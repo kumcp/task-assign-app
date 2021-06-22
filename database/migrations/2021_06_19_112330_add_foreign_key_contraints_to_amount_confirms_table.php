@@ -27,8 +27,8 @@ class AddForeignKeyContraintsToAmountConfirmsTable extends Migration
     public function down()
     {
         Schema::table('amount_confirms', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('job_assign_id');
-            $table->dropConstrainedForeignId('staff_id');
+            $table->dropForeign(['job_assign_id']);
+            $table->dropForeign(['staff_id']);
         });
     }
 }

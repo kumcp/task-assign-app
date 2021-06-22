@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToStaffTable extends Migration
     public function down()
     {
         Schema::table('staff', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('department_id');
+            $table->dropForeign(['department_id']);
         });
     }
 }

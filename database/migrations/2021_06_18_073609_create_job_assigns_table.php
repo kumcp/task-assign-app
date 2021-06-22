@@ -18,6 +18,7 @@ class CreateJobAssignsTable extends Migration
             $table->unsignedBigInteger('job_id');
             $table->unsignedBigInteger('staff_id');
             $table->unsignedBigInteger('process_method_id');
+            $table->unsignedBigInteger('parent_id');
             $table->boolean('direct_report')->nullable();
             $table->text('sms')->nullable();
             $table->string('status');

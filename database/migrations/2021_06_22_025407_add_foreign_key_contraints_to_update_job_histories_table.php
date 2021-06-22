@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToUpdateJobHistoriesTable extends Migration
     public function down()
     {
         Schema::table('update_job_histories', function (Blueprint $table) {
-            //
+            $table->dropForeign(['job_id']);
         });
     }
 }

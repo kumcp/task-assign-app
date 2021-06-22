@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToTimeSheetsTable extends Migration
     public function down()
     {
         Schema::table('time_sheets', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('job_assign_id');
+            $table->dropForeign(['job_assign_id']);
         });
     }
 }
