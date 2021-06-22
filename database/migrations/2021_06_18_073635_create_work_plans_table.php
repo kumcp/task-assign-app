@@ -21,7 +21,6 @@ class CreateWorkPlansTable extends Migration
             $table->time('from_time');
             $table->time('to_time');
             $table->text('content');
-            $table->text('deny_reason')->nullable();
             $table->timestamps();
         });
     }
