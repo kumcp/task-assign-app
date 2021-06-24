@@ -1,7 +1,6 @@
 <table class=" table table-hover table-light table-stripped">
     <thead>
         <tr>
-            <th scope="col">#</th>
             @foreach ($fields ?? [] as $key => $value)
                 <th scope="col">{{ __("title.$key") }}</th>
             @endforeach
