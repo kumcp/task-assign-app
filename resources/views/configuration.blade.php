@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <form action="#">
+        <form action="#" class="offset-4">
             <div class="form-group-row mb-3">
                 @include('components.select', [
                     'name' => 'period', 
@@ -41,14 +41,20 @@
                 ])
             </div>
 
-            <div class="form-group-row mb-3">
+            <div class="form-group-row mb-5">
                 @include('components.select', [
                     'name' => 'work_plan', 
                     'label' => 'Kế hoạch thực hiện',
                     'options' => ['Không', 'Bắt buộc'],
                 ])
             </div>
-            <button type="submit" class="btn btn-primary text-center">Lưu</button>
+            <div class="row offset-2">
+                <button type="submit" class="btn btn-info">
+                    <i class="fas fa-save"></i>
+                    <span>Lưu</span> 
+                </button>
+            </div>
+            
         </form>
             
     </div>

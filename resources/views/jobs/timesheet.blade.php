@@ -64,7 +64,7 @@
                         {{-- <label for="percentage_completed" class="mr-5">% hoàn thành</label>
                         <input type="text" name="percentage_completed" id="percentage_completed"> --}}
                     </div>
-                    <div class="form-group-row">
+                    <div class="form-group-row mb-3">
                         @include('components.text-area', [
                             'name' => 'content', 
                             'label' => 'Nội dung',
@@ -72,6 +72,23 @@
                         {{-- <label for="content" class="mr-5">Nội dung</label>
                         <textarea type="text" name="content" id="content"></textarea> --}}
                     </div>  
+                    
+                    <div class="btn-group offset-3" role="group">
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-save"></i>
+                            <span>Ghi lại</span>
+                        </button>
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-copy"></i>
+                            <span>Ghi-sao</span>
+                        </button>
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-trash"></i>
+                            <span>Xóa</span>
+                        </button>
+    
+                    </div>
+
                 </form>
             </div>
             <div class="col-md-4">

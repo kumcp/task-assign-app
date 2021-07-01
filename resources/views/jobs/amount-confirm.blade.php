@@ -47,10 +47,7 @@
                             'name' => 'old_confirm_percentage', 
                             'label' => '% đã xác nhận',
                         ])
-                        {{-- <label for="old_confirm_amount"  class="mr-5">KL cũ đã xác nhận</label>
-                        <input type="number" name="old_confirm_amount" id="old_confirm_amount">   
-                        <label for="old_confirm_percentage" class="mx-5">% đã xác nhận</label>
-                        <input type="number" name="old_confirm_percentage" id="old_confirm_percentage">     --}}
+
                     </div>
                     <div class="form-group-row mb-3">
                         @include('components.input-number', [
@@ -61,10 +58,7 @@
                             'name' => 'request_percentage', 
                             'label' => '% đề nghị',
                         ])
-                        {{-- <label for="request_amount"  class="mr-5">KL đề nghị</label>
-                        <input type="number" name="request_amount" id="request_amount">    
-                        <label for="request_percentage"  class="mx-5">% đề nghị</label>
-                        <input type="number" name="request_percentage" id="request_percentage">    --}}
+
                     </div>
                     <div class="form-group-row mb-3">
                         @include('components.input-number', [
@@ -75,10 +69,7 @@
                             'name' => 'confirm_percentage', 
                             'label' => '% hoàn thành',
                         ])
-                        {{-- <label for="confirm_amount"  class="mr-5">Khối lượng CV</label>
-                        <input type="number" name="confirm_amount" id="confirm_amount">  
-                        <label for="confirm_percentage" class="mx-5">% hoàn thành</label>
-                        <input type="number" name="confirm_percentage" id="confirm_percentage">    --}}
+
                     </div>
                     <div class="form-group-row mb-3">
                         @include('components.select', [
@@ -86,21 +77,29 @@
                             'label' => 'Chất lượng',
                             'options' => ['Tốt', 'Trung bình', 'Kém'],
                         ])
-                        {{-- <label for="quality" class="mr-5">Chất lượng</label>
-                        <select name="quality" id="quality">
-                            <option value="Tốt">Tốt</option>
-                            <option value="Trung bình">Trung bình</option>
-                            <option value="Kém">Kém</option>
-                        </select>     --}}
+  
                     </div>
   
-                    <div class="form-group-row">
+                    <div class="form-group-row mb-5">
                         @include('components.text-area', [
                             'name' => 'note',
                             'label' => 'Nhận xét',
                         ])
-                        {{-- <label for="note" class="mr-5">Nhận xét</label>
-                        <textarea name="note" id="note" class="form-control"></textarea> --}}
+
+                    </div>
+                    <div class="btn-group offset-4" role="group">
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-save"></i>
+                            <span>Lưu</span>
+                        </button>
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-trash"></i>
+                            <span>Xóa</span>
+                        </button>
+                        <button type="submit" class="btn btn-light">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Timesheet</span> 	
+                        </button>
                     </div>
                 </form>
                 

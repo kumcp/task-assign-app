@@ -16,7 +16,12 @@
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
-        @include('components.buttons', ['buttons' => ['Lưu', 'Xóa']])
+        @include('components.buttons', [
+            'buttons' => [
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu'], 
+                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa'], 
+            ] 
+        ])
     </form>
 @endsection
 

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <div class="row mb-4">
+        <div class="row mb-4 ml-0">
             @include('components.select', [
                 'name' => 'assignee',
                 'label' => 'Đối tượng xử lý',
@@ -11,7 +11,7 @@
             <label for="process_method">(Hình thức xử lý)</label>
 
         </div>
-        <div class="row">
+        <div class="row ml-0">
             @include('components.table', [
                 'cols' => ['Từ ngày', 'Đến ngày', 'Từ giờ', 'Đến giờ', 'Nội dung công việc'],
                 'rows' => [
