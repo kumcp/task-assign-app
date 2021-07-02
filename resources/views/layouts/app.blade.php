@@ -14,9 +14,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     
-    <!-- gijgo plugin for treeview -->
-    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
-    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -156,12 +153,6 @@
             $.fn.selectpicker.Constructor.BootstrapVersion = '4';
             $('.selectpicker').selectpicker();
 
-<<<<<<< HEAD
-=======
-            // $('select').change(function() {
-            //     console.log($(this).find(':selected'))
-            // })
->>>>>>> 89db910b192eb6fcc53ee8ee6896572374747ebe
         });
     </script>
 
