@@ -9,12 +9,10 @@
     <tbody>
         @foreach ($items ?? [] as $item)
             <tr>
-                <td scope="row">{{ $item->id }}</td>
                 @foreach ($fields ?? [] as $key => $value)
-
                     @if ($value === 'pattern.modified')
                         <td><a href="{{ route($edit_route ?? 'edit', ['id' => $item->id]) }}"
-                                class="btn btn-primary">{{ __('title.edit') }}</a>
+                                class="btn btn-primary">{{ __('Sửa') }}</a>
                         </td>
                     @elseif ($value === 'pattern.image')
                         <td>
@@ -24,11 +22,14 @@
                         </td>
                     @elseif (strpos($value, 'custom.'))
                         @yield($value, $item)
-                    @else 
-                        <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
+                    @else
+                        <td>
+                            {{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
                         </td>
                     @endif
-
+                    @if($value === 'pattern.id')
+                            <td scope="row">{{ $item->id }}</td>
+                        @endif
                 @endforeach
             </tr>
         @endforeach

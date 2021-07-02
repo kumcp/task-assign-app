@@ -11,7 +11,7 @@
 						'options' => ['Tất cả', 'Dự án', 'Training']
                     ])
                     @include('components.select', [
-                        'name' => 'project',
+                        'name' => 'site.project.project',
 						'label' => 'Dự án',
 						'options' => ['Tất cả', 'CodeStar']
                     ])

@@ -8,7 +8,6 @@
 
 @section('page')
 
-    
 
     <h3 class="title">{{ __('title.course-content-management') }}</h3>
 

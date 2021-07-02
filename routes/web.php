@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\ProjectController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,12 +44,9 @@ Route::get('/jobs/update-history', function () {
 Route::get('/jobs/workplan', function () {
     return view('jobs.workplan');
 });
-Route::get('/projects/create', function () {
-    return view('project');
-});
 
 Route::get('/project-types/create', function () {
-    return view('project-type');
+    return view('welcome');
 });
 Route::get('/priorities', function () {
     return view('priority');
@@ -57,4 +54,14 @@ Route::get('/priorities', function () {
 
 Route::get('/configurations', function () {
     return view('configuration');
+});
+
+// Project
+Route::prefix('project')->group(function () {
+    Route::get('/', [ProjectController::class, 'list'])->name('project.list');
+    Route::post('/store', [ProjectController::class, 'store'])->name('project.store');
+    Route::get('/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
+    Route::post('/update/{id}', [ProjectController::class, 'update'])->name('project.update');
+    Route::get('/delete/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+    Route::post('/action', [ProjectController::class, 'action'])->name('project.action');
 });
