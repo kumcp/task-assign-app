@@ -23,7 +23,7 @@
             ])
         </div>
 
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => 'save'], 
                 ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 

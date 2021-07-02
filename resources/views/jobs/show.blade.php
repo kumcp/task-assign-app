@@ -4,12 +4,6 @@
 ])
 
 @section('assign-button-group')
-	{{-- @include('components.buttons', [
-		'parentClass' => 'btn-group',
-		'buttons' => [
-			['iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết'], 
-		]
-	]) --}}
 	<a href="#" class="btn btn-link text-decoration-none">
 		<i class="fas fa-info-circle"></i>
 		<span>Xem chi tiết</span>

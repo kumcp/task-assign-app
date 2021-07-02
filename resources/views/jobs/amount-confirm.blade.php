@@ -12,8 +12,6 @@
                             'name' => 'month', 
                             'label' => 'Tháng',
                         ])
-                        {{-- <label for="month" class="mr-5">Tháng</label>
-                        <input type="month" name="month" id="month">     --}}
                     </div>
     
                     <div class="form-group-row mb-3">
@@ -22,11 +20,6 @@
                             'label' => 'Người xử lý',
                             'options' => ['Hoàng Quân', 'Quân', 'ABC', 'XYZ']
                         ])
-                        {{-- <label for="assignee" class="mr-5">Người xử lý</label>
-                        <select name="assignee" id="assignee">
-                            <option value="ABC">ABC</option>
-                            <option value="XYZ">XYZ</option>
-                        </select>     --}}
                     </div>
     
                     <div class="form-group-row mb-3">
@@ -34,8 +27,6 @@
                             'name' => 'assign_amount', 
                             'label' => 'KL giao',
                         ])
-                        {{-- <label for="assign_amount"  class="mr-5">KL giao</label>
-                        <input type="number" name="assign_amount" id="assign_amount">     --}}
                     </div>
     
                     <div class="form-group-row mb-3">
@@ -87,52 +78,22 @@
                         ])
 
                     </div>
-                    <div class="btn-group offset-4" role="group">
-                        <button type="submit" class="btn btn-light">
-                            <i class="fas fa-save"></i>
-                            <span>Lưu</span>
-                        </button>
-                        <button type="submit" class="btn btn-light">
-                            <i class="fas fa-trash"></i>
-                            <span>Xóa</span>
-                        </button>
-                        <button type="submit" class="btn btn-light">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Timesheet</span> 	
-                        </button>
-                    </div>
+
+                    @include('components.button-group', [
+                        'buttons' => [
+                            ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => 'save'], 
+                            ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
+                            ['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
+                        ] 
+                    ])
                 </form>
                 
             </div>
 
             <div class="col-md-3">
-                <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">Tháng</th>
-                        <th scope="col">Đối tượng xử lý</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Nguyen Van A</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Nguyen Van B</td>
-                        </tr>
-                        <tr>
-                            <td>1</td>
-                            <td>Nguyen Van C</td>
-                        </tr>
-                        
-                    </tbody>
-                  </table>
+                {{-- TODO: table filling --}}
             </div>
         </div>
-        
-
     </div>
     
 @endsection
