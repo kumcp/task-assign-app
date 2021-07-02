@@ -18,8 +18,8 @@
         </div>
         @include('components.buttons', [
             'buttons' => [
-                ['iconClass' => 'fas fa-save', 'value' => 'Lưu'], 
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa'], 
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => 'save'], 
+                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
             ] 
         ])
     </form>

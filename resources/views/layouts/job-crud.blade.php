@@ -6,6 +6,7 @@
         <div class="row">
         
             <div class="col-md-9">
+               
                 <form action="{{route($routeName, $params ?? [])}}" method="{{$method}}">
                     @csrf
                     
@@ -28,7 +29,30 @@
                                 'label' => 'Mã dự án'	
                             ])
                         </div>
-    
+
+                        {{-- test
+                        <div class="form-group-row mb-3">
+                            <label for="test">Test</label>
+                            <select class="selectpicker custom-select form-control" name="test[]" data-live-search="true" multiple>
+                                <option data-tokens="ketchup mustard">Hot Dog, Fries and a Soda</option>
+                                <option data-tokens="mustard">Burger, Shake and a Smile</option>
+                                <option data-tokens="frosting">Sugar, Spice and all things nice</option>
+                            </select>
+                              
+                            
+                        </div>
+                        {{-- test object --}}
+                        
+                        {{--<div class="form-group-row mb-3">
+                            <label for="test1">Test 1</label>
+                            <select class="custom-select form-control" name="test1">
+                                <option data-value='{"name":"rajiv","age":"40"}'>a</option>
+                                <option data-value='{"name":"mithun","age":"22"}'>f</option>
+                            </select>
+                
+                        </div> --}}
+                          
+
                         <div class="form-group-row mb-3">
                             @include('components.select', [
                                 'name' => 'job_type', 

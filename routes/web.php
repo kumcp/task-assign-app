@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,17 +16,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+
 Route::get('/jobs', function () {
     return view('jobs.index');
-});
+})->name('jobs');
 
 Route::get('/jobs/create', function () {
     return view('jobs.create');
-});
+})->name('jobs.create');
 
 Route::get('/jobs/search', function () {
     return view('jobs.search');
-});
+})->name('jobs.search');
+
+Route::get('/jobs/show', function () {
+    return view('jobs.show');
+})->name('jobs.show');
 
 Route::get('/timesheets/create', function () {
     return view('jobs.timesheet');
@@ -58,3 +67,24 @@ Route::get('/priorities', function () {
 Route::get('/configurations', function () {
     return view('configuration');
 });
+
+Route::get('/jobs', [JobsController::class, 'index']);
+Route::get('/jobs/create', [JobsController::class, 'create']);
+Route::get('/jobs/edit', [JobsController::class, 'edit']);
+Route::get('/jobs/{id}', [JobsController::class, 'show']);
+Route::post('/jobs', [JobsController::class, 'store'])->name('jobs.store');
+Route::put('/jobs/{id}', [JobsController::class, 'update']);
+Route::delete('/jobs/{id}', [JobsController::class, 'delete']);
+
+
+Route::get('/projects', [ProjectsController::class, 'index']);
+Route::get('/projects/{id}', [ProjectsController::class, 'show']);
+Route::get('/projects/create', [ProjectsController::class, 'create']);
+Route::post('/projects', [ProjectsController::class, 'store']);
+Route::get('/projects/{id}/edit', [ProjectsController::class, 'edit']);
+Route::put('/projects/{id}', [ProjectsController::class, 'update']);
+Route::delete('/projects/{id}', [ProjectsController::class, 'destroy']);
+
+
+// Route::post('/test', [TestController::class, 'store']);
+// Route::put('/test1', [TestController::class, 'update']);
