@@ -17,6 +17,7 @@ class CreateJobsTable extends Migration
             $table->id()->unsigned();
             $table->string('code')->nullable()->unique();
             $table->string('name');
+            $table->unsignedBigInteger('assigner_id');
             $table->unsignedBigInteger('parent_id')->nullable();
             $table->unsignedBigInteger('job_type_id')->nullable();
             $table->unsignedBigInteger('project_id')->nullable();

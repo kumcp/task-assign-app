@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToCommunicationHistoriesTable extends Migration
     public function down()
     {
         Schema::table('communication_histories', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('staff_id');
+            $table->dropForeign(['staff_id']);
         });
     }
 }

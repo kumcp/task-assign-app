@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToAccountsTable extends Migration
     public function down()
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('staff_id');
+            $table->dropForeign(['staff_id']);
         });
     }
 }
