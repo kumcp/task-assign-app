@@ -28,7 +28,7 @@
 @section('table')
     @include('components.table', [
         'cols' => ['Mã', 'Tên'],
-        'rows' => $project
+        'rows' => []
         
     ])
 
