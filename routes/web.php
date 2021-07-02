@@ -4,7 +4,7 @@ use App\Http\Controllers\JobsController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\ProjectController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -53,12 +53,9 @@ Route::get('/jobs/update-history', function () {
 Route::get('/jobs/workplan', function () {
     return view('jobs.workplan');
 });
-Route::get('/projects/create', function () {
-    return view('project');
-});
 
 Route::get('/project-types/create', function () {
-    return view('project-type');
+    return view('welcome');
 });
 Route::get('/priorities', function () {
     return view('priority');
@@ -77,6 +74,7 @@ Route::put('/jobs/{id}', [JobsController::class, 'update']);
 Route::delete('/jobs/{id}', [JobsController::class, 'delete']);
 
 
+// TODO: check and delete unneccessary
 Route::get('/projects', [ProjectsController::class, 'index']);
 Route::get('/projects/{id}', [ProjectsController::class, 'show']);
 Route::get('/projects/create', [ProjectsController::class, 'create']);
@@ -88,3 +86,13 @@ Route::delete('/projects/{id}', [ProjectsController::class, 'destroy']);
 
 // Route::post('/test', [TestController::class, 'store']);
 // Route::put('/test1', [TestController::class, 'update']);
+
+// Project
+Route::prefix('project')->group(function () {
+    Route::get('/', [ProjectController::class, 'list'])->name('project.list');
+    Route::post('/store', [ProjectController::class, 'store'])->name('project.store');
+    Route::get('/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
+    Route::post('/update/{id}', [ProjectController::class, 'update'])->name('project.update');
+    Route::get('/delete/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+    Route::post('/action', [ProjectController::class, 'action'])->name('project.action');
+});
