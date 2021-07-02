@@ -1,7 +1,11 @@
 @extends('layouts.create')
 
 @section('form')
-    <form action="#">
+
+    @include('common.block.flash-message')
+
+    <form action="{{route('project.store')}}" method="POST">
+        @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'project_code', 
@@ -26,11 +30,14 @@
 @endsection
 
 @section('table')
-    @include('components.table', [
-        'cols' => ['Mã', 'Tên'],
-        'rows' => []
-        
+    @include('common.block.table', [
+        'fields' => [
+            'code' => 'code',
+            'name_project' => 'name',
+            'edit' => 'pattern.modified'
+           ],
+        'items' => $projects,
+        'edit_route' => 'project.edit'
     ])
+@endsection,
 
-    
-@endsection
