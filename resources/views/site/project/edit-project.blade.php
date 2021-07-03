@@ -24,8 +24,7 @@
         </div>
         @include('components.buttons', [
             'buttons' => [
-                ['iconClass' => 'fas fa-plus-circle', 'value' => 'Thêm mới' ],
-                ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'name' => 'update' ],
                 ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
