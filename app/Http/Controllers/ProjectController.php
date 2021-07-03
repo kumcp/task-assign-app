@@ -39,11 +39,13 @@ class ProjectController extends Controller
         $project->delete();
         return redirect()->route('project.list')->with('massage','Đã xóa dự án thành công!');
     }
-//    public function action(Request $request){
-//        if ($request->name == 'store'){
-//            return redirect()->route('project.store');
-//        }
-//        if ($request->name == 'update'){}
-//        if ($request->name == 'delet')
-//    }
+    public function action(Request $request){
+        if ($request->name == 'store'){
+            return redirect()->route('project.store');
+        }
+        if ($request->name == 'update'){
+            return redirect()->route('project.update');
+        }
+
+    }
 }
