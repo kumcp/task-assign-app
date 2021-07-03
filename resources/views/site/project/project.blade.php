@@ -22,9 +22,8 @@
         </div>
         @include('components.buttons', [
             'buttons' => [
-                ['iconClass' => 'fas fa-plus-circle', 'value' => 'Thêm mới' ],
-                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => route('project.update',['id'=>3])],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => '' ],
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
+                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ] 
         ])
     </form>
