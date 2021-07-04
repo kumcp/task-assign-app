@@ -38,7 +38,7 @@
             'name_project' => 'name',
             'edit' => 'pattern.modified'
            ],
-        'items' => $projects,
-        'edit_route' => 'project.edit'
+        'items' => $skills,
+        'edit_route' => 'skill.edit'
     ])
 @endsection

@@ -3,7 +3,7 @@
 return [
 
 
-    'code' => 'Mã code',
+    'code' => 'Mã',
     'name_project' => 'Tên dự án',
     'name_project_type' => 'Loại công việc',
     'name_priority' => 'Tên ưu tiên',

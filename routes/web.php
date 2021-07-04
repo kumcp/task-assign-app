@@ -5,15 +5,11 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
-<<<<<<< HEAD
 use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
-use App\Http\Controllers\TimeSheetController;
 
-=======
->>>>>>> 409c963 (add project view function)
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -90,7 +86,6 @@ Route::prefix('project-type')->group(function () {
     Route::get('/delete/{id}', [ProjectTypeController::class, 'destroy'])->name('project-type.destroy');
 });
 
-<<<<<<< HEAD
 // Priorities
 Route::prefix('priority')->group(function () {
     Route::get('/', [PriorityController::class, 'list'])->name('priority.list');
@@ -117,31 +112,5 @@ Route::prefix('process-method')->group(function () {
     Route::post('/update/{id}', [ProcessMethodController::class, 'update'])->name('process-method.update');
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
-=======
-// TODO: check and delete unneccessary
-Route::get('/projects', [ProjectsController::class, 'index']);
-Route::get('/projects/{id}', [ProjectsController::class, 'show']);
-Route::get('/projects/create', [ProjectsController::class, 'create']);
-Route::post('/projects', [ProjectsController::class, 'store']);
-Route::get('/projects/{id}/edit', [ProjectsController::class, 'edit']);
-Route::put('/projects/{id}', [ProjectsController::class, 'update']);
-Route::delete('/projects/{id}', [ProjectsController::class, 'destroy']);
->>>>>>> 409c963 (add project view function)
 
-//Configuration
 
-<<<<<<< HEAD
-=======
-// Route::post('/test', [TestController::class, 'store']);
-// Route::put('/test1', [TestController::class, 'update']);
-
-// Project
-Route::prefix('project')->group(function () {
-    Route::get('/', [ProjectController::class, 'list'])->name('project.list');
-    Route::post('/store', [ProjectController::class, 'store'])->name('project.store');
-    Route::get('/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
-    Route::post('/update/{id}', [ProjectController::class, 'update'])->name('project.update');
-    Route::get('/delete/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
-    Route::post('/action', [ProjectController::class, 'action'])->name('project.action');
-});
->>>>>>> 409c963 (add project view function)
