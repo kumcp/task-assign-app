@@ -4,7 +4,8 @@
         <select name="course" class="form-select course-select">
             @foreach ($options as $option)
                 <option value="{{ $valueField ? $option->$valueField : $option }}" {{ ($select ?? '') == ($valueField ? $option->$valueField : $option) ? 'selected': '' }}>
-                    {{ $displayField ? $option->$displayField : $option }}</option>
+                    {{ $displayField ? $option->$displayField : $option }}
+                </option>
             @endforeach
         </select>
     </div>
