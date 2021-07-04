@@ -119,3 +119,4 @@ Route::prefix('process-method')->group(function () {
     Route::post('/update/{id}', [ProcessMethodController::class, 'update'])->name('process-method.update');
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
+
