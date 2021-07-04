@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssigneeListController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+Route::redirect('/', '/jobs', 301);
+
 
 Route::get('/jobs', function () {
     return view('jobs.index');
@@ -33,9 +37,7 @@ Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
 });
 
-Route::get('/assignee-list', function () {
-    return view('jobs.assignee-list');
-});
+Route::get('/assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list');
 
 Route::get('/jobs/update-history', function () {
     return view('jobs.update-history');
