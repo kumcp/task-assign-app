@@ -1,19 +1,13 @@
 <?php
 
-use App\Http\Controllers\JobsController;
-use App\Http\Controllers\ProjectsController;
-use App\Http\Controllers\TestController;
+use App\Http\Controllers\AssigneeListController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\TimeSheetController;
->>>>>>> 4fef603 (update web router)
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,6 +19,7 @@ use App\Http\Controllers\TimeSheetController;
 |
 */
 
+Route::redirect('/', '/jobs', 301);
 
 
 Route::get('/jobs', function () {
@@ -47,9 +42,7 @@ Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
 });
 
-Route::get('/assignee-list', function () {
-    return view('jobs.assignee-list');
-});
+Route::get('/assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list');
 
 Route::get('/jobs/update-history', function () {
     return view('jobs.update-history');
@@ -72,12 +65,6 @@ Route::get('/configurations', function () {
 
 //================================== ROUTE VIEW =====================================================//
 
-<<<<<<< HEAD
-//================================== ROUTE VIEW =====================================================//
-
-
-=======
->>>>>>> 4fef603 (update web router)
 // Project
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'list'])->name('project.list');
