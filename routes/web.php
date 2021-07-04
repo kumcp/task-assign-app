@@ -110,4 +110,3 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
-
