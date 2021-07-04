@@ -4,13 +4,12 @@
 
     @include('common.block.flash-message')
 
-    <form action="{{route('project.update',['id'=>$project->id])}}" method="POST">
+    <form action="{{route('project.store')}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'project_code',
                 'label' => 'Mã',
-                'value' => $project->code,
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -18,13 +17,12 @@
             @include('components.input-text', [
                 'name' => 'project_name',
                 'label' => 'Tên',
-                'value' => $project->name,
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         @include('components.buttons', [
             'buttons' => [
-                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'name' => 'update' ],
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
                 ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
@@ -38,7 +36,8 @@
             'name_project' => 'name',
             'edit' => 'pattern.modified'
            ],
-        'items' => $skills,
-        'edit_route' => 'skill.edit'
+        'items' => $projects,
+        'edit_route' => 'project.edit'
     ])
-@endsection
+@endsection,
+
