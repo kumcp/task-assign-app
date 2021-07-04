@@ -2,11 +2,26 @@
 
 namespace App\Models;
 
-
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Job extends Model
 {
+    use HasFactory;
+
+    const STATUS_ACTIVE = 'active';
+    const STATUS_DEACTIVE = 'deactive';
+
+    const PERIOD_UNIT_DAY = 'day';
+    const PERIOD_UNIT_HOUR = 'hour';
+    const PERIOD_UNIT_TERM = 'term';
+
+    // Default attribute when create Model
+    protected $attributes = [
+        'status' => self::STATUS_ACTIVE,
+        'period_unit' => self::PERIOD_UNIT_DAY,
+    ];
+
     public function parent()
     {
         return $this->belongsTo(Job::class, 'parent_id');
