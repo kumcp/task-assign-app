@@ -4,7 +4,7 @@
 
     @include('common.block.flash-message')
 
-    <form action="{{route('project-type.store')}}" method="POST">
+    <form action="{{route('project-type.update',['id'=>$project_type->id])}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
@@ -35,8 +35,13 @@
                 'name' => 'project_type_common',
                 'label' => 'Thường xuyên',
                 'value' => $project_type->common,
-                'options' => [0, 1],
-            ])
+                'options' => [
+                                    ['value' => 0, 'display' => 'Không'],
+                                    ['value' => 1, 'display' => 'Có'],
+
+                                ]
+
+            ]),
         </div>
         @include('components.buttons', [
             'buttons' => [
@@ -51,7 +56,7 @@
     @include('common.block.table', [
         'fields' => [
             'code' => 'code',
-            'name_project_type' => 'name',
+            'name' => 'name',
             'edit' => 'pattern.modified'
            ],
         'items' => $projects_type,

@@ -4,19 +4,19 @@
 
     @include('common.block.flash-message')
 
-    <form action="{{route('project.store')}}" method="POST">
+    <form action="{{route('skill.store')}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
-                'name' => 'project_code',
-                'label' => 'Mã',
+                'name' => 'skill_code',
+                'label' => 'Mã code',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         <div class="form-group-row mb-5">
             @include('components.input-text', [
-                'name' => 'project_name',
-                'label' => 'Tên',
+                'name' => 'skill_name',
+                'label' => 'Tên kỹ năng',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -33,10 +33,10 @@
     @include('common.block.table', [
         'fields' => [
             'code' => 'code',
-            'name_project' => 'name',
+            'name_skill' => 'name',
             'edit' => 'pattern.modified'
            ],
-        'items' => $skill,
+        'items' => $skills,
         'edit_route' => 'skill.edit'
     ])
 @endsection,

@@ -9,14 +9,14 @@
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'priority_code',
-                'label' => 'Mã',
+                'label' => 'Mã code',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'priority_name',
-                'label' => 'Tên',
+                'label' => 'Tên ưu tiên',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -42,9 +42,8 @@
             'code' => 'code',
             'name_priority' => 'name',
             'edit' => 'pattern.modified',
-
            ],
-        'items' => $priority,
+        'items' => $prioritys,
         'edit_route' => 'priority.edit'
     ])
 @endsection,
