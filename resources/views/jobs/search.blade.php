@@ -15,17 +15,6 @@
 						'label' => 'Dự án',
 						'options' => ['Tất cả', 'CodeStar']
                     ])
-                    {{-- <label class="mr-5" for="job_type">Loại công việc</label>
-                    <select name="job_type" id="job_type">
-                        <option value="Tất cả">Tất cả</option>
-                        <option value="Dự án">Dự án</option>
-                    </select> --}}
-
-                    {{-- <label class="mx-5" for="project">Dự án</label>
-                    <select name="project" id="project">
-                        <option value="Tất cả">Tất cả</option>
-                        <option value="ABC">ABC</option>
-                    </select> --}}
                     
                 </div>
 
@@ -93,130 +82,27 @@
 					</ul>
 					<div class="tab-content" id="myTabContent">
 						<div class="tab-pane fade show active" id="direct" role="tabpanel" aria-labelledby="direct-tab">
-							<table class="table">
-								<thead>
-								  <tr>
-									<th scope="col">Mã dự án</th>
-									<th scope="col">Tên công việc</th>
-									<th scope="col">Người giao</th>
-									<th scope="col">Hình thức xử lý</th>
-									<th scope="col">Hạn xử lý</th>
-									<th scope="col">KL giao</th>
-									<th scope="col">KL timesheet</th>
-									<th scope="col">% hoàn thành</th>
-									<th scope="col">Số ngày còn lại</th>
-									<th scope="col"><input type="checkbox" name="option" id="option"></th>
-								  </tr>
-								</thead>
-								<tbody>
-								  <tr>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>@mdo</td>
-								  </tr>
-								  <tr>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>@mdo</td>
-								  </tr>
-								  <tr>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>@mdo</td>
-								  </tr>
-								</tbody>
-							</table>
+							{{-- TODO: Thêm bảng công việc xử lý trực tiếp --}}
 						</div>
 						<div class="tab-pane fade" id="related" role="tabpanel" aria-labelledby="related-tab">
-							<table class="table">
-								<thead>
-								  <tr>
-									<th scope="col">Mã dự án</th>
-									<th scope="col">Tên công việc</th>
-									<th scope="col">Người giao</th>
-									<th scope="col">Hình thức xử lý</th>
-									<th scope="col">Hạn xử lý</th>
-									<th scope="col">KL giao</th>
-									<th scope="col">KL timesheet</th>
-									<th scope="col">% hoàn thành</th>
-									<th scope="col">Số ngày còn lại</th>
-									<th scope="col"><input type="checkbox" name="option" id="option"></th>
-								  </tr>
-								</thead>
-								<tbody>
-								  <tr>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>Mark</td>
-									<td>Otto</td>
-									<td>@mdo</td>
-									<td>@mdo</td>
-								  </tr>
-								</tbody>
-							</table>
+							{{-- TODO: Thêm bảng công việc liên quan --}}
+
 						</div>
 					</div>
 				</div>
 
-				<div class="btn-group offset-1" role="group">
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-info-circle"></i>
-						<span>Xem chi tiết</span> 
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-check"></i>
-						<span>Hoàn thành</span>
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-search"></i>
-						<span>Tìm kiếm</span>
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-tasks"></i>
-						<span>Giao xử lý</span> 
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-clipboard-list"></i>
-						<span>Timesheet</span> 	
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-plus"></i>
-						<span>Tạo việc</span> 
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-tasks"></i>
-						<span>Xác nhận SL</span>
-					</button>
-					<button type="submit" class="btn btn-light">
-						<i class="fas fa-comments"></i>
-						<span>Trao đổi</span> 
-					</button>
-				</div>
+				@include('components.button-group', [
+					'parentClass' => 'btn-group offset-1',
+					'buttons' => [
+						['iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'detail'], 
+						['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
+                        ['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
+						['iconClass' => 'fas fa-tasks', 'value' => 'Giao xử lý', 'action' => 'assign'], 
+						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
+                        ['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
+						['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
+					] 
+				])
 
             </form>
         </div>

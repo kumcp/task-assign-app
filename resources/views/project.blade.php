@@ -16,10 +16,10 @@
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
-                ['iconClass' => 'fas fa-save', 'value' => 'Lưu'], 
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa'], 
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => 'save'], 
+                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
             ] 
         ])
     </form>
@@ -28,12 +28,9 @@
 @section('table')
     @include('components.table', [
         'cols' => ['Mã', 'Tên'],
-        'rows' => [
-            ['ABC', 'CodeStar'],
-            ['ABC', 'CodeStar'],
-            ['ABC', 'CodeStar'],
-            ['ABC', 'CodeStar'],
-        ]
+        'rows' => []
+        
     ])
+
     
 @endsection

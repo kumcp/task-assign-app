@@ -25,7 +25,7 @@
             ])
         </div>
 
-        @include('components.buttons', ['buttons' => ['Lưu', 'Xóa']])
+        @include('components.button-group', ['buttons' => ['Lưu', 'Xóa']])
     </form>
 @endsection
 
