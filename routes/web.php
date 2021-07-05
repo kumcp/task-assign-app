@@ -92,6 +92,9 @@ Route::delete('/projects/{id}', [ProjectsController::class, 'destroy']);
 // Route::post('/test', [TestController::class, 'store']);
 // Route::put('/test1', [TestController::class, 'update']);
 
+//================================== ROUTE VIEW =====================================================//
+
+
 // Project
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'list'])->name('project.list');
@@ -137,4 +140,3 @@ Route::prefix('process-method')->group(function () {
     Route::post('/update/{id}', [ProcessMethodController::class, 'update'])->name('process-method.update');
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
-

@@ -16,7 +16,7 @@
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'project_type_name',
-                'label' => 'Tên',
+                'label' => 'Loại công việc',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -31,7 +31,11 @@
             @include('components.select', [
                 'name' => 'project_type_common',
                 'label' => 'Thường xuyên',
-                'options' => ['Không', 'Có'],
+                 'options' => [
+                                    ['value' => 0, 'display' => 'Không'],
+                                    ['value' => 1, 'display' => 'Có'],
+
+                                ]
             ])
         </div>
         @include('components.buttons', [

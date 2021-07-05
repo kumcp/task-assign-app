@@ -9,7 +9,7 @@ use App\Models\Project;
 class ProjectController extends Controller
 {
     public function list(){
-        $projects = Project::paginate(10);
+        $projects = Project::paginate(15);
         return view('site.project.project', compact('projects'));
     }
     public function store(ProjectRequest $request) {
@@ -23,8 +23,8 @@ class ProjectController extends Controller
     }
     public function edit($id) {
         $project = Project::findOrFail($id);
-        $projects = Project::all();
-        return view('site.project.edit-project', compact('project','projects'));
+        $projects = Project::paginate(15);
+        return view('site.project.project-edit', compact('project','projects'));
     }
     public function update(ProjectRequest $request, $id) {
         $project = Project::findOrFail($id);
@@ -40,12 +40,4 @@ class ProjectController extends Controller
         $project->delete();
         return redirect()->route('project.list')->with('massage','Đã xóa dự án thành công!');
     }
-//    public function action(ProjectRequest $request){
-//        if ($request->name == 'store'){
-//            return redirect()->route('project.store');
-//        }
-//        if ($request->name == 'update'){
-//            return redirect()->route('project.update');
-//        }
-//    }
 }

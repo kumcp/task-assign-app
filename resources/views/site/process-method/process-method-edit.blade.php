@@ -4,20 +4,33 @@
 
     @include('common.block.flash-message')
 
-    <form action="{{route('project.store')}}" method="POST">
+    <form action="{{route('process-method.update',['id'=>$process_method->id])}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
-                'name' => 'project_code',
-                'label' => 'Mã',
+                'name' => 'process_code',
+                'label' => 'Mã code',
+                'value' => $process_method->code,
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         <div class="form-group-row mb-5">
             @include('components.input-text', [
-                'name' => 'project_name',
-                'label' => 'Tên',
+                'name' => 'process_name',
+                'label' => 'Hình thức xử lý',
+                'value' => $process_method->name,
                 'inputClass' => 'form-control d-inline w-75'
+            ])
+        </div>
+        <div class="form-group-row mb-5">
+            @include('components.select', [
+                'name' => 'process_assigner',
+                'label' => 'Chủ trì',
+                'value' => $process_method->assigner,
+                'options' => [
+                     ['value' => 0, 'display' => 'Không'],
+                     ['value' => 1, 'display' => 'Có'],
+                 ]
             ])
         </div>
         @include('components.buttons', [
@@ -33,11 +46,11 @@
     @include('common.block.table', [
         'fields' => [
             'code' => 'code',
-            'name_project' => 'name',
+            'name_process' => 'name',
             'edit' => 'pattern.modified'
            ],
-        'items' => $projects,
-        'edit_route' => 'project.edit'
+        'items' => $process_methods,
+        'edit_route' => 'process-method.edit'
     ])
 @endsection,
 
