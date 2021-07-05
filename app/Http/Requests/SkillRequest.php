@@ -13,7 +13,7 @@ class SkillRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     /**
@@ -24,15 +24,15 @@ class SkillRequest extends FormRequest
     public function rules()
     {
         return [
-            'project_code' => 'required',
-            'project_name' => 'required',
+            'skill_code' => 'required',
+            'skill_name' => 'required',
 
         ];
     }
     public function messages() {
         return [
-            'project_code.required' => 'Mã code không được để trống!',
-            'project_name.required' => 'Tên dự án không được để trống!',
+            'skill_code.required' => 'Mã code không được để trống!',
+            'skill_name.required' => 'Kỹ năng không được để trống!',
 
         ];
     }

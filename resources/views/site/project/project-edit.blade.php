@@ -35,7 +35,7 @@
     @include('common.block.table', [
         'fields' => [
             'code' => 'code',
-            'name_project' => 'name',
+            'name' => 'name',
             'edit' => 'pattern.modified'
            ],
         'items' => $projects,

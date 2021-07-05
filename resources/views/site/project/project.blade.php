@@ -9,14 +9,14 @@
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'project_code', 
-                'label' => 'Mã',
+                'label' => 'Mã code',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         <div class="form-group-row mb-5">
             @include('components.input-text', [
                 'name' => 'project_name', 
-                'label' => 'Tên',
+                'label' => 'Tên dự án',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -40,7 +40,10 @@
         'edit_route' => 'project.edit'
     ])
 
-{{--    {{$projects->links()}}--}}
+    {{$projects->links()}}
 
-@endsection,
+@endsection
+
+
+
 
