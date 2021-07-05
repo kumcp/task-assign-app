@@ -8,15 +8,22 @@
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
-                'name' => 'project_code',
+                'name' => 'priority_code',
                 'label' => 'Mã',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
-        <div class="form-group-row mb-5">
+        <div class="form-group-row mb-3">
             @include('components.input-text', [
-                'name' => 'project_name',
+                'name' => 'priority_name',
                 'label' => 'Tên',
+                'inputClass' => 'form-control d-inline w-75'
+            ])
+        </div>
+        <div class="form-group-row mb-5">
+            @include('components.input-number', [
+                'name' => 'priority_number',
+                'label' => 'Thứ tự ưu tiên',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -33,11 +40,12 @@
     @include('common.block.table', [
         'fields' => [
             'code' => 'code',
-            'name_project' => 'name',
-            'edit' => 'pattern.modified'
+            'name_priority' => 'name',
+            'edit' => 'pattern.modified',
+
            ],
-        'items' => $projects,
-        'edit_route' => 'project.edit'
+        'items' => $priority,
+        'edit_route' => 'priority.edit'
     ])
 @endsection,
 

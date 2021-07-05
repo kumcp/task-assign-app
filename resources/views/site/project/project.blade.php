@@ -30,9 +30,19 @@
 @endsection
 
 @section('table')
-    @include('components.table', [
-    'cols' => ['Mã', 'Tên'],
-    'rows' => []
-
+    @include('common.block.table', [
+    'fields' => [
+    'code' => 'code',
+    'name_project' => 'name',
+    'edit' => 'pattern.modified'
+    ],
+    'items' => $projects,
+    'edit_route' => 'project.edit'
     ])
+
+    {{-- {{$projects->links()}} --}}
+
+@endsection,
+
+])
 @endsection

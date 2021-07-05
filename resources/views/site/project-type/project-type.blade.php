@@ -31,7 +31,7 @@
             @include('components.select', [
                 'name' => 'project_type_common',
                 'label' => 'Thường xuyên',
-                'options' => [0, 1],
+                'options' => ['Không', 'Có'],
             ])
         </div>
         @include('components.buttons', [

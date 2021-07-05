@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Priority;
+use App\Http\Requests\PriorityRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
@@ -10,12 +11,12 @@ class PriorityController extends Controller
 {
     public function list(){
         $priority = Priority::all();
-        return view('site.priority.priority', compact('projects_type'));
+        return view('site.priority.priority', compact('priority'));
     }
-    public function store(Request $request) {
+    public function store(PriorityRequest $request) {
         $priority = new Priority();
-        $priority->code = $request->project_type_code;
-        $priority->name = $request->project_type_name;
+        $priority->code = $request->priority_code;
+        $priority->name = $request->priority_name;
         $priority->deadline = $request->project_type_deadline;
         $priority->common = $request->project_type_common;
         $priority->save();
@@ -28,7 +29,7 @@ class PriorityController extends Controller
         $prioritys = Priority::all();
         return view('site.priority.priority-edit', compact('priority','$prioritys'));
     }
-    public function update(Request $request, $id) {
+    public function update(PriorityRequest $request, $id) {
         $priority = Priority::findOrFail($id);
         $priority->code = $request->project_code;
         $priority->name = $request->project_name;

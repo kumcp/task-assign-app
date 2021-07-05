@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobType;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\ProjectTypeRequest;
 use Illuminate\Http\Request;
 
 class ProjectTypeController extends Controller
@@ -12,7 +13,7 @@ class ProjectTypeController extends Controller
         $projects_type = JobType::all();
         return view('site.project-type.project-type', compact('projects_type'));
     }
-    public function store(Request $request) {
+    public function store(ProjectTypeRequest $request) {
         $projects_type = new JobType();
         $projects_type->code = $request->project_type_code;
         $projects_type->name = $request->project_type_name;
@@ -28,7 +29,7 @@ class ProjectTypeController extends Controller
         $projects_type = JobType::all();
         return view('site.project-type.project-type-edit', compact('project_type','projects_type'));
     }
-    public function update(Request $request, $id) {
+    public function update(ProjectTypeRequest $request, $id) {
         $projects_type = JobType::findOrFail($id);
         $projects_type->code = $request->project_code;
         $projects_type->name = $request->project_name;
