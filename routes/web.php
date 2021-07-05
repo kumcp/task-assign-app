@@ -68,6 +68,9 @@ Route::get('/configurations', function () {
 
 //================================== ROUTE VIEW =====================================================//
 
+//================================== ROUTE VIEW =====================================================//
+
+
 // Project
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'list'])->name('project.list');

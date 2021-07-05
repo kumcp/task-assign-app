@@ -63,7 +63,7 @@
     @include('components.table', [
         'fields' => [
             'code' => 'code',
-            'name_project_type' => 'name',
+            'name' => 'name',
             'edit' => 'pattern.modified'
            ],
         'items' => $projectsType,
