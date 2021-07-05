@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobType;
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Requests\ProjectTypeRequest;
 use Illuminate\Http\Request;
 use App\Http\Requests\ProjectTypeRequest;
 

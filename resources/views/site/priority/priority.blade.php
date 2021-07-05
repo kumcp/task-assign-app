@@ -30,6 +30,13 @@
                 'value' => old('priority_number')
             ])
         </div>
+        <div class="form-group-row mb-5">
+            @include('components.input-number', [
+                'name' => 'priority_number',
+                'label' => 'Thứ tự ưu tiên',
+                'inputClass' => 'form-control d-inline w-75'
+            ])
+        </div>
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
