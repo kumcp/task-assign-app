@@ -39,5 +39,8 @@
         'items' => $projects,
         'edit_route' => 'project.edit'
     ])
+
+{{--    {{$projects->links()}}--}}
+
 @endsection,
 
