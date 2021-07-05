@@ -45,9 +45,3 @@
     {{ $projects->links() }}
 
 @endsection
-
-
-
-
-])
-@endsection
