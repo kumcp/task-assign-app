@@ -12,10 +12,9 @@
     </thead>
     <tbody>
         @foreach ($rows ?? [] as $item)
-            <tr>
+            <tr class="data-row" id="{{$item->id}}">
                 @foreach ($cols ?? [] as $key => $value)
                     @if ($value === 'pattern.modified')
-
                     @else
                         <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
                         </td>
