@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Job;
+use App\Models\JobAssign;
+
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -15,6 +17,7 @@ class JobFactory extends Factory
      *
      * @var string
      */
+
     protected $model = Job::class;
 
     /**
@@ -30,9 +33,9 @@ class JobFactory extends Factory
             'name' => $this->faker->word,
             'assigner_id' => 0,
             'parent_id'    => NULL,
-            'job_type_id' => NULL,
-            'project_id' => NULL,
-            'priority_id' => NULL,
+            'job_type_id' => 0,
+            'project_id' => 0,
+            'priority_id' => 0,
             'deadline' => Carbon::now()->addDays($workingDay),
             'period' => $workingDay,
             'period_unit' => Job::PERIOD_UNIT_DAY,

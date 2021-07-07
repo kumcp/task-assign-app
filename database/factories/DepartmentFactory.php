@@ -29,12 +29,10 @@ class DepartmentFactory extends Factory
         ];
     }
 
-
     public function configure()
     {
         return $this->afterMaking(function () {
         })->afterCreating(function (Department $dep) {
-
             Staff::factory()->count(5)->create(
                 ['department_id' => $dep->id]
             );

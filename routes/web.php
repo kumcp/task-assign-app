@@ -34,9 +34,6 @@ Route::get('/jobs/search', function () {
     return view('jobs.search');
 })->name('jobs.search');
 
-Route::get('/jobs/show', function () {
-    return view('jobs.show');
-})->name('jobs.show');
 
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
@@ -110,3 +107,10 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
+//=================TIME SHEET===============================
+
+Route::prefix('/timesheets')->group(function () {
+    Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
+    Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
+
+});
