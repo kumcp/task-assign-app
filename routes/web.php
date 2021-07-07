@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AssigneeListController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TimeSheetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,9 +30,7 @@ Route::get('/jobs/search', function () {
     return view('jobs.search');
 });
 
-Route::get('/timesheets/create', function () {
-    return view('jobs.timesheet');
-});
+
 
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
@@ -59,4 +58,12 @@ Route::get('/priorities', function () {
 
 Route::get('/configurations', function () {
     return view('configuration');
+});
+
+//=================TIME SHEET===============================
+
+Route::prefix('/timesheets')->group(function () {
+    Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
+    Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
+
 });

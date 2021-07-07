@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TimeSheet extends Model
 {
+    use HasFactory;
     public function jobAssign()
     {
         return $this->belongsTo(JobAssign::class);

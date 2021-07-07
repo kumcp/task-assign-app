@@ -8,7 +8,17 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class JobAssign extends Model
 {
-    protected $table = 'job_assigns'; 
+    protected $table = 'job_assigns';
+
+    use HasFactory;
+
+    const STATUS_ACTIVE = 'active';
+    const DENY_REASON = 'deny_reason';
+
+    protected $attributes = [
+        'status' => self::STATUS_ACTIVE,
+        'deny_reason' => self::DENY_REASON,
+    ];
 
     public function workPlans()
     {

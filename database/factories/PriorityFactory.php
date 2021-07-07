@@ -3,17 +3,19 @@
 namespace Database\Factories;
 
 use App\Models\Job;
-use App\Models\Staff;
+use App\Models\Priority;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
-class StaffFactory extends Factory
+class PriorityFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Staff::class;
+    protected $model = Priority::class;
 
     /**
      * Define the model's default state.
@@ -22,19 +24,11 @@ class StaffFactory extends Factory
      */
     public function definition()
     {
+        $priority = $this->faker->randomElement([1, 2, 3, 4, 5 , 6]);
         return [
-            'department_id' => 0,
+            'code' => Str::random(10),
             'name' => $this->faker->userName,
-            'position' => $this->faker->jobTitle
+            'priority' => $priority,
         ];
-    }
-
-    public function configure()
-    {
-        return $this->afterCreating(function (Staff $staff) {
-            Job::factory()->count(5)->create(
-                ['assigner_id' => $staff->id]
-            );
-        });
     }
 }
