@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProcessMethod extends Model
 {
+    use HasFactory;
     public function jobAssigns()
     {
         return $this->hasMany(JobAssign::class);
