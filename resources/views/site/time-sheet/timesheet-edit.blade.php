@@ -9,7 +9,7 @@
                         @include('components.input-text', [
                             'name' => 'job_name',
                             'label' => 'Tên công việc',
-                            'value' => $timeSheet->job_assign_id,
+                            'value' => $jobs[$jobAssign[$timeSheet->id]->job_id]->name,
                         ])
 
                     </div>
@@ -17,7 +17,7 @@
                         @include('components.input-text', [
                             'name' => 'assignee',
                             'label' => 'Đối tượng xử lý',
-                            'value' => $timeSheet->job_assign_id,
+                            'value' => $jobAssign[$timeSheet->id]->staff_id,
                         ])
 
                         <label for="process_method" class="ml-5">(Hình thức xử lý)</label>
