@@ -111,6 +111,8 @@ Route::prefix('process-method')->group(function () {
 
 Route::prefix('/timesheets')->group(function () {
     Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
+    Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
     Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
-
+    Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
+    Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
 });
