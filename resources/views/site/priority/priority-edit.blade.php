@@ -2,9 +2,9 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
-    <form action="{{route('project.store')}}" method="POST">
+    <form action="{{route('priority.update',['id'=>$priority->id])}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
@@ -33,21 +33,28 @@
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
+        @include('components.span-modal', [
+               'value' => 'Xóa'
+           ])
     </form>
+
+    @include('components.modal', [
+        'href' => route('priority.destroy',['id'=>$priority->id])
+    ])
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_priority' => 'name',
-            'edit' => 'pattern.modified'
+            'edit' => 'pattern.modified',
            ],
-        'items' => $prioritys,
-        'edit_route' => 'project.edit'
+        'items' => $priorities,
+        'edit_route' => 'priority.edit'
     ])
-@endsection,
+    {{$priorities->links()}}
+@endsection
 

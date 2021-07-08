@@ -24,15 +24,15 @@ class ProcessMethodRequest extends FormRequest
     public function rules()
     {
         return [
-            'project_code' => 'required',
-            'project_name' => 'required',
+            'process_code' => 'required',
+            'process_name' => 'required',
 
         ];
     }
     public function messages() {
         return [
-            'project_code.required' => 'Mã code không được để trống!',
-            'project_name.required' => 'Tên dự án không được để trống!',
+            'process_code.required' => 'Mã code không được để trống!',
+            'process_name.required' => 'Tên dự án không được để trống!',
 
         ];
     }

@@ -30,12 +30,14 @@ class PriorityRequest extends FormRequest
         return [
             'priority_code' => 'required',
             'priority_name' => 'required',
+            'priority_number' => 'required',
         ];
     }
     public function messages() {
         return [
             'priority_code.required' => 'Mã code không được để trống!',
             'priority_name.required' => 'Độ ưu tiên không được để trống!',
+            'priority_number.required' => 'Thứ tự ưu tiên không được để trống!',
         ];
     }
 }

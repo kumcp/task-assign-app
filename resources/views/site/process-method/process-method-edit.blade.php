@@ -2,7 +2,7 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('process-method.update',['id'=>$process_method->id])}}" method="POST">
         @csrf
@@ -27,23 +27,27 @@
                 'name' => 'process_assigner',
                 'label' => 'Chủ trì',
                 'value' => $process_method->assigner,
-                'options' => [
-                     ['value' => 0, 'display' => 'Không'],
-                     ['value' => 1, 'display' => 'Có'],
-                 ]
+                'options' => $jobs,
+                 'checked' => 0,
             ])
         </div>
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
-    </form>
+        @include('components.span-modal', [
+           'value' => 'Xóa'
+       ])
+        </form>
+
+        @include('components.modal', [
+            'href' => route('process-method.destroy',['id'=>$process_method->id])
+        ])
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_process' => 'name',
@@ -52,5 +56,8 @@
         'items' => $process_methods,
         'edit_route' => 'process-method.edit'
     ])
+
+    {{$process_methods->links()}}
+
 @endsection,
 

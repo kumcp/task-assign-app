@@ -2,7 +2,7 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('process-method.store')}}" method="POST">
         @csrf
@@ -24,11 +24,8 @@
             @include('components.select', [
                 'name' => 'process_assigner',
                 'label' => 'Chủ trì',
-                 'options' => [
-                     ['value' => 0, 'display' => 'Không'],
-                     ['value' => 1, 'display' => 'Có'],
-
-                 ]
+                 'options' => $jobs,
+                 'checked' => 0,
             ])
         </div>
         @include('components.buttons', [
@@ -41,7 +38,7 @@
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_process' => 'name',
@@ -50,5 +47,8 @@
         'items' => $process_methods,
         'edit_route' => 'process-method.edit'
     ])
+
+    {{$process_methods->links()}}
+
 @endsection,
 

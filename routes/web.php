@@ -9,6 +9,7 @@ use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
+use App\Http\Controllers\TimeSheetController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,10 +39,6 @@ Route::get('/jobs/search', function () {
 Route::get('/jobs/show', function () {
     return view('jobs.show');
 })->name('jobs.show');
-
-Route::get('/timesheets/create', function () {
-    return view('jobs.timesheet');
-});
 
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
@@ -79,7 +76,6 @@ Route::prefix('project')->group(function () {
     Route::get('/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
     Route::post('/update/{id}', [ProjectController::class, 'update'])->name('project.update');
     Route::get('/delete/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
-    Route::post('/action', [ProjectController::class, 'action'])->name('project.action');
 });
 
 // Project-Type
@@ -118,4 +114,5 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
+//Configuration
 
