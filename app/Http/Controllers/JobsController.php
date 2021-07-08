@@ -24,6 +24,7 @@ class JobsController extends Controller
 
     public function index()
     {
+        
         return view('jobs.index');
     }
 
@@ -48,8 +49,7 @@ class JobsController extends Controller
 
     public function action(Request $request)
     {
-
-        
+        // dd($request->all());
         $action = $request->input('action');
         switch ($action) {
             case 'save': 
@@ -58,22 +58,33 @@ class JobsController extends Controller
                     return redirect()->route('jobs.create')->with('success', $result['message']);
                 }
                 else {
-                    return redirect()->route('jobs.create')->withErrors($result['message']);
+                    return redirect()->route('jobs.create')->withInput()->withErrors($result['message']);
                 }
+
             case 'save_copy': 
                 $result = $this->save($request->all());
                 if ($result['status']) {
-                    return redirect()->route('jobs.create')->withInput();
+                    return redirect()->route('jobs.create')->withInput()->with('success', $result['message']);
                 }
                 else {
-                    return redirect()->refresh()->withErrors($result['message']);
+                    return redirect()->route('jobs.create')->withErrors($result['message']);
                 }
+
             case 'delete': 
                 $id = $request->input('job_id');
-                $result = $this->destroy($id);
-                if ($result) {
-                    return redirect()->route('jobs.create')->with('message', 'Xóa công việc thành công');
+                if (!$id) { 
+                    return redirect()->route('jobs.create')->withErrors([
+                        'job_id' => 'Chưa chọn công việc để xóa'
+                    ]);
                 }
+                $result = $this->destroy($id);
+                if ($result['status']) {
+                    return redirect()->route('jobs.create')->with('success', $result['message']);
+                }
+                else {
+                    return redirect()->route('jobs.create')->withInput()->withErrors($result['message']);
+                }
+                
             case 'search': 
                 return redirect()->route('jobs.search');
         }
@@ -83,13 +94,26 @@ class JobsController extends Controller
     
     private function destroy ($id) 
     {
-        $job = Job::findOrFail($id);
-        return $job->delete();
+        $job = Job::find($id);
+        try {
+            if ($job) {
+                $job->delete();
+                return ['status' => true, 'message' => 'Xóa công việc thành công'];
+            }
+            else {
+                return ['status' => false, 'message' => 'Chưa chọn công việc'];
+            }
+
+        }
+        catch (Exception $e) {
+            return ['status' => false, 'message' => $e->getMessage()];
+        }
         
     } 
 
     private function save($data) {
         $jobId = $data['job_id'];
+
         if ($jobId) {
             $validator = Validator::make($data, [ 
                 'assigner_id' => 'required', 
@@ -109,6 +133,7 @@ class JobsController extends Controller
         if ($validator->fails()) {
             return ['status' => false, 'message' => $validator->errors()];
         }
+
         $tableCols = DB::getSchemaBuilder()->getColumnListing('jobs');
         $jobData = array_filter(
             $data, 

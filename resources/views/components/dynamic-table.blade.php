@@ -1,20 +1,27 @@
-<table class=" table table-hover table-light table-stripped dynamic-table">
+@if (isset($id))
+    <table class=" table table-hover table-light table-stripped dynamic-table" id="{{$id}}">
+@else
+    <table class=" table table-hover table-light table-stripped dynamic-table">
+@endif
+{{-- <table class=" table table-hover table-light table-stripped dynamic-table" {{ isset($id) ? 'id = {{$id}}' : '' }}> --}}
     <thead>
         <tr>
             @foreach ($cols ?? [] as $key => $value)
                 @if ($key === 'checkbox')
-                    <th><input type="checkbox"></th>
+                    <th><input type="checkbox" ></th>
                 @else
-                    <th scope="col">{{ $key }}</th>
+                    <th scope="col" data-value="{{$value}}">{{ $key }}</th>
                 @endif
             @endforeach
         </tr>
     </thead>
     <tbody>
         @foreach ($rows ?? [] as $item)
-            <tr class="data-row" id="{{$item->id}}">
+            <tr class="data-row" id="{{isset($idField) ? $item[$idField] : $item['id']}}">
                 @foreach ($cols ?? [] as $key => $value)
                     @if ($value === 'pattern.modified')
+                    @elseif ($key === 'checkbox')
+                        <td><input name="{{ $value }}" type="checkbox"></td>
                     @else
                         <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
                         </td>
@@ -23,6 +30,8 @@
                 @endforeach
             </tr>
         @endforeach
+
+        
 
         {{-- Inject blank row --}}
         @isset($min_row)
@@ -38,6 +47,11 @@
 
     </tbody>
 </table>
+@isset($pagination)
+    {{ $rows->onEachSide(2)->links('pagination::bootstrap-4') }}
+@endisset
+
+
 
 
 {{-- Example of invocation
