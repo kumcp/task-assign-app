@@ -2,7 +2,7 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('project.store')}}" method="POST">
         @csrf
@@ -10,27 +10,31 @@
             @include('components.input-text', [
                 'name' => 'project_code', 
                 'label' => 'Mã code',
-                'inputClass' => 'form-control d-inline w-75'
+                'inputClass' => 'form-control d-inline w-75',
+                'value' => old('project_code')
             ])
         </div>
         <div class="form-group-row mb-5">
             @include('components.input-text', [
                 'name' => 'project_name', 
                 'label' => 'Tên dự án',
-                'inputClass' => 'form-control d-inline w-75'
+                'inputClass' => 'form-control d-inline w-75',
+                'value' => old('project_name')
             ])
         </div>
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ] 
         ])
+        <a href="" class="btn btn-light"> <i class="fas fa-trash"></i> Xóa </a>
     </form>
+
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_project' => 'name',
@@ -43,6 +47,8 @@
     {{$projects->links()}}
 
 @endsection
+
+
 
 
 

@@ -1,9 +1,6 @@
-@if (session()->get('message') ?? '')
-        <div class="alert alert-{{ session()->get('messageType') ?? 'info' }}" role="alert">
-            {{ session()->get('message') ?? '' }}
-        </div>
-        {{ session()->put('message', null) }}
-        {{ session()->put('messageType', null) }}
+@if(session('success'))
+    <div class="alert alert-info  alert-dismissible">
+        <strong>{{session('success')}}!</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">&times;</button>
+    </div>
 @endif
-
-{{-- A custom flash message with color --}}

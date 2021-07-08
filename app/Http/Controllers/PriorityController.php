@@ -6,41 +6,47 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PriorityRequest;
 use App\Models\Priority;
 
+const DEFAULT_PAGINATE = 15;
+
 class PriorityController extends Controller
 {
-    public function list(){
-        $prioritys = Priority::paginate(15);
-        return view('site.priority.priority', compact('prioritys'));
-    }
-    public function store(PriorityRequest $request) {
-        dd('check');
-        $priority = new Priority();
+    public function insertData(PriorityRequest $request, $priority){
         $priority->code = $request->priority_code;
         $priority->name = $request->priority_name;
         $priority->priority = $request->priority_number;
         $priority->save();
-        $request->session()->put('message', 'Đã thêm độ ưu tiên thành công! ');
-        $request->session()->put('messageType', 'success');
-        return redirect()->route('priority.list');
+    }
+
+    public function list(){
+        $priorities = Priority::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
+        return view('site.priority.priority', compact('priorities'));
+    }
+    public function store(PriorityRequest $request) {
+        $priorities = new Priority();
+        // check mã code trùng hay không?
+        if (Priority::where('code', '=', $request->priority_code)->exists()) {
+            return redirect()->route('priority.list')->with('success','Mã code đã tồn tại');
+        }
+        $this->insertData($request, $priorities);
+        return redirect()->route('priority.list')->with('success','Đã thêm độ ưu tiên thành công');
     }
     public function edit($id) {
         $priority = Priority::findOrFail($id);
-        $prioritys = Priority::paginate(15);
-        return view('site.priority.priority-edit', compact('priority','prioritys'));
+        $priorities = Priority::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
+        return view('site.priority.priority-edit', compact('priority','priorities'));
     }
     public function update(PriorityRequest $request, $id) {
         $priority = Priority::findOrFail($id);
-        $priority->code = $request->priority_code;
-        $priority->name = $request->priority_name;
-        $priority->priority = $request->priority_number;
-        $priority->save();
-        $request->session()->put('message', 'Đã cập nhật độ ưu tiên thành công! ');
-        $request->session()->put('messageType', 'success');
-        return redirect()->route('priority.list');
+        // check mã code trùng hay không?
+        if (Priority::where('code', '=', $request->priority_code)->where('id', '!=', $id)->exists()) {
+            return redirect()->route('priority.edit', ['id' => $id])->with('success','Mã code đã tồn tại');
+        }
+        $this->insertData($request, $priority);
+        return redirect()->route('priority.list')->with('success','Đã cập nhật độ ưu tiên thành công');
     }
     public function destroy($id) {
-        $priority = Priority::findOrFail($id);
-        $priority->delete();
-        return redirect()->route('priority.list')->with('massage','Đã xóa độ ưu tiên thành công!');
+        $priorities = Priority::findOrFail($id);
+        $priorities->delete();
+        return redirect()->route('priority.list')->with('success','Đã xóa độ ưu tiên thành công');
     }
 }

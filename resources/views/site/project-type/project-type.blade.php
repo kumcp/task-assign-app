@@ -2,14 +2,14 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('project-type.store')}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
             @include('components.input-text', [
                 'name' => 'project_type_code',
-                'label' => 'Mã',
+                'label' => 'Mã code',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
@@ -35,7 +35,8 @@
                                     ['value' => 0, 'display' => 'Không'],
                                     ['value' => 1, 'display' => 'Có'],
 
-                                ]
+                                ],
+                 'checked' => 0
             ])
         </div>
         @include('components.buttons', [
@@ -48,14 +49,18 @@
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_project_type' => 'name',
+            'name_deadline' => 'deadline',
             'edit' => 'pattern.modified'
            ],
-        'items' => $projects_type,
+        'items' => $projectsType,
         'edit_route' => 'project-type.edit'
     ])
+
+{{$projectsType->links()}}
+
 @endsection,
 

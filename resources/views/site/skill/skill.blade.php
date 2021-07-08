@@ -2,7 +2,7 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('skill.store')}}" method="POST">
         @csrf
@@ -16,21 +16,21 @@
         <div class="form-group-row mb-5">
             @include('components.input-text', [
                 'name' => 'skill_name',
-                'label' => 'Tên kỹ năng',
+                'label' => 'Kỹ năng',
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
+        <a href="" class="btn btn-light"> <i class="fas fa-trash"></i> Xóa </a>
     </form>
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
             'name_skill' => 'name',
@@ -39,5 +39,8 @@
         'items' => $skills,
         'edit_route' => 'skill.edit'
     ])
+
+    {{$skills->links()}}
+
 @endsection,
 

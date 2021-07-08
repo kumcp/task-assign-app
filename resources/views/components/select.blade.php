@@ -2,7 +2,8 @@
 <div class="{{$selectClass ?? 'col-sm-4 d-inline'}}">
     <select name="{{$name}}" id="{{$name}}" class="custom-select w-25">
         @foreach ($options as $option)
-            <option value="{{$option['value'] ?? $option}}">{{$option['display'] ?? $option}}</option>
+            <option value="{{$option['value'] ?? $option}}" @if($checked==1) {{'selected'}} @endif>
+                {{$option['display'] ?? $option}}</option>
         @endforeach
     </select>
 </div>

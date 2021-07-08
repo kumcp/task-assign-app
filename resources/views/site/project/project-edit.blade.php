@@ -2,7 +2,7 @@
 
 @section('form')
 
-    @include('common.block.flash-message')
+    @include('components.flash-message')
 
     <form action="{{route('project.update',['id'=>$project->id])}}" method="POST">
         @csrf
@@ -25,20 +25,31 @@
         @include('components.buttons', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'name' => 'update' ],
-                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
             ]
         ])
+
+        @include('components.span-modal', [
+           'value' => 'Xóa'
+       ])
     </form>
+
+    @include('components.modal', [
+        'href' => route('project.destroy',['id'=>$project->id])
+    ])
+
 @endsection
 
 @section('table')
-    @include('common.block.table', [
+    @include('components.table', [
         'fields' => [
             'code' => 'code',
-            'name' => 'name',
+            'name_project' => 'name',
             'edit' => 'pattern.modified'
            ],
         'items' => $projects,
         'edit_route' => 'project.edit'
     ])
+
+    {{$projects->links()}}
+
 @endsection
