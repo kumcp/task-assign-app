@@ -1,12 +1,18 @@
 <?php
 
+use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
+<<<<<<< HEAD
 use App\Http\Controllers\TimeSheetController;
+=======
+>>>>>>> be93513c4bdf1bb4a36de8fc2484dd81b1a82ef6
 
 /*
 |--------------------------------------------------------------------------
@@ -19,17 +25,23 @@ use App\Http\Controllers\TimeSheetController;
 |
 */
 
+
+
 Route::get('/jobs', function () {
     return view('jobs.index');
-});
+})->name('jobs');
 
 Route::get('/jobs/create', function () {
     return view('jobs.create');
-});
+})->name('jobs.create');
 
 Route::get('/jobs/search', function () {
     return view('jobs.search');
-});
+})->name('jobs.search');
+
+Route::get('/jobs/show', function () {
+    return view('jobs.show');
+})->name('jobs.show');
 
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
@@ -58,8 +70,36 @@ Route::get('/configurations', function () {
     return view('configuration');
 });
 
+<<<<<<< HEAD
 //================================== ROUTE VIEW =====================================================//
 
+=======
+Route::get('/jobs', [JobsController::class, 'index']);
+Route::get('/jobs/create', [JobsController::class, 'create']);
+Route::get('/jobs/edit', [JobsController::class, 'edit']);
+Route::get('/jobs/{id}', [JobsController::class, 'show']);
+Route::post('/jobs', [JobsController::class, 'store'])->name('jobs.store');
+Route::put('/jobs/{id}', [JobsController::class, 'update']);
+Route::delete('/jobs/{id}', [JobsController::class, 'delete']);
+
+
+// TODO: check and delete unneccessary
+Route::get('/projects', [ProjectsController::class, 'index']);
+Route::get('/projects/{id}', [ProjectsController::class, 'show']);
+Route::get('/projects/create', [ProjectsController::class, 'create']);
+Route::post('/projects', [ProjectsController::class, 'store']);
+Route::get('/projects/{id}/edit', [ProjectsController::class, 'edit']);
+Route::put('/projects/{id}', [ProjectsController::class, 'update']);
+Route::delete('/projects/{id}', [ProjectsController::class, 'destroy']);
+
+
+// Route::post('/test', [TestController::class, 'store']);
+// Route::put('/test1', [TestController::class, 'update']);
+
+//================================== ROUTE VIEW =====================================================//
+
+
+>>>>>>> be93513c4bdf1bb4a36de8fc2484dd81b1a82ef6
 // Project
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'list'])->name('project.list');
@@ -67,6 +107,10 @@ Route::prefix('project')->group(function () {
     Route::get('/edit/{id}', [ProjectController::class, 'edit'])->name('project.edit');
     Route::post('/update/{id}', [ProjectController::class, 'update'])->name('project.update');
     Route::get('/delete/{id}', [ProjectController::class, 'destroy'])->name('project.destroy');
+<<<<<<< HEAD
+=======
+    Route::post('/action', [ProjectController::class, 'action'])->name('project.action');
+>>>>>>> be93513c4bdf1bb4a36de8fc2484dd81b1a82ef6
 });
 
 // Project-Type
@@ -104,6 +148,9 @@ Route::prefix('process-method')->group(function () {
     Route::post('/update/{id}', [ProcessMethodController::class, 'update'])->name('process-method.update');
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
+<<<<<<< HEAD
 
 //Configuration
 
+=======
+>>>>>>> be93513c4bdf1bb4a36de8fc2484dd81b1a82ef6

@@ -6,20 +6,21 @@
         <div class="row">
         
             <div class="col-md-9">
+               
                 <form action="{{route($routeName, $params ?? [])}}" method="{{$method}}">
                     @csrf
                     
-                    {{-- <input type="hidden" name="assigner_id">
-                    <input type="hidden" name="assignee[staff_id][]">
-                    <input type="hidden" name="assignee[process_method_id][]"> --}}
+                
 
                     <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
                         <legend class="w-auto">Thông tin nghiệp vụ</legend>
                         <div class="form-group-row mb-3">
-                            @include('components.select', [
+        
+                            @include('components.searchable-input-text', [
                                 'name' => 'assigner',
-                                'label' => 'Người giao việc',
-                                'options' => ['ABAC', 'ASCS'],	
+                                'label' => 'Người giao việc', 
+                                'listId' => 'assigner_list',
+                                'list' => ['Quan', 'Thanh', 'Dat']
                             ])
                         </div>
                         <div class="form-group-row mb-3">
@@ -27,14 +28,19 @@
                                 'name' => 'project_code',
                                 'label' => 'Mã dự án'	
                             ])
+                            <input type="hidden" name="project_id" id="project_id">
                         </div>
-    
+
+                          
+        
                         <div class="form-group-row mb-3">
                             @include('components.select', [
                                 'name' => 'job_type', 
                                 'label' => 'Loại công việc', 
                                 'options' => ['Dự án', 'Training']
                             ])
+
+                            <input type="hidden" name="job_type_id" id="job_type_id">
                             
                         </div>
                         <div class="form-group-row mb-3">
@@ -54,6 +60,7 @@
                                 'label' => 'Việc cha', 
                                 'options' => ['ABC', 'XYZ']
                             ])
+                            <input type="hidden" name="parent_id" id="parent_id">
                         </div>
                         <div class="form-group-row mb-3">
                             @include('components.input-text', [
@@ -65,6 +72,7 @@
                                 'label' => 'Độ ưu tiên', 
                                 'options' => ['ABC', 'XYZ', 'DEF'] 
                             ])
+                            <input type="hidden" name="priority_id" id="priority_id">
     
                         </div>
                         <div class="form-group-row mb-3">
@@ -99,16 +107,13 @@
                                 'name' => 'description',
                                 'label' => 'Mô tả CV',
                             ])
-                            {{-- <label for="description" class="col-sm-2 col-form-label">Mô tả CV</label>
-                            <textarea name="description" id="description"></textarea> --}}
+                           
                         </div>
                         <div class="form-group-row mb-3">
                             @include('components.input-file', [
                                 'name' => 'file',
                                 'label' => 'Tệp nội dung',
                             ])
-                            {{-- <label for="file" class="col-sm-2 col-form-label">Tệp nội dung</label>
-                            <input type="file" name="file" id="file" class="form-control-file d-inline"> --}}
                         </div>
                     </fieldset>
 					
@@ -162,3 +167,5 @@
     </div>
     
 @endsection
+
+

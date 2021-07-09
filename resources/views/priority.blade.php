@@ -23,7 +23,12 @@
             ])
         </div>
 
-        @include('components.buttons', ['buttons' => ['Lưu', 'Xóa']])
+        @include('components.button-group', [
+            'buttons' => [
+                ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'action' => 'save'], 
+                ['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
+            ] 
+        ])
     </form>
 @endsection
 
