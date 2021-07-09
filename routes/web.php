@@ -9,6 +9,10 @@ use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
+<<<<<<< HEAD
+=======
+use App\Http\Controllers\TimeSheetController;
+>>>>>>> 4fef603 (update web router)
 
 /*
 |--------------------------------------------------------------------------
@@ -68,9 +72,12 @@ Route::get('/configurations', function () {
 
 //================================== ROUTE VIEW =====================================================//
 
+<<<<<<< HEAD
 //================================== ROUTE VIEW =====================================================//
 
 
+=======
+>>>>>>> 4fef603 (update web router)
 // Project
 Route::prefix('project')->group(function () {
     Route::get('/', [ProjectController::class, 'list'])->name('project.list');
