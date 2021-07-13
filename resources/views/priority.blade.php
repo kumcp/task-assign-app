@@ -42,6 +42,5 @@
             ['ABC', 'CodeStar'],
         ]
     ])
-    
 @endsection
 

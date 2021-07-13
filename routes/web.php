@@ -60,6 +60,8 @@ Route::get('/configurations', function () {
     return view('configuration');
 });
 
+
+
 //================================== ROUTE VIEW =====================================================//
 
 // Project
@@ -115,3 +117,7 @@ Route::prefix('/timesheets')->group(function () {
     Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
     Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
 });
+
+//Timesheet Statictics
+Route::get('/timesheet-statistics',[TimesheetStatisticsController::class, 'list'])->name('timesheet-statis.list');
+Route::post('/timesheet-statistics-search',[TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
