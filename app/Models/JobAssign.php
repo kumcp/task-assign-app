@@ -44,4 +44,7 @@ class JobAssign extends Model
         return $this->belongsTo(Job::class);
     }
 
+    public function staff(){
+        return $this->belongsTo(Staff::class);
+    }
 }

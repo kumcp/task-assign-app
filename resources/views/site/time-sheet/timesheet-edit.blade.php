@@ -103,12 +103,12 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($timeSheets as $timesheet)
-                        <tr>
-                            <td>{{$timesheet->created_at}}</td>
-                            <td><a href="{{route('timesheet.edit',['id'=>$timesheet['id']])}}" class="btn btn-primary">Xem</a></td>
-                        </tr>
-                    @endforeach
+                        @foreach($timeSheets as $timesheet)
+                            <tr>
+                                <td>{{$timesheet->created_at}}</td>
+                                <td><a href="{{route('timesheet.edit',['id'=>$timesheet['id']])}}" class="btn btn-primary">Xem</a></td>
+                            </tr>
+                        @endforeach
                     </tbody>
                 </table>
                 {{$timeSheets->links()}}
