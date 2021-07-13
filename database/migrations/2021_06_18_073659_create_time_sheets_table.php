@@ -11,6 +11,7 @@ class CreateTimeSheetsTable extends Migration
      *
      * @return void
      */
+
     public function up()
     {
         Schema::create('time_sheets', function (Blueprint $table) {

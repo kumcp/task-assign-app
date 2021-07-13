@@ -98,3 +98,12 @@ Route::post('/staff-info/{id}', [StaffInfoController::class, 'update'])->name('s
 
 Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
 Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
+
+//Time Sheet
+Route::prefix('/timesheets')->group(function () {
+    Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
+    Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
+    Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
+    Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
+    Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
+});

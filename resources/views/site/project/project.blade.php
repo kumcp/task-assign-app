@@ -22,7 +22,7 @@
                     'value' => old('project_name')
                 ])
             </div>
-            @include('components.buttons', [
+            @include('components.button-group', [
                 'buttons' => [
                     ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
                 ]
