@@ -1,7 +1,8 @@
 @extends('layouts.create')
 
 @section('form')
-
+    <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
+        <legend class="w-auto">Dự án</legend>
     @include('components.flash-message')
 
     <form action="{{route('project.update',['id'=>$project->id])}}" method="POST">
@@ -22,7 +23,7 @@
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu', 'name' => 'update' ],
             ]
@@ -36,7 +37,7 @@
     @include('components.modal', [
         'href' => route('project.destroy',['id'=>$project->id])
     ])
-
+    </fieldset>
 @endsection
 
 @section('table')

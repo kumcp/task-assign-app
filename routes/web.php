@@ -107,8 +107,7 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
-//=================TIME SHEET===============================
-
+//Time Sheet
 Route::prefix('/timesheets')->group(function () {
     Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
     Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');

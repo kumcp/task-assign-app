@@ -1,9 +1,9 @@
 @extends('layouts.create')
 
 @section('form')
-
+    <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
+        <legend class="w-auto">Loại công việc</legend>
     @include('components.flash-message')
-
     <form action="{{route('project-type.update',['id'=>$projectType->id])}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
@@ -43,7 +43,7 @@
                 'checked' => $projectType->common
             ]),
         </div>
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ]
             ]
@@ -52,11 +52,10 @@
             'value' => 'Xóa'
         ])
     </form>
-
     @include('components.modal', [
         'href' => route('project-type.destroy',['id'=>$projectType->id])
     ])
-
+    </fieldset>
 @endsection
 
 @section('table')
