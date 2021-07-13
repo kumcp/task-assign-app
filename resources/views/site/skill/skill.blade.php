@@ -1,7 +1,8 @@
 @extends('layouts.create')
 
 @section('form')
-
+    <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
+        <legend class="w-auto">Kỹ năng</legend>
     @include('components.flash-message')
 
     <form action="{{route('skill.store')}}" method="POST">
@@ -20,13 +21,14 @@
                 'inputClass' => 'form-control d-inline w-75'
             ])
         </div>
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
             ]
         ])
         <a href="" class="btn btn-light"> <i class="fas fa-trash"></i> Xóa </a>
     </form>
+    </fieldset>
 @endsection
 
 @section('table')

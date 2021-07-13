@@ -1,9 +1,9 @@
 @extends('layouts.create')
 
 @section('form')
-
+    <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
+        <legend class="w-auto">Hình thức xử lý</legend>
     @include('components.flash-message')
-
     <form action="{{route('process-method.update',['id'=>$process_method->id])}}" method="POST">
         @csrf
         <div class="form-group-row mb-3">
@@ -27,11 +27,14 @@
                 'name' => 'process_assigner',
                 'label' => 'Chủ trì',
                 'value' => $process_method->assigner,
-                'options' => $jobs,
-                 'checked' => 0,
+                'options' => [
+                         ['value' => 0, 'display' => 'Không'],
+                         ['value' => 1, 'display' => 'Có'],
+                ],
+                 'checked' => $process_method->assigner,
             ])
         </div>
-        @include('components.buttons', [
+        @include('components.button-group', [
             'buttons' => [
                 ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
             ]
@@ -40,10 +43,10 @@
            'value' => 'Xóa'
        ])
         </form>
-
         @include('components.modal', [
             'href' => route('process-method.destroy',['id'=>$process_method->id])
         ])
+    </fieldset>
 @endsection
 
 @section('table')

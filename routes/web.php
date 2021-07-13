@@ -61,15 +61,8 @@ Route::get('/configurations', function () {
     return view('configuration');
 });
 
-Route::get('/jobs', [JobsController::class, 'index']);
-Route::get('/jobs/create', [JobsController::class, 'create']);
-Route::get('/jobs/edit', [JobsController::class, 'edit']);
-Route::get('/jobs/{id}', [JobsController::class, 'show']);
-Route::post('/jobs', [JobsController::class, 'store'])->name('jobs.store');
-Route::put('/jobs/{id}', [JobsController::class, 'update']);
-Route::delete('/jobs/{id}', [JobsController::class, 'delete']);
-
 //================================== ROUTE VIEW =====================================================//
+
 
 
 // Project
@@ -117,8 +110,7 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
-//=================TIME SHEET===============================
-
+//Time Sheet
 Route::prefix('/timesheets')->group(function () {
     Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
     Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
