@@ -50,6 +50,7 @@
     opacity: 0;
     transition: all 0.5s ease-in-out;
 }
+
 .overlay.active {
     display: block;
     opacity: 1;
@@ -128,9 +129,11 @@ a.article:hover {
     color: #fff !important;
 }
 
+
 /* ---------------------------------------------------
     CONTENT STYLE
 ----------------------------------------------------- */
+
 
 /* #content {
     width: 100%;
