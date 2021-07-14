@@ -9,7 +9,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                Bạn có chắc chắn xóa loại công việc này không?
+                {{$messages ?? ''}}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>

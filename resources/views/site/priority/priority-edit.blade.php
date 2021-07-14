@@ -36,12 +36,13 @@
             ]
         ])
         @include('components.span-modal', [
-               'value' => 'Xóa'
-           ])
+             'value' => 'Xóa'
+         ])
     </form>
 
     @include('components.modal', [
-        'href' => route('priority.destroy',['id'=>$priority->id])
+        'href' => route('priority.destroy',['id'=>$priority->id]),
+        'messages' => 'Bạn có chắc chắn xóa độ ưu tiên này không?'
     ])
 @endsection
 
