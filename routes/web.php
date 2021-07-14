@@ -1,13 +1,13 @@
 <?php
 
-use App\Http\Controllers\AssigneeListController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
-use App\Http\Controllers\TimeSheetController;
+use App\Http\Controllers\ConfigController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,56 +20,6 @@ use App\Http\Controllers\TimeSheetController;
 |
 */
 
-Route::redirect('/', '/jobs', 301);
-
-
-Route::get('/jobs', function () {
-    return view('jobs.index');
-})->name('jobs');
-
-Route::get('/jobs/create', function () {
-    return view('jobs.create');
-})->name('jobs.create');
-
-Route::get('/jobs/search', function () {
-    return view('jobs.search');
-})->name('jobs.search');
-
-
-Route::get('/amount-confirm', function () {
-    return view('jobs.amount-confirm');
-});
-
-Route::get('/assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list');
-
-Route::get('/jobs/update-history', function () {
-    return view('jobs.update-history');
-});
-
-Route::get('/jobs/workplan', function () {
-    return view('jobs.workplan');
-});
-
-Route::get('/project-types/create', function () {
-    return view('welcome');
-});
-Route::get('/priorities', function () {
-    return view('priority');
-});
-
-Route::get('/configurations', function () {
-    return view('configuration');
-});
-
-Route::get('/jobs', [JobsController::class, 'index']);
-Route::get('/jobs/create', [JobsController::class, 'create']);
-Route::get('/jobs/edit', [JobsController::class, 'edit']);
-Route::get('/jobs/{id}', [JobsController::class, 'show']);
-Route::post('/jobs', [JobsController::class, 'store'])->name('jobs.store');
-Route::put('/jobs/{id}', [JobsController::class, 'update']);
-Route::delete('/jobs/{id}', [JobsController::class, 'delete']);
-
-//================================== ROUTE VIEW =====================================================//
 
 
 // Project
@@ -117,12 +67,5 @@ Route::prefix('process-method')->group(function () {
     Route::get('/delete/{id}', [ProcessMethodController::class, 'destroy'])->name('process-method.destroy');
 });
 
-//=================TIME SHEET===============================
-
-Route::prefix('/timesheets')->group(function () {
-    Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
-    Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
-    Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
-    Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
-    Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
-});
+// Config
+Route::get('config',[ConfigController::class, 'list'])->name('config.list');
