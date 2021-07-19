@@ -61,4 +61,8 @@ class Job extends Model
     {
         return $this->hasMany(UpdateJobHistory::class);
     }
+    public function jobAssign()
+    {
+        return $this->belongsTo(JobAssign::class);
+    }
 }

@@ -9,6 +9,8 @@ use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\TimesheetStatisticsController;
+use App\Http\Controllers\ProjectPlanController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -124,3 +126,7 @@ Route::prefix('/timesheets')->group(function () {
 //Timesheet Statictics
 Route::get('/timesheet-statistics',[TimesheetStatisticsController::class, 'list'])->name('timesheet-statis.list');
 Route::post('/timesheet-statistics-search',[TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
+
+//Project Plan
+Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
+Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
