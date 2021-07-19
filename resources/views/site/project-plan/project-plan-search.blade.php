@@ -34,14 +34,15 @@
                         'phone' => 'phone',
                         'email' => 'email',
                         'name_deadline' => 'deadline',
-                        'delivery_volume' => 'delivery_volume',
-                        'timesheet_volume' => 'timesheet_volume',
-                        'finish' => 'finish',
+                        'delivery_volume' => '0',
+                        'timesheet_volume' => '0',
+
+
                        ],
                     'items' => $jobAssigns,
                     'edit_route' => 'skill.edit'
                 ])
 
-        {{$jobAssigns->links()}}
+    {{$jobAssigns->links()}}
 
 @endsection
