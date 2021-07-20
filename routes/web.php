@@ -1,29 +1,25 @@
 <?php
 
-<<<<<<< HEAD
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-=======
 use App\Http\Controllers\AssigneeListController;
->>>>>>> e7f19ce (timesheet-statistics search)
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
 use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
-<<<<<<< HEAD
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffInfoController;
-
-=======
 use App\Http\Controllers\TimeSheetController;
+use App\Http\Controllers\TimesheetStatisticsController;
+use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
->>>>>>> e7f19ce (timesheet-statistics search)
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
