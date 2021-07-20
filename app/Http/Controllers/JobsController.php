@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Configuration;
 use App\Models\File;
 use App\Models\Job;
 use App\Models\JobAssign;
@@ -10,9 +11,11 @@ use App\Models\Priority;
 use App\Models\ProcessMethod;
 use App\Models\Project;
 use App\Models\Staff;
+use App\Models\UpdateJobHistory;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
@@ -22,10 +25,64 @@ class JobsController extends Controller
     //     $this->middleware('auth');
     // }
 
-    public function index()
+    public function index(Request $request)
     {
-        
-        return view('jobs.index');
+
+
+        if ($request->has(['type', 'staff-id'])) {
+            $type = $request->input('type');
+            $staffId = $request->input('staff-id');
+            
+            $jobTypes = JobType::orderBy('name')->get();
+            $assigners = Staff::orderBy('name')->get();
+            $projects = Project::orderBy('name')->get();
+
+            $condition = [];
+            if ($request->method() === 'POST') {
+                
+                foreach ($request->all() as $key => $value) {
+                    if (!in_array($key, ['type', 'staff-id', 'from_date', 'to_date']) && $value)
+                        $condition[$key] = $value;
+                    
+                    if ($key == 'from_date' && $value) {
+                        $condition[] = ['deadline', '>=' , $value];
+                    }
+
+                    if ($key == 'to_date' && $value) {
+                        $condition[] = ['deadline', '<=', $value];
+                    } 
+
+                }
+              
+            }
+            
+
+            switch ($type) {
+
+                case 'pending': 
+                    [$newAssignedJobs, $unassignedJobs] = $this->getPendingJobs($staffId, $condition);
+                    return view('jobs.pending-jobs', compact('newAssignedJobs', 'unassignedJobs', 'jobTypes', 'assigners', 'projects'));
+                
+                case 'handling': 
+                    [$directJobs, $relatedJobs] = $this->getHandlingJobs($staffId, $condition);
+                    return view('jobs.handling-jobs', compact('directJobs', 'relatedJobs', 'jobTypes', 'assigners', 'projects'));
+
+                case 'assigner': 
+                    $createdJobs = $this->getAssignerJobs($staffId, $condition);
+                    dd($createdJobs);
+
+                default: 
+                    break;
+
+                
+            }
+
+        }
+        else {
+            $jobs = Job::all();
+            return view('jobs.index', compact($jobs));
+        }
+
     }
 
     public function show($id)
@@ -34,22 +91,170 @@ class JobsController extends Controller
         return response($job);
     }
 
-    public function create()
+    public function detailAction(Request $request)
+    {   
+        $action = $request->input('action');
+        
+        // dd($request->all());
+        
+        switch ($action) {
+            
+            case 'detail':
+                
+                $jobIds = $request->input('job_ids');
+                $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+
+                if (count($jobIds) == 1) {
+
+                    return view('jobs.job-detail', [
+                        'jobs' => $jobs,
+                        'jobId' => $jobIds[0]
+                    ]);
+                    
+                }
+                else {
+                    return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
+                } 
+                
+
+            case 'finish':
+                break;
+
+            case 'search': 
+                break;
+            
+            case 'assign':
+                break;
+            
+            case 'timesheet': 
+                break;
+
+            case 'amount_confirm': 
+                break;
+
+            case 'exchange': 
+                break;
+        }
+    }
+
+    public function create($jobId=null)
     {
-        $jobs = Job::orderBy('created_at', 'DESC')->get();
+        
+        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
         $staff = Staff::all();
         $projects = Project::all();
         $jobTypes = JobType::all();
         $priorities = Priority::all();
         $processMethods = ProcessMethod::all();
+    
+        if ($jobId)
+            return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
+        
         return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods'));
 
+    }
+
+    
+
+    public function updateStatus(Request $request) {
+        $action = $request->input('action');
+        $jobId = $request->input('job_id');
+        $staffId = $request->input('staff_id');
+        
+        $job = Job::findOrFail($jobId);
+        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+
+        $jobAssign = JobAssign::where([
+            'job_id' => $jobId, 
+            'staff_id' => $staffId
+        ])->first();
+
+        switch ($action) {
+            case 'accept':
+                $workplanRequired = Configuration::where('field', 'workplan')->first('value')->value;
+                
+                if ($workplanRequired == 'true') {
+                    if ($jobAssign)
+                        $request->session()->put('job_assign_id', $jobAssign->id);
+                    else {
+                        $request->session()->put([
+                            'job_id' =>  $jobId,
+                            'staff_id' => $staffId
+                        ]);
+                    }
+                    return redirect()->route('workplans.create');
+                }
+
+                if ($jobAssign) {
+                    $jobAssign->update(['status' => 'accepted']);
+                }
+                else {
+                    $mainProcessMethod = ProcessMethod::where('name', 'chu-tri')->first();
+                    JobAssign::create([
+                        'job_id' => $jobId,
+                        'staff_id' => $staffId,
+                        'process_method_id' => $mainProcessMethod->id
+                    ]);
+                }
+
+                $job->update(['status' => 'active']);
+
+                
+
+
+                
+
+                // $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+
+
+                return view('jobs.job-detail', [
+                    'jobs' => $jobs,
+                    'jobId' => $jobId,
+                    'success' => 'Nhận việc thành công'
+                ]);
+                    
+
+
+
+            case 'reject': 
+
+                $denyReason = $request->input('deny_reason');
+
+                if (!$denyReason)
+                    return view('jobs.job-detail', [
+                        'jobs' => $jobs,
+                        'jobId' => $jobId,
+                    ]);
+                
+
+                if ($jobAssign) {
+                    $jobAssign->update([
+                        'status' => 'rejected',
+                        'deny_reason' => $denyReason
+                    ]);
+                }
+
+
+                $job->update(['status' => 'rejected']);
+                
+
+
+
+                return view('jobs.job-detail', [
+                    'jobs' => $jobs,
+                    'jobId' => $jobId,
+                    'success' => 'Từ chối công việc thành công'
+                ]);
+
+            case 'exchange': 
+                break;
+        }
     }
 
 
     public function action(Request $request)
     {
-        // dd($request->all());
+
         $action = $request->input('action');
         switch ($action) {
             case 'save': 
@@ -87,6 +292,8 @@ class JobsController extends Controller
                 
             case 'search': 
                 return redirect()->route('jobs.search');
+
+            
         }
 
 
@@ -144,7 +351,110 @@ class JobsController extends Controller
         try {
             if ($jobId) {
                 $job = Job::findOrFail($jobId);
+                if ($job['status'] == 'active') {
+                    $jobUpdates = [];
+                    $updateNote = isset($data['note']) ? $data['note'] : '';
+                    foreach ($jobData as $key => $value) {
+                        if ($value != $job[$key]) {
+                            switch ($key) {
+                                case "assigner_id":  
+                                    $assigner = Staff::find($job['assigner_id']);
+                                    $newAssigner = Staff::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Người giao việc',
+                                        "old_value" => $assigner->name,
+                                        "new_value" => $newAssigner->name,
+                                        "note" => $updateNote
+                                    ]));    
+                                         
+                                    break;
+
+                                case "project_id": 
+                                    $project = Project::find($job['project_id']);
+                                    $newProject = Project::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Dự án',
+                                        "old_value" => $project ? $project->name : '',
+                                        "new_value" => $newProject ? $newProject->name : '',
+                                        "note" => $updateNote
+                                    ]));
+                                    break;
+
+                                case "parent_id": 
+                                    $parentJob = Job::find($job['parent_id']);
+                                    $newParentJob = Job::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Việc cha',
+                                        "old_value" => $parentJob ? $parentJob->name : '',
+                                        "new_value" => $newParentJob ? $newParentJob->name : '',
+                                        "note" => $updateNote
+                                    ]));
+                                    break;
+
+                                case "job_type_id": 
+                                    $jobType = JobType::find($job['job_type_id']);
+                                    $newJobType = JobType::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Loại công việc',
+                                        "old_value" => $jobType ? $jobType->name : '',
+                                        "new_value" => $newJobType ? $newJobType->name : '',
+                                        "note" => $updateNote
+                                    ]));
+                                    break;
+
+                                case "process_method_id":
+                                    $processMethod = ProcessMethod::find($job['process_method_id']);
+                                    $newProcessMethod = ProcessMethod::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Hình thức xử lý',
+                                        "old_value" => $processMethod ? $processMethod->name : '',
+                                        "new_value" => $newProcessMethod ? $newProcessMethod->name: '',
+                                        "note" => $updateNote
+                                    ]));
+                                    break;
+
+                                case "priority_id": 
+                                    $priority = Priority::find($job['priority_id']);
+                                    $newPriority = Priority::find($value);
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId,
+                                        "field" => 'Loại công việc',
+                                        "old_value" => $priority ? $priority->name : '',
+                                        "new_value" => $newPriority ? $newPriority->name : '',
+                                        "note" => $updateNote
+                                    ]));
+                                    break;
+
+                                default: 
+                                    array_push($jobUpdates, new UpdateJobHistory([
+                                        "job_id" => $jobId, 
+                                        "field" => $key, 
+                                        "old_value" => $job[$key] ? $job[$key] : '',
+                                        "new_value" => $value ? $value : '', 
+                                        "note" => $updateNote
+                                    ]));
+
+                                    
+                            }
+                        }
+                        
+    
+                    }
+                    // dd($jobUpdates);
+                    if ($jobUpdates) {
+                        $job->updateHistories()->saveMany($jobUpdates);
+                    }
+                }
+
                 $job->update($jobData);
+                
+                
+
             }
             else {
                 $job = Job::create($jobData);
@@ -172,7 +482,153 @@ class JobsController extends Controller
         
         //TODO: insert into job_assigns table
     }
+
+
+    private function handleUpdateStatus($reject = false) {
+
+    }
+
+
+    private function getHandlingJobs($staffId, $condition=[]) 
+    {
+        try {
+
+
+
+            $directJobs = Job::with([
+                'jobAssigns' => function ($query) use ($staffId){
+                    $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
+                }, 
+                'jobAssigns.processMethod',
+                'jobAssigns.timeSheets',
+                'project:id,code', 
+                'assigner:id,name', 
+            ])
+            ->where($condition)
+            ->whereHas('jobAssigns', function ($query) use ($staffId) {
+                $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
+            })->get();
+
+
+            $relatedJobs = Job::with([
+                'jobAssigns' => function ($query) use ($staffId){
+                    $query->where('staff_id', $staffId)->whereNotNull('parent_id');
+                }, 
+                'jobAssigns.parent.assignee:id,name',
+                'jobAssigns.processMethod',
+                'jobAssigns.timeSheets',
+                'project:id,code', 
+                'assigner:id,name', 
+            ])
+            ->where($condition)
+            ->whereHas('jobAssigns', function ($query) use ($staffId) {
+                $query->where('staff_id', $staffId)->whereNotNull('parent_id');
+            })->get();
+
+
+
+
+            $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
+            $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
+            
+
+
+            return [$reformatedDirectJobs, $reformatedRelatedJobs];
+
+
+        } 
+        catch (Exception $e) {
+            dd($e);
+        }
+        
+    }
+
+    private function getPendingJobs($staffId, $condition=[]) 
+    {
+        $newAssignedJobs = Job::with([
+            'jobAssigns' => function ($query) use ($staffId) {
+                $query->where('staff_id', $staffId);
+            }
+        ])
+        ->where('status', 'pending')
+        ->where($condition)
+        ->whereHas('jobAssigns', function ($query) use ($staffId) {
+            $query->where('staff_id', $staffId);
+        })->get();
+
+
+
+        $unassignedJobs = Job::where('status', 'pending')
+        ->where($condition)
+        ->doesntHave('jobAssigns')
+        ->get();
+        
+        
+        
+        $reformatedNewAssignedJobs = $this->reformatPendingJobs($newAssignedJobs);
+        
+        $reformatedUnassignedJobs = $this->reformatPendingJobs($unassignedJobs);
+        
+
+        
+
+        
+        return [$reformatedNewAssignedJobs, $reformatedUnassignedJobs];
+    }
+
+    private function getAssignerJobs($staffId, $condition=null) 
+    {
+        $createdJobs = Job::where('assigner_id', $staffId)->get();
+        
+        // TODO: get forward jobs 
+        return $createdJobs;
+    }
+
+
+    private function reformatHandlingJobs($jobs, $related = false) 
+    {
+
+        foreach ($jobs as $item) {
+            $item->project_code = $item->project ? $item->project->code : null;
+            $item->assigner = $item->assigner->name;
+            $item->process_method  = $item->jobAssigns[0]->processMethod->name;
+            $item->timesheet_amount = null;
+            $item->finished_percent = null;
+            $item->remaining = null;
+            $item->job_assign_id = $item->jobAssigns[0]->id;
+            
+            if ($related)
+                $item->forward = $item->jobAssigns[0]->parent->assignee->name;
+
+
+        }
+        return $jobs;
+    }
+
+    private function reformatPendingJobs($jobs)
+    {
+        foreach ($jobs as $item) {
+            
+            $item->project_code = $item->project ? $item->project->code : null;
+            $item->assigner = $item->assigner->name; 
+            if ($item->jobAssigns->count()) {
+                
+                $item->job_assign_id = $item->jobAssigns[0]->id;
+            }
+        }
+
+        return $jobs;
+    }
     
+    private function reformatCreatedJobs($jobs)
+    {
+
+    }
+
+    private function reformatAllJobs($jobs)
+    {
+
+    }
     
 
 
