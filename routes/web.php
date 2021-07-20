@@ -8,12 +8,7 @@ use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\TimeSheetController;
-<<<<<<< HEAD
-=======
-use App\Http\Controllers\TimesheetStatisticsController;
-use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
->>>>>>> 307f1a2 (search and list backup-manday)
 /*
 |--------------------------------------------------------------------------
 | Web Routes
