@@ -22,3 +22,13 @@ function ready(callbackFunc) {
  * @param {*} selector
  */
 const getValueSelector = selector => document.querySelector(selector).value;
+
+/**
+ * Set value of a selector
+ *
+ * @param {*} selector 
+ * @param {*} value 
+ */
+const setValue = (selector, value) => {
+    $(selector).val(value)
+}

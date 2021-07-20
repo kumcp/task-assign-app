@@ -6,3 +6,7 @@
     height: 2em;
     background-color: lightsteelblue;
 }
+
+.dynamic-table tbody tr.data-row:hover {
+    cursor: pointer;
+}
