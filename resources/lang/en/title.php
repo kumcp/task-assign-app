@@ -2,8 +2,7 @@
 
 return [
 
-    'code' => 'Mã',
-    'name' => 'Tên',
+    'code' => 'Mã code',
     'name_project' => 'Tên dự án',
     'name_project_type' => 'Loại công việc',
     'name_job' => 'Tên công việc',
