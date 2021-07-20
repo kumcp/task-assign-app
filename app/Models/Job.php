@@ -57,6 +57,11 @@ class Job extends Model
         return $this->belongsToMany(Staff::class, 'job_assigns')->using(JobAssign::class)->withPivot('role', 'direct_report', 'sms');
     }
 
+    public function jobAssigns()
+    {
+        return $this->hasMany(JobAssign::class);
+    }
+
     public function updateHistories()
     {
         return $this->hasMany(UpdateJobHistory::class);

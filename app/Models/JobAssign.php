@@ -20,6 +20,29 @@ class JobAssign extends Model
         'deny_reason' => self::DENY_REASON,
     ];
 
+    protected $guarded = [];
+
+    
+    public function parent()
+    {
+        return $this->belongsTo(JobAssign::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(JobAssign::class, 'parent_id');
+    }
+
+    public function job()
+    {
+        return $this->belongsTo(Job::class);
+    }
+
+    public function assignee()
+    {
+        return $this->belongsTo(Staff::class, 'staff_id');
+    }
+
     public function workPlans()
     {
         return $this->hasMany(WorkPlan::class);
