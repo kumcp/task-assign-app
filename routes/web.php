@@ -10,7 +10,7 @@ use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\TimesheetStatisticsController;
 use App\Http\Controllers\ProjectPlanController;
-
+use App\Http\Controllers\BackupMandayController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,7 +24,6 @@ use App\Http\Controllers\ProjectPlanController;
 
 Route::redirect('/', '/jobs', 301);
 
-
 Route::get('/jobs', function () {
     return view('jobs.index');
 })->name('jobs');
@@ -37,12 +36,9 @@ Route::get('/jobs/search', function () {
     return view('jobs.search');
 })->name('jobs.search');
 
-
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
 });
-
-Route::get('/assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list');
 
 Route::get('/jobs/update-history', function () {
     return view('jobs.update-history');
@@ -64,10 +60,7 @@ Route::get('/configurations', function () {
 });
 
 
-
 //================================== ROUTE VIEW =====================================================//
-
-
 
 // Project
 Route::prefix('project')->group(function () {
@@ -130,3 +123,7 @@ Route::post('/timesheet-statistics-search',[TimesheetStatisticsController::class
 //Project Plan
 Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
 Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
+
+//Backup Manday
+Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
+Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
