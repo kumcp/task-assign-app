@@ -9,6 +9,8 @@ class Staff extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name'];
+
     public function account()
     {
         return $this->hasOne(Account::class);

@@ -1,6 +1,9 @@
 <?php
 
-
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
@@ -69,3 +72,16 @@ Route::prefix('process-method')->group(function () {
 
 // Config
 Route::get('config',[ConfigController::class, 'list'])->name('config.list');
+
+Route::get('/register', [RegisterController::class, 'register']);
+Route::post('/register', [RegisterController::class, 'store'])->name('register');
+
+Route::get('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/login', [LoginController::class, 'authenticate']);
+Route::get('logout', [LoginController::class, 'logout'])->name('logout');
+
+Route::get('/forget-password', [ForgotPasswordController::class, 'getEmail']);
+Route::post('/forget-password', [ForgotPasswordController::class, 'postEmail']);
+
+Route::get('/accounts/pending', [AccountController::class, 'getPendingAccounts'])->name('accounts.pending');
+Route::post('/accounts/activate', [AccountController::class, 'activateAccounts'])->name('accounts.activate');
