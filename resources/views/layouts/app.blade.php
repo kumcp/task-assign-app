@@ -65,8 +65,14 @@
             </div>
 
             @include('components.sidebar-content', ['options' => [
-            'Công việc', 'Nhận việc'
+                ['link' => '/jobs', 'value' => 'Tìm kiếm công việc'],
+                ['link' => '/jobs/search', 'value' => 'Nhận việc'],
+                ['link' => '/jobs/create', 'value' => 'Tạo công việc mới'],
+                ['link' => '/jobs', 'value' => 'Công việc đang xử lý'],
+                ['link' => '/jobs', 'value' => 'Công việc cần xử lý'],
+                ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới']
             ]])
+
 
         </nav>
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
@@ -123,14 +129,11 @@
                                 </a>
 
                                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                         document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
+                                    <a class="dropdown-item" href="{{ route('logout') }}">
+                                        {{ __('Đăng xuất') }}
                                     </a>
 
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
+
                                 </div>
                             </li>
                         @endguest
