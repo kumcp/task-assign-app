@@ -5,9 +5,19 @@
 
 @section('modal-body')
     <form action="{{ route('workplans.store') }}" method="POST">
-        @isset($jobAssignId)
-            <input type="hidden" name="job_assign_id" value="{{ $jobAssignId}}">
+        
+        @isset ($jobAssignId)
+            <input type="hidden" name="job_assign_id" value="{{ $jobAssignId }}">
         @endisset
+
+        @isset ($jobId)
+            <input type="hidden" name="job_id" value="{{ $jobId }}">
+        @endisset
+
+        @isset ($staffId)
+            <input type="hidden" name="staff_id" value="{{ $staffId }}">
+        @endisset
+
         <div class="form-group-row mb-3">
             @include('components.input-date', [
                 'type' => 'date',

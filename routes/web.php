@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+
+use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\WorkPlanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
@@ -98,3 +103,17 @@ Route::post('/staff-info/{id}', [StaffInfoController::class, 'update'])->name('s
 
 Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
 Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
+
+
+
+Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
+Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
+Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
+Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
+Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
+Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
+
+
+Route::get('/workplans/create/', [WorkPlanController::class, 'create'])->name('workplans.create');
+Route::post('/workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
+Route::post('/workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');

@@ -28,9 +28,15 @@
     @endif
 
     @if (isset($jobAssignId))
-            
         @include('components.workplan-modal', ['jobAssignId' => $jobAssignId])
 
+    @elseif (isset($jobId) && isset($staffId))
+   
+        @include('components.workplan-modal', [
+            'jobId' => $jobId, 
+            'staffId' => $staffId,
+        ])
+    
     @else
         
         @include('components.workplan-modal')
@@ -46,17 +52,7 @@
                 <input type="hidden" name="job_assign_id" value="{{ $jobAssignId }}">
             @endisset
 
-            @isset($jobId)
-            
-                <input type="hidden" name="job_id" value="{{ $jobId }}">
 
-            @endisset
-
-            @isset($staffId)
-            
-            <input type="hidden" name="job_id" value="{{ $staffId }}">
-
-            @endisset
 
             <div class="row ml-0 mb-5">
                 @include('components.dynamic-table', [

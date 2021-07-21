@@ -20,16 +20,14 @@ use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
-    // public function __construct()
-    // {
-    //     $this->middleware('auth');
-    // }
+
 
     public function index(Request $request)
     {
 
 
         if ($request->has(['type', 'staff-id'])) {
+           
             $type = $request->input('type');
             $staffId = $request->input('staff-id');
             
@@ -69,7 +67,7 @@ class JobsController extends Controller
 
                 case 'assigner': 
                     $createdJobs = $this->getAssignerJobs($staffId, $condition);
-                    dd($createdJobs);
+
 
                 default: 
                     break;
@@ -91,11 +89,28 @@ class JobsController extends Controller
         return response($job);
     }
 
+    public function create($jobId=null)
+    {
+        
+        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+        $staff = Staff::all();
+        $projects = Project::all();
+        $jobTypes = JobType::all();
+        $priorities = Priority::all();
+        $processMethods = ProcessMethod::all();
+    
+        if ($jobId)
+            return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
+        
+        return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods'));
+
+    }
+
+
     public function detailAction(Request $request)
     {   
         $action = $request->input('action');
         
-        // dd($request->all());
         
         switch ($action) {
             
@@ -137,22 +152,6 @@ class JobsController extends Controller
         }
     }
 
-    public function create($jobId=null)
-    {
-        
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
-        $staff = Staff::all();
-        $projects = Project::all();
-        $jobTypes = JobType::all();
-        $priorities = Priority::all();
-        $processMethods = ProcessMethod::all();
-    
-        if ($jobId)
-            return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
-        
-        return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods'));
-
-    }
 
     
 
@@ -200,12 +199,6 @@ class JobsController extends Controller
                 $job->update(['status' => 'active']);
 
                 
-
-
-                
-
-                // $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
-
 
                 return view('jobs.job-detail', [
                     'jobs' => $jobs,
@@ -484,9 +477,7 @@ class JobsController extends Controller
     }
 
 
-    private function handleUpdateStatus($reject = false) {
 
-    }
 
 
     private function getHandlingJobs($staffId, $condition=[]) 

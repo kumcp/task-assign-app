@@ -30,7 +30,6 @@ const setSelectedValueDynamic = (selector, selectedValue, inputValue) => {
 
 const initializeJobValues = (jobId) => {
     getJob(jobId).then(job => {
-        console.log(job);
         Object.keys(job).forEach(key => {
             let input = document.querySelector(`#${key}`);
             if (input !== null) {
@@ -44,23 +43,20 @@ const initializeJobValues = (jobId) => {
         setSelectedValueDynamic('#assigner_name', job.assigner_id, job.assigner.name);
 
         setSelectedValueDynamic('#project_code', job.project_id, job.project ? job.project.name : null);
-        
-        // setSelectedValue('#project_code', job.project_id);
-        
-
-
+    
         
         setSelectedValueDynamic('#job_type', job.job_type_id, job.type ? job.type.name : null);
 
         
-        // setSelectedValue('#job_type', job.job_type_id);
        
         setSelectedValueDynamic('#parent_job', job.parent_id, job.parent_id ? job.parent.name : null);
 
-        // setSelectedValue('#parent_job', job.parent_id);
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
-        // setSelectedValue('#priority_name', job.priority_id);
+        if (job.status !== 'pending') {
+            $('button[value="accept"]').prop('disabled', true);
+        }
+
     });
 }

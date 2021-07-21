@@ -253,6 +253,8 @@
 				$('#deny-reason-modal').modal('show');
 			});
 
+			$('#history-workplan').show();
+
 		});
 
 	</script>

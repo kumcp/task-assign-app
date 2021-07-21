@@ -40,7 +40,12 @@ const handleRowClick = (id) => {
     $('.alert').each(function () {
         $(this).alert('close');
     });
-    $('#job_id').val(id);
+
+    $('#job_id').val(id).change();
     $('#history-workplan').show();
     initializeJobValues(id);
+    
+    let url = $('#workplan').attr('href');
+    $('#workplan').prop('href', `${url.slice(0, -1)}${id}`);
+
 }
