@@ -53,48 +53,36 @@
 <body>
     <div class="overlay"></div>
     <div id="app">
-        <nav id="sidebar">
-            <div id="dismiss">
-                <i class="fas fa-arrow-left"></i>
-            </div>
 
-            <div class="sidebar-header">
-                <h3>
-                    <a class="navbar-brand" href="{{ url('/jobs') }}">{{ config('app.name', 'Laravel') }}</a>
-                </h3>
-            </div>
-
-            @include('components.sidebar-content', ['options' => [
-                ['link' => '/jobs', 'value' => 'Tìm kiếm công việc'],
-                ['link' => '/jobs/search', 'value' => 'Nhận việc'],
-                ['link' => '/jobs/create', 'value' => 'Tạo công việc mới'],
-                ['link' => '/jobs', 'value' => 'Công việc đang xử lý'],
-                ['link' => '/jobs', 'value' => 'Công việc cần xử lý'],
-                ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới']
-            ]])
-
-
-        </nav>
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                {{-- <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a> --}}
-                {{-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button> --}}
+                @auth
+                    <nav id="sidebar">
+                        <div id="dismiss">
+                            <i class="fas fa-arrow-left"></i>
+                        </div>
+            
+                        <div class="sidebar-header">
+                            <h3>
+                                <a class="navbar-brand" href="{{ url('/jobs') }}">{{ config('app.name', 'Laravel') }}</a>
+                            </h3>
+                        </div>
+            
+                        @include('components.sidebar-content', ['options' => [
+                            ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới'],
+                            ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
+                        ]])
+            
+            
+                    </nav>
+                    
+                    <button class="navbar-toggler d-inline" id="sidebarCollapse" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
 
-                <button class="navbar-toggler d-inline" id="sidebarCollapse" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                @endauth
+                
 
-
-                <button class="btn btn-dark d-inline-block d-lg-none ml-auto" type="button" data-toggle="collapse"
-                    data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                    aria-label="Toggle navigation">
-                    <i class="fas fa-align-justify"></i>
-                </button>
 
 
                 <div class="navbar-collapse collapse" id="navbarSupportedContent">
@@ -110,13 +98,13 @@
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
+                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Đăng nhập') }}</a>
                                 </li>
                             @endif
 
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Đăng ký') }}</a>
                                 </li>
                             @endif
                         @else

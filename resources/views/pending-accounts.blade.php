@@ -3,43 +3,32 @@
 @section('content')
 
     <div class="container">
-        @if(session()->has('error'))
-            <div class="alert alert-danger">
-                {{ session()->get('error') }}
+        @include('components.flash-message')
+
+        <form action="{{ route('accounts.activate') }}" method="POST">
+            @csrf
+            
+            @include('components.custom-table', [
+                'cols' => [
+                    'Địa chỉ e-mail' => 'email',
+                    'Tên' => 'name',
+                    'checkbox' => 'account_ids[]',
+                ],
+                'rows' => $pendings, 
+                'pagination' => true
+
+            ])
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary offset-5 mt-3" name="action" value="accept" disabled>
+                    <i class="fas fa-save"></i>
+                    <span>Kích hoạt</span>
+                </button>
+
             </div>
-        @endif
-
-        @if(session()->has('success'))
-            <div class="alert alert-success">
-                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                {{ session()->get('success') }}
-            </div>
-        @endif
-
-            <form action="{{ route('accounts.activate') }}" method="POST">
-                @csrf
-                
-                @include('components.custom-table', [
-                    'cols' => [
-                        'Địa chỉ e-mail' => 'email',
-                        'Tên' => 'name',
-                        'checkbox' => 'account_ids[]',
-                    ],
-                    'rows' => $pendings, 
-                    'pagination' => true
-
-                ])
-
-                <div class="button-group">
-                    <button type="submit" class="btn btn-primary offset-5 mt-3" name="action" value="accept" disabled>
-                        <i class="fas fa-save"></i>
-                        <span>Kích hoạt</span>
-                    </button>
-
-                </div>
-                
-                
-            </form>
+            
+            
+        </form>
 
 
 
