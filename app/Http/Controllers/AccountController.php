@@ -12,10 +12,10 @@ class AccountController extends Controller
 
     public function getPendingAccounts()
     {
-        $pending = Account::where('active', false)->with('staff')->paginate($this::DEFAULT_PAGINATE);
-        $reformatedPending = $this->reformatAccounts($pending);
+        $pendingAccounts = Account::pending()->with('staff')->paginate($this::DEFAULT_PAGINATE);
+        $reformatedPendingAccounts = $this->reformatAccounts($pendingAccounts);
         
-        return view('pending-accounts', ['pendings' => $reformatedPending]);
+        return view('pending-accounts', ['pendings' => $reformatedPendingAccounts]);
     }
 
     public function activateAccounts(Request $request) {
@@ -30,7 +30,7 @@ class AccountController extends Controller
                     return redirect()->back()->with('error', 'Tài khoản không tồn tại');
                 }
 
-                $account->active = true;
+                $account->activate();
                 $account->save();
             }
 

@@ -6,6 +6,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
 
 class Account extends Authenticatable
 {
@@ -41,8 +42,32 @@ class Account extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    public function scopePending($query) {
+        return $query->where('active', false);
+    }
+
+    public function activate() {
+        $this->active = true;
+    }
+
+    public function isActive() {
+        return $this->active;
+    }
+
     public function staff()
     {
         return $this->belongsTo(Staff::class);
+    }
+
+    public function updatePassword($newPassword) 
+    {
+        $this->password = Hash::make($newPassword);
+        return $this;
+    }
+
+    public function removeToken() 
+    {
+        PasswordReset::where('email', $this->email)->delete();
+        return $this;
     }
 }
