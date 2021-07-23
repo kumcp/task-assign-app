@@ -22,7 +22,7 @@
                     @elseif ($key === 'checkbox')
                         <td><input name="{{ $value }}" type="checkbox"></td>
                     @else
-                        <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
+                        <td class="{{ $value }}">{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
                         </td>
                     @endif
 
