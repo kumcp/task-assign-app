@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\PriorityController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\ConfigController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StaffInfoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,7 +84,17 @@ Route::post('/login', [LoginController::class, 'authenticate']);
 Route::get('logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/forget-password', [ForgotPasswordController::class, 'getEmail']);
-Route::post('/forget-password', [ForgotPasswordController::class, 'postEmail']);
+Route::post('/forget-password', [ForgotPasswordController::class, 'postEmail'])->name('forgotPassword');
+
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'getPassword']);
+Route::post('/reset-password', [ResetPasswordController::class, 'updatePassword'])->name('resetPassword');
+
 
 Route::get('/accounts/pending', [AccountController::class, 'getPendingAccounts'])->name('accounts.pending');
 Route::post('/accounts/activate', [AccountController::class, 'activateAccounts'])->name('accounts.activate');
+
+Route::get('/staff-info/{id}', [StaffInfoController::class, 'show'])->name('staff_info.show');
+Route::post('/staff-info/{id}', [StaffInfoController::class, 'update'])->name('staff_info.update');
+
+Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
