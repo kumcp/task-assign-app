@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TimeSheetRequest extends FormRequest
+class BackupMandayRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +26,6 @@ class TimeSheetRequest extends FormRequest
         return [
             'from_date' => 'required|date',
             'to_date' => 'required|date|after_or_equal:from_date',
-            'from_time' => 'required',
-            'to_time' => 'required',
-            'content' => 'required',
         ];
     }
 
@@ -39,9 +36,6 @@ class TimeSheetRequest extends FormRequest
             'to_date.after_or_equal' => 'Ngày bắt đầu không được > ngày kết thúc!',
             'to_date.required' => 'Ngày kết thúc không được để trống!',
             'to_date.date' => 'Ngày kết thúc không hợp lệ!',
-            'from_time.required' => 'Thời gian ngày bắt đầu không được để trống!',
-            'to_time.required' => 'Thời gian ngày kết thúc không được trống!',
-            'content.required' => 'Nội dung không được để trống!',
         ];
     }
 }

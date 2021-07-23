@@ -13,13 +13,14 @@
                             'name' => 'project_id',
                             'label' => 'Dự án',
                             'type' => 'date',
-                            'options' => $project,
+                            'options' => $projects,
                         ])
                         @include('components.button-group', [
                              'buttons' => [
                                  ['class' => 'btn btn-primary', 'iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search']
                              ]
                          ])
+                        <a href="{{route('project-plan.list')}}" class="ml-3"> <i class="fas fa-sync-alt"></i> Reset</a>
                     </div>
 
                 </form>
@@ -43,5 +44,9 @@
                 ])
 
         {{$jobAssigns->links()}}
+
+        <div class="text-center">
+            <a href="#" class="ml-3 btn btn-success"> <i class="fas fa-eye"></i> Xem chi tiết</a>
+        </div>
 
 @endsection

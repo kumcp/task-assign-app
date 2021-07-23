@@ -27,7 +27,6 @@
                                 'check' => 0,
                                 'options' => $staff
                             ])
-
                             <label for="process_method" class="ml-5">(Hình thức xử lý)</label>
                         </div>
                         <div class="form-group-row mb-3">
@@ -51,7 +50,7 @@
                                 'type' => 'time',
                                 'name' => 'from_time',
                                 'label' => 'Từ giờ',
-                                'value' => $timeSheet->form_time
+                                'value' => $timeSheet->from_time
                             ])
                             @include('components.input-date', [
                                 'type' => 'time',
@@ -74,6 +73,7 @@
                                 'name' => 'content',
                                 'label' => 'Nội dung',
                                 'value' => $timeSheet->content
+
                             ])
 
                         </div>
@@ -96,19 +96,19 @@
                 </fieldset>
             </div>
             <div class="col-md-4">
-                <table class="table">
+                <table class="table border table-hover">
                     <thead>
                     <tr>
                         <th scope="col">Ngày nhập time sheet</th><th></th>
                     </tr>
                     </thead>
                     <tbody>
-                        @foreach($timeSheets as $timesheet)
-                            <tr>
-                                <td>{{$timesheet->created_at}}</td>
-                                <td><a href="{{route('timesheet.edit',['id'=>$timesheet['id']])}}" class="btn btn-primary">Xem</a></td>
-                            </tr>
-                        @endforeach
+                    @foreach($timeSheets as $timesheet)
+                        <tr>
+                            <td>{{date_format($timesheet->created_at, 'Y-m-d')}}</td>
+                            <td><a href="{{route('timesheet.edit',['id'=>$timesheet['id']])}}" class="btn btn-primary">Xem</a></td>
+                        </tr>
+                    @endforeach
                     </tbody>
                 </table>
                 {{$timeSheets->links()}}

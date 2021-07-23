@@ -14,7 +14,7 @@ class UpdateTimeSheetsTable extends Migration
     public function up()
     {
         Schema::table('time_sheets', function (Blueprint $table) {
-            $table->time('form_time');
+            $table->time('from_time');
             $table->time('to_time');
         });
     }

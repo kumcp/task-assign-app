@@ -7,36 +7,31 @@ use App\Models\Job;
 use App\Models\Staff;
 use App\Models\TimeSheet;
 use Illuminate\Http\Request;
-const DEFAULT_PAGINATE = 15;
+
 class TimesheetStatisticsController extends Controller
 {
-    /*
-     *
-     *
-     */
-
-    /**
-     *  Show data time sheet statistics
-     *
-     */
-    public function list(){
-        $departments = Department::all();
-        $staff = Staff::all();
-        $timeStatistics = TimeSheet::with('jobAssign.job')
-            ->with('jobAssign.staff')
-            ->orderBy('id', 'desc')->paginate(100);
+    public const DEFAULT_PAGINATE = 15;
+    private function formatField($timeStatistics){
         foreach ($timeStatistics as $timeStatistic) {
             $timeStatistic->job_name =  $timeStatistic->jobAssign->job->name;
             $timeStatistic->object_handling = $timeStatistic->jobAssign->staff->name;
             $timeStatistic->finish = $timeStatistic->timeDate();
         }
-
-        return view('site.timesheet-statistics.timesheet-statistics',
-            compact('timeStatistics', 'departments', 'staff'));
     }
-
+    public function list(){
+        $departments = Department::orderBy('id', 'DESC')->get();
+        $staffs = Staff::orderBy('id', 'DESC')->get();
+        $timeStatistics = TimeSheet::with('jobAssign.job')
+            ->with('jobAssign.staff')
+            ->orderBy('id', 'desc')->paginate(self::DEFAULT_PAGINATE);
+        $this->formatField($timeStatistics);
+        return view('site.timesheet-statistics.timesheet-statistics',
+            compact('timeStatistics', 'departments', 'staffs'));
+    }
     public function search(Request $request){
-
+        $jobs = Job::orderBy('id', 'DESC')->get();
+        $departments = Department::orderBy('id', 'DESC')->get();
+        $staffs = Staff::orderBy('id', 'DESC')->get();
         $timeStatistics = TimeSheet::with('jobAssign.job')
             ->with('jobAssign.staff')
             ->whereHas('jobAssign.staff', function ($q) use($request) {
@@ -44,18 +39,9 @@ class TimesheetStatisticsController extends Controller
             })
             ->orderBy('id', 'desc')
             ->whereBetween('from_date', array($request->from_date, $request->to_date))
-
             ->get();
-        foreach ($timeStatistics as $timeStatistic) {
-            $timeStatistic->job_name =  $timeStatistic->jobAssign->job->name;
-            $timeStatistic->object_handling = $timeStatistic->jobAssign->staff->name;
-            $timeStatistic->finish = $timeStatistic->timeDate();
-        }
-        $jobs = Job::all();
-        $departments = Department::all();
-        $staff = Staff::all();
-
+        $this->formatField($timeStatistics);
         return view('site.timesheet-statistics.timesheet-statistics-search',
-            compact('timeStatistics', 'jobs', 'departments', 'staff'));
+            compact('timeStatistics', 'jobs', 'departments', 'staffs'));
     }
 }

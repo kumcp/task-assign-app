@@ -4,7 +4,6 @@
     <div class="container">
         <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
             <legend class="w-auto">Manday dự phòng</legend>
-            @include('components.flash-message')
             <div class="row mb-4 ml-0">
                 <form action="{{route('backup-manday.search')}}" class="w-100" method="POST">
                     @csrf
@@ -15,6 +14,7 @@
                             'type' => 'date',
                             'value' => app('request')->input('from_date')
                         ])
+                        <br>
                         @include('components.input-date', [
                             'name' => 'to_date',
                             'label' => 'Đến ngày',

@@ -33,7 +33,7 @@
                             'name' => 'object_handling',
                             'label' => 'Đối tượng xử lý',
                             'type' => 'date',
-                            'options' => $staff
+                            'options' => $staffs
                         ])
                     </div>
                     <div class="form-group-row mb-3">
@@ -42,7 +42,7 @@
                                      ['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'],
                                  ]
                              ])
-                        <a href="{{route('timesheet-statis.list')}}"> <i class="fas fa-circle-notch"></i> Reset</a>
+                        <a href="{{route('timesheet-statis.list')}}"> <i class="fas fa-sync-alt"></i> Reset</a>
                     </div>
                 </form>
             </div>
@@ -56,7 +56,7 @@
                         'from_date' => 'from_date',
                         'to_date' => 'to_date',
                         'content' => 'content',
-                        'from_time' => 'form_time',
+                        'from_time' => 'from_time',
                         'to_time' => 'to_time',
                         'finish' => 'finish'
                        ],
