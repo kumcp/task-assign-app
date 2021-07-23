@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -18,25 +19,30 @@ class ResetPasswordController extends Controller
     public function updatePassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users',
+            'email' => 'required|email|exists:accounts',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required',
 
         ]);
 
-        $updatePassword = DB::table('password_resets')
-                            ->where(['email' => $request->email, 'token' => $request->token])
-                            ->first();
 
-        if(!$updatePassword)
-            return back()->withInput()->with('error', 'Invalid token!');
 
-        $user = Account::where('email', $request->email)
-                    ->update(['password' => Hash::make($request->password)]);
+        $emailToken = PasswordReset::where([
+            'email' => $request->email,
+            'token' => $request->token
+        ])->first();
+        
 
-        DB::table('password_resets')->where(['email'=> $request->email])->delete();
+        if(!$emailToken)
+            return back()->withInput()->with('error', 'Token không hợp lệ!');
 
-        return redirect()->route('login')->with('message', 'Mật khẩu cập nhật thành công');
+        
+        $account = Account::where('email', $request->email)->first();
+        $account->updatePassword($request->password)
+        ->removeToken()
+        ->save();
+
+        return redirect()->route('login')->with('success', 'Mật khẩu cập nhật thành công');
 
     }
 }

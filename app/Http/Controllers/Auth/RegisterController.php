@@ -7,7 +7,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\Account;
 use App\Models\Department;
 use App\Models\Staff;
-
+use App\Models\StaffInfo;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
@@ -20,18 +20,27 @@ class RegisterController extends Controller
 
     public function store(RegisterRequest $request) 
     {
+ 
+        $newStaff = Staff::create(['name' => $request->name]); 
 
-        $newStaff = Staff::create(['name' => $request->name]);
+        StaffInfo::create([
+            'date_of_birth' => $request->has('dob') ? $request->dob : null,
+            'gender' => $request->has('gender-option') ? $request->gender : null,
+            'address' => $request->has('address') ? $request->address : null,
+            'phone' => $request->has('phone') ? $request->phone : null,
+            'staff_id' => $newStaff->id,
+        ]);
 
-        $newAccount = new Account([
+
+        Account::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'staff_id' => $newStaff->id, 
         ]);
 
-        $newAccount->save();
 
-        return redirect('login')->with('success', 'Tạo tài khoản thành công');
+
+        return redirect()->route('login')->with('success', 'Tạo tài khoản thành công');
 
     }
 }

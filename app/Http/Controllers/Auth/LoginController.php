@@ -20,18 +20,19 @@ class LoginController extends Controller
     
         $email = $request->email;
         $account = Account::where('email', $email)->first();
+        $remember = $request->has('remember');
 
-        if (!$account->active)
-            return redirect('login')->withInput()->with('error', 'Tài khoản chưa được kích hoạt bởi quản trị viên');
+        if (!$account->isActive())
+            return redirect()->route('login')->withInput()->with('error', 'Tài khoản chưa được kích hoạt bởi quản trị viên');
         
         $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $remember)) {
             
-            return redirect('jobs.index');
+            return redirect()->route('home');
         }
 
-        return redirect('login')->withInput()->with('error', 'Tài khoản hoặc mật khẩu không chính xác');
+        return redirect()->route('login')->withInput()->with('error', 'Tài khoản hoặc mật khẩu không chính xác');
     }
 
 
