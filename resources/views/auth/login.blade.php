@@ -5,26 +5,16 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header">{{ __('Đăng nhập') }}</div>
-                @if(session()->has('error'))
-                   <div class="alert alert-danger">
-                        {{ session()->get('error') }}
-                    </div>
-                @endif
+                <div class="card-header">Đăng nhập</div>
 
-                @if(session()->has('success'))
-                    <div class="alert alert-success">
-                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                        {{ session()->get('success') }}
-                    </div>
-                @endif
+                @include('components.flash-message')
 
                 <div class="card-body">
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 
                         <div class="form-group row">
-                            <label for="email" class="col-md-4 col-form-label text-md-right">{{ __('Địa chỉ E-Mail') }}</label>
+                            <label for="email" class="col-md-4 col-form-label text-md-right">Địa chỉ E-Mail</label>
 
                             <div class="col-md-6">
                                 <input id="email" type="text" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" autocomplete="email" autofocus>
@@ -38,7 +28,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Mật khẩu') }}</label>
+                            <label for="password" class="col-md-4 col-form-label text-md-right">Mật khẩu</label>
 
                             <div class="col-md-6">
                                 <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" value="{{ old('password') }}" autocomplete="current-password">
@@ -57,7 +47,7 @@
                                     <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
 
                                     <label class="form-check-label" for="remember">
-                                        {{ __('Duy trì đăng nhập') }}
+                                        Duy trì đăng nhập
                                     </label>
                                 </div>
                             </div>
@@ -66,10 +56,10 @@
                         <div class="form-group row mb-0">
                             <div class="col-md-8 offset-md-4">
                                 <button type="submit" class="btn btn-primary">
-                                    {{ __('Đăng nhập') }}
+                                    Đăng nhập
                                 </button>
 
-                                <a class="btn btn-link" href="/forget-password">
+                                <a class="btn btn-link" href="{{ route('forgotPassword') }}">
                                     Quên mật khẩu?
                                 </a>
                             </div>
