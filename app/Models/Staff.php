@@ -9,6 +9,8 @@ class Staff extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name', 'department_id', 'position'];
+
     public function account()
     {
         return $this->hasOne(Account::class);
@@ -42,5 +44,10 @@ class Staff extends Model
     public function amountConfirms()
     {
         return $this->hasMany(AmountConfirm::class);
+    }
+
+    public function info()
+    {
+        return $this->hasOne(StaffInfo::class);
     }
 }

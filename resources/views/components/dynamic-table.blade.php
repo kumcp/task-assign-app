@@ -26,14 +26,17 @@
         @endforeach
 
         {{-- Inject blank row --}}
-        @for ($i = 0; $i < $min_row - count($rows); $i++)
-            <tr>
-                @foreach ($cols ?? [] as $key => $value)
-                    <td>
-                    </td>
-                @endforeach
-            </tr>
-        @endfor
+        @isset($min_row)
+            @for ($i = 0; $i < $min_row - count($rows); $i++)
+                <tr>
+                    @foreach ($cols ?? [] as $key => $value)
+                        <td>
+                        </td>
+                    @endforeach
+                </tr>
+            @endfor
+        @endisset
+
     </tbody>
 </table>
 
