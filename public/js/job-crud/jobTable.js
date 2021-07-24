@@ -45,7 +45,7 @@ const handleRowClick = (id) => {
     $('#history-workplan').show();
     initializeJobValues(id);
     
-    let url = $('#workplan').attr('href');
-    $('#workplan').prop('href', `${url.slice(0, -1)}${id}`);
+    let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
+    $('#workplan').prop('href', `${url}/${id}`);
 
 }

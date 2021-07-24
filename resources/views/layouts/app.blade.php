@@ -71,6 +71,8 @@
                         @include('components.sidebar-content', ['options' => [
                             ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới'],
                             ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
+                            ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
+                            ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
                         ]])
             
             

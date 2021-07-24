@@ -22,6 +22,8 @@ class Job extends Model
         'period_unit' => self::PERIOD_UNIT_DAY,
     ];
 
+    protected $guarded = [];
+
     public function parent()
     {
         return $this->belongsTo(Job::class, 'parent_id');

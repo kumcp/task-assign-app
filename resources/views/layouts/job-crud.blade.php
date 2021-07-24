@@ -125,8 +125,8 @@
             if ($('#job_id').val() !== '') {
                 const jobId = $('#job_id').val();
                 
-                let url = $('#workplan').attr('href');
-                $('#workplan').prop('href', `${url.slice(0, -1)}${jobId}`);
+                let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
+                $('#workplan').prop('href', `${url}/${jobId}`);
 
                 initializeJobValues(jobId);
             }

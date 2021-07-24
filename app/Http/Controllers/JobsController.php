@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
-
+    const DEFAULT_PAGINATE = 15;
 
     public function index(Request $request)
     {
@@ -85,24 +85,22 @@ class JobsController extends Controller
 
     public function show($id)
     {
-        $job = Job::with(['parent', 'type', 'project', 'priority', 'assigner'])->where('id', $id)->get()[0];
+        $job = Job::with(['parent', 'type', 'project', 'priority', 'assigner'])->where('id', $id)->first();
         return response($job);
     }
 
     public function create($jobId=null)
     {
         
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+        $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
         $staff = Staff::all();
         $projects = Project::all();
         $jobTypes = JobType::all();
         $priorities = Priority::all();
         $processMethods = ProcessMethod::all();
     
-        if ($jobId)
-            return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
         
-        return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods'));
+        return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
 
     }
 
@@ -117,7 +115,7 @@ class JobsController extends Controller
             case 'detail':
                 
                 $jobIds = $request->input('job_ids');
-                $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+                $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
 
                 if (count($jobIds) == 1) {
 
@@ -127,27 +125,33 @@ class JobsController extends Controller
                     ]);
                     
                 }
-                else {
-                    return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
-                } 
+
+                return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
+                 
                 
 
             case 'finish':
+                // TODO: finish function
                 break;
 
             case 'search': 
+                // TODO: redirect to search view
                 break;
             
             case 'assign':
+                // TODO: assign view function
                 break;
             
             case 'timesheet': 
+                // TODO: timesheet view function
                 break;
 
             case 'amount_confirm': 
+                // TODO: amount confirm view function
                 break;
 
             case 'exchange': 
+                // TODO: exchange view function
                 break;
         }
     }
@@ -161,7 +165,7 @@ class JobsController extends Controller
         $staffId = $request->input('staff_id');
         
         $job = Job::findOrFail($jobId);
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate(15);
+        $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
 
         $jobAssign = JobAssign::where([
             'job_id' => $jobId, 
@@ -173,8 +177,11 @@ class JobsController extends Controller
                 $workplanRequired = Configuration::where('field', 'workplan')->first('value')->value;
                 
                 if ($workplanRequired == 'true') {
-                    if ($jobAssign)
+
+                    if ($jobAssign) {
                         $request->session()->put('job_assign_id', $jobAssign->id);
+                    }
+
                     else {
                         $request->session()->put([
                             'job_id' =>  $jobId,
@@ -188,7 +195,7 @@ class JobsController extends Controller
                     $jobAssign->update(['status' => 'accepted']);
                 }
                 else {
-                    $mainProcessMethod = ProcessMethod::where('name', 'chu-tri')->first();
+                    $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
                     JobAssign::create([
                         'job_id' => $jobId,
                         'staff_id' => $staffId,
@@ -240,6 +247,7 @@ class JobsController extends Controller
                 ]);
 
             case 'exchange': 
+                //TODO: exchange function
                 break;
         }
     }
@@ -275,7 +283,10 @@ class JobsController extends Controller
                         'job_id' => 'Chưa chọn công việc để xóa'
                     ]);
                 }
+
+
                 $result = $this->destroy($id);
+
                 if ($result['status']) {
                     return redirect()->route('jobs.create')->with('success', $result['message']);
                 }
@@ -343,16 +354,21 @@ class JobsController extends Controller
         
         try {
             if ($jobId) {
+
                 $job = Job::findOrFail($jobId);
-                if ($job['status'] == 'active') {
+
+                if ($job->status == 'active') {
+
                     $jobUpdates = [];
                     $updateNote = isset($data['note']) ? $data['note'] : '';
+
                     foreach ($jobData as $key => $value) {
                         if ($value != $job[$key]) {
                             switch ($key) {
                                 case "assigner_id":  
                                     $assigner = Staff::find($job['assigner_id']);
                                     $newAssigner = Staff::find($value);
+                                    
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Người giao việc',
@@ -366,6 +382,7 @@ class JobsController extends Controller
                                 case "project_id": 
                                     $project = Project::find($job['project_id']);
                                     $newProject = Project::find($value);
+
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Dự án',
@@ -438,7 +455,7 @@ class JobsController extends Controller
                         
     
                     }
-                    // dd($jobUpdates);
+
                     if ($jobUpdates) {
                         $job->updateHistories()->saveMany($jobUpdates);
                     }
@@ -454,7 +471,9 @@ class JobsController extends Controller
             }
         
             if (isset($data['job_files'])) {
+                
                 $files = $data['job_files'];
+
                 foreach ($files as $file) {
                     $filePath = $file->store(File::UPLOAD_DIR, 'public');
                     $fileName = explode('/', $filePath)[2];
@@ -466,6 +485,7 @@ class JobsController extends Controller
                     $job->files()->attach($newFile->id);
                 }
             }
+
             $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
             return ['status' => true, 'message' => $message];
         }
@@ -611,15 +631,7 @@ class JobsController extends Controller
         return $jobs;
     }
     
-    private function reformatCreatedJobs($jobs)
-    {
 
-    }
-
-    private function reformatAllJobs($jobs)
-    {
-
-    }
     
 
 
