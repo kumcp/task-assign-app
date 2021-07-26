@@ -31,6 +31,7 @@ use App\Http\Controllers\StaffInfoController;
 |
 */
 
+Route::redirect('/', '/login', 301);
 
 
 // Project
@@ -105,15 +106,17 @@ Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
 Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
 
 
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
+    Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
+    Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
+    Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
+    Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
+    Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
+});
 
-Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
-Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
-Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
-Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
-Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
-Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
 
 
-Route::get('/workplans/create/', [WorkPlanController::class, 'create'])->name('workplans.create');
+Route::get('/workplans/create/{job_id?}', [WorkPlanController::class, 'create'])->name('workplans.create');
 Route::post('/workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
 Route::post('/workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
