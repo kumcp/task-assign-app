@@ -29,7 +29,31 @@ const setSelectedValueDynamic = (selector, selectedValue, inputValue) => {
 
 
 const initializeJobValues = (jobId) => {
+
+    const addRowToTable = (tableId, idx,  data) => {
+        let row = $('<tr/>', {
+            'class': 'data-row',
+        });    
+        let content = $('<td/>', {id: idx}).append(data);
+        row.append(content);
+
+        $(`#${tableId} tbody`).append(row);
+    }
+
+    const initializeFileTable = (tableId, files) => {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const newLink = $('<a/>', {
+                href: `http://127.0.0.1:8000/storage/${file.dir}/${file.name}`,
+                text: file.name,
+                target: '_blank'
+            });
+            addRowToTable(tableId, i, newLink);
+        }
+    }
+
     getJob(jobId).then(job => {
+        console.log(job);
         Object.keys(job).forEach(key => {
             let input = document.querySelector(`#${key}`);
             if (input !== null) {
@@ -37,6 +61,7 @@ const initializeJobValues = (jobId) => {
             }
             
         });
+
 
         setValue('#project_name', job.project ? job.project.name : '');
 
@@ -57,6 +82,14 @@ const initializeJobValues = (jobId) => {
         if (job.status !== 'pending') {
             $('button[value="accept"]').prop('disabled', true);
         }
+
+        if (jobs.files.length > 0) {
+            $('#file-count span').html(job.files.length);
+        }
+
+        initializeFileTable('files', job.files);
+
+
 
     });
 }

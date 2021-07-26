@@ -1,8 +1,11 @@
 const getJob = (id, options) => {
+    console.log(id);
     return fetch(`/api/jobs/${id}`, {
         method: "GET",
         ...options
-    }).then(response => response.json());
+    }).then(response => {
+        return response.json();
+    });
 } 
 
 const getUpdateHistories = (id, options) => {
