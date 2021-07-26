@@ -26,6 +26,7 @@ class UpdateTimeSheetsTable extends Migration
      */
     public function down()
     {
-        //
+        $table->dropColumn('from_time');
+        $table->dropColumn('to_time');
     }
 }

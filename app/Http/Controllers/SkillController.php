@@ -21,6 +21,7 @@ class SkillController extends Controller
         $skills = Skill::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.skill.skill', compact('skills'));
     }
+
     public function store(SkillRequest $request) {
         $skill = new Skill();
         // check mã code trùng hay không?
@@ -30,11 +31,13 @@ class SkillController extends Controller
         $this->insertData($request, $skill);
         return redirect()->route('skill.list')->with('success','Đã thêm kỹ năng thành công');
     }
+
     public function edit($id) {
         $skill = Skill::findOrFail($id);
         $skills = Skill::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.skill.skill-edit', compact('skill','skills'));
     }
+
     public function update(SkillRequest $request, $id) {
         $skill = Skill::findOrFail($id);
         // check mã code trùng hay không?
@@ -44,6 +47,7 @@ class SkillController extends Controller
         $this->insertData($request, $skill);
         return redirect()->route('skill.list')->with('success','Đã cập nhật kỹ năng thành công');
     }
+
     public function destroy($id) {
         $skill = Skill::findOrFail($id);
         $skill->delete();

@@ -15,14 +15,14 @@
                             @include('components.select', [
                                     'name' => 'job_name',
                                     'label' => 'Tên công việc',
-                                    'options' => $nameJob
+                                    'options' => $nameJobs
                                 ])
                         </div>
                         <div class="form-group-row mb-3">
                             @include('components.select', [
                                    'name' => 'process_method',
                                    'label' => 'Đối tượng xử lý',
-                                   'options' => $staff
+                                   'options' => $staffs
                                ])
                             <label for="process_method" class="ml-5">(Hình thức xử lý)</label>
                         </div>

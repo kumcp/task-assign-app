@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 class ProjectPlanController extends Controller
 {
     public const DEFAULT_PAGINATE = 15;
+
     private function formatFeild($jobAssigns)
     {
         foreach ($jobAssigns as $jobAssign) {
@@ -22,6 +23,7 @@ class ProjectPlanController extends Controller
             $jobAssign->finish = 'Loading... (%)';
         }
     }
+
     public function list(){
         $projects = Project::orderBy('name', 'ASC')->get();
         $jobAssigns = JobAssign::with(['job.project', 'staff', 'timeSheets'])
@@ -32,11 +34,13 @@ class ProjectPlanController extends Controller
 
     public function search(Request $request){
         $projects = Project::orderBy('name', 'ASC')->get();
-        $jobAssigns = JobAssign::with(['job.project', 'staff', 'timeSheets'])
-            ->whereHas('job.project', function ($q) use($request) {
+        $query = JobAssign::with(['job.project', 'staff', 'timeSheets']);
+        if (isset($request->project_id)) {
+            $query = $query->whereHas('job.project', function ($q) use($request) {
                 $q->where('id', $request->project_id);
-            })
-            ->orderBy('id', 'ASC')->get();
+            });
+        }
+        $jobAssigns = $query->orderBy('id', 'ASC')->get();
         $this->formatFeild($jobAssigns);
         return view('site.project-plan.project-plan-search', compact('jobAssigns','projects'));
     }

@@ -51,7 +51,7 @@
             @include('components.table', [
                     'fields' => [
                         'create_day' => 'created_at',
-                        'object_handling' => 'object_handling',
+                        'object_handling' => 'staff_name',
                         'name_project' => 'job_name',
                         'from_date' => 'from_date',
                         'to_date' => 'to_date',

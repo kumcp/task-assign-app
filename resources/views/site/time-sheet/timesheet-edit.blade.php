@@ -16,7 +16,7 @@
                                 'name' => 'job_name',
                                 'label' => 'Tên công việc',
                                 'check' => $timeSheet->id,
-                                'options' => $nameJob
+                                'options' => $nameJobs
                             ])
 
                         </div>
@@ -25,7 +25,7 @@
                                 'name' => 'process_method',
                                 'label' => 'Đối tượng xử lý',
                                 'check' => 0,
-                                'options' => $staff
+                                'options' => $staffs
                             ])
                             <label for="process_method" class="ml-5">(Hình thức xử lý)</label>
                         </div>
