@@ -68,4 +68,9 @@ class Job extends Model
     {
         return $this->hasMany(UpdateJobHistory::class);
     }
+
+    public function isActive()
+    {
+        return $this->status == 'active';
+    }
 }

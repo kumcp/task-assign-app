@@ -14,22 +14,28 @@ use App\Models\Staff;
 use App\Models\UpdateJobHistory;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
     const DEFAULT_PAGINATE = 15;
 
+
     public function index(Request $request)
     {
 
 
-        if ($request->has(['type', 'staff-id'])) {
+
+        $staffId = Auth::user()->staff_id;
+
+        if ($request->has('type')) {
            
             $type = $request->input('type');
-            $staffId = $request->input('staff-id');
+
             
             $jobTypes = JobType::orderBy('name')->get();
             $assigners = Staff::orderBy('name')->get();
@@ -39,7 +45,7 @@ class JobsController extends Controller
             if ($request->method() === 'POST') {
                 
                 foreach ($request->all() as $key => $value) {
-                    if (!in_array($key, ['type', 'staff-id', 'from_date', 'to_date']) && $value)
+                    if (!in_array($key, ['_token', 'type', 'from_date', 'to_date']) && $value)
                         $condition[$key] = $value;
                     
                     if ($key == 'from_date' && $value) {
@@ -53,31 +59,34 @@ class JobsController extends Controller
                 }
               
             }
+
             
 
             switch ($type) {
 
                 case 'pending': 
                     [$newAssignedJobs, $unassignedJobs] = $this->getPendingJobs($staffId, $condition);
+                    
+                    $request->flash();
+
+
                     return view('jobs.pending-jobs', compact('newAssignedJobs', 'unassignedJobs', 'jobTypes', 'assigners', 'projects'));
-                
+
                 case 'handling': 
                     [$directJobs, $relatedJobs] = $this->getHandlingJobs($staffId, $condition);
+                    
+                    $request->flash();
+                    
                     return view('jobs.handling-jobs', compact('directJobs', 'relatedJobs', 'jobTypes', 'assigners', 'projects'));
-
+                
                 case 'assigner': 
                     $createdJobs = $this->getAssignerJobs($staffId, $condition);
-
-
-                default: 
-                    break;
-
                 
             }
 
         }
         else {
-            $jobs = Job::all();
+            $jobs = $this->getAllJobsByStaffId($staffId);
             return view('jobs.index', compact($jobs));
         }
 
@@ -85,7 +94,18 @@ class JobsController extends Controller
 
     public function show($id)
     {
-        $job = Job::with(['parent', 'type', 'project', 'priority', 'assigner'])->where('id', $id)->first();
+
+        $job = Job::with([
+            'parent', 
+            'type', 
+            'project', 
+            'priority', 
+            'assigner', 
+            'files',
+        ])
+        ->where('id', $id)
+        ->first();
+
         return response($job);
     }
 
@@ -342,6 +362,7 @@ class JobsController extends Controller
         }
 
         if ($validator->fails()) {
+            dd($validator->errors());
             return ['status' => false, 'message' => $validator->errors()];
         }
 
@@ -357,7 +378,7 @@ class JobsController extends Controller
 
                 $job = Job::findOrFail($jobId);
 
-                if ($job->status == 'active') {
+                if ($job->isActive()) {
 
                     $jobUpdates = [];
                     $updateNote = isset($data['note']) ? $data['note'] : '';
@@ -475,14 +496,19 @@ class JobsController extends Controller
                 $files = $data['job_files'];
 
                 foreach ($files as $file) {
-                    $filePath = $file->store(File::UPLOAD_DIR, 'public');
-                    $fileName = explode('/', $filePath)[2];
+                    
+                    $originalFileName = ($file->getClientOriginalName());
+                    $file->storeAs(File::UPLOAD_DIR, $originalFileName, 'public');
+
+
                     $newFile = File::create([
                         'staff_id' => $job->assigner_id, 
-                        'name' => $fileName,
+                        'name' => $originalFileName,
                         'dir' => File::UPLOAD_DIR
                     ]);
                     $job->files()->attach($newFile->id);
+                  
+
                 }
             }
 
@@ -490,6 +516,7 @@ class JobsController extends Controller
             return ['status' => true, 'message' => $message];
         }
         catch (Exception $e) {
+            dd($e->getMessage());
             return ['status' => false, 'message' => $e->getMessage()];
         }
         
@@ -569,6 +596,7 @@ class JobsController extends Controller
 
 
 
+
         $unassignedJobs = Job::where('status', 'pending')
         ->where($condition)
         ->doesntHave('jobAssigns')
@@ -593,6 +621,30 @@ class JobsController extends Controller
         
         // TODO: get forward jobs 
         return $createdJobs;
+    }
+
+    private function getAllJobsByStaffId($staffId, $condition=null)
+    {
+
+        $allJobs = Job::with([
+            'jobAssigns' => function ($query) use ($staffId) {
+                $query->where('staff_id', $staffId);
+            }
+        ])
+        ->where($condition)
+        ->whereNotIn('status', ['rejected', 'cancelled'])
+        ->where(function ($subQuery) use ($staffId){  
+            
+            $subQuery->where('assigner_id', $staffId)->orWhereHas('jobAssigns', function ($query) use ($staffId){
+                $query->where('staff_id', $staffId);
+            });
+
+        })->get();
+        
+        dd($allJobs);
+
+
+
     }
 
 
@@ -630,6 +682,7 @@ class JobsController extends Controller
 
         return $jobs;
     }
+
     
 
     
