@@ -16,12 +16,11 @@
 
         <div class="row mb-4 ml-0">
             <form action="{{ route('jobs.search')}}" method="POST" class="w-100">
-                @yield('form-group')
+                @csrf
+
 				
 				<input type="hidden" name="type" value="handling">
 
-				{{-- TODO: get authenticated staff id --}}
-				<input type="hidden" name="staff-id" value="10">
 
 
 				<div class="form-group-row mb-3">
@@ -37,6 +36,24 @@
 					])
 
                 </div>
+
+				@isset($all)
+					<div class="form-group-row mb-3">
+						@include('components.select', [
+							'name' => 'status',
+							'label' => 'Trạng thái',
+							'options' => []
+						])
+						@include('components.select', [
+							'name' => 'assessment',
+							'label' => 'Đánh giá',
+							'options' => []
+						])
+
+					</div>
+				@endisset
+
+
                 <div class="form-group-row mb-3">
                     @include('components.select', [
 						'name' => 'assigner_id',
@@ -76,30 +93,39 @@
 			</form>
 
 			<form action="{{ route('jobs.detailAction')}}" method="POST" class="w-100">
+				@csrf
+				
+				@isset($all)
+				
+					@yield('table')
 
+				@else
 
-				<div class="row ml-0 mb-5">
-					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item" role="presentation">
-						  <a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $left_title }}</a>
-						</li>
-						<li class="nav-item" role="presentation">
-						  <a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $right_title }}</a>
-						</li>
-					</ul>
-					<div class="tab-content w-100" id="myTabContent">
-						<div class="tab-pane fade show active w-100" id="left" role="tabpanel" aria-labelledby="left-tab">
+					<div class="row ml-0 mb-5">
+						<ul class="nav nav-tabs" id="myTab" role="tablist">
+							<li class="nav-item" role="presentation">
+							<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $left_title }}</a>
+							</li>
+							<li class="nav-item" role="presentation">
+							<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $right_title }}</a>
+							</li>
+						</ul>
+						<div class="tab-content w-100" id="myTabContent">
+							<div class="tab-pane fade show active w-100" id="left" role="tabpanel" aria-labelledby="left-tab">
 
-							@yield('left-tab-table')
-							
-						</div>
-						<div class="tab-pane" id="right" role="tabpanel" aria-labelledby="right-tab">
+								@yield('left-tab-table')
+								
+							</div>
+							<div class="tab-pane" id="right" role="tabpanel" aria-labelledby="right-tab">
 
-							@yield('right-tab-table')
-							
+								@yield('right-tab-table')
+								
+							</div>
 						</div>
 					</div>
-				</div>
+
+				@endisset
+				
 
 				@yield('button-group')
 

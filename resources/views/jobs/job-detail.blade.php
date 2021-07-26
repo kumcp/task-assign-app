@@ -150,10 +150,15 @@
 	
 	</div>
 	<div class="form-group-row mb-3">
-		@include('components.input-file', [
-			'name' => 'job_files[]',
-			'label' => 'Tệp nội dung',
-		])
+
+		<label for="file-count" class="col-sm-2 col-form-label p-0">Tệp nội dung</label>
+		<div class="col-sm-4 d-inline">
+			<button type="button" class="btn btn-light" id="file-count">
+				<i class="fas fa-file"></i>
+				<sup><span class="badge badge-success"></span></sup>
+			</button>
+		</div>
+		
 	</div>
 @endsection
 
@@ -254,6 +259,13 @@
 			});
 
 			$('#history-workplan').show();
+
+
+			$('#file-count').click(function() {
+
+				$('#file-modal').modal('show');
+
+			});
 
 		});
 

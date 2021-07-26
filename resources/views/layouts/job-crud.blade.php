@@ -3,9 +3,16 @@
 @section('content')
 
     <link rel="stylesheet" href="{{ asset('css/bootstrap-select.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/file-input.css') }}">
+
+    @include('components.file-modal')
+
+
     <div class="container">
 
         @yield('message')
+
+        
 
         <div class="row">
 
@@ -18,8 +25,8 @@
                     @csrf
                     <input type="hidden" name="job_id" id="job_id" value="{{ $job_id ?? old('job_id') }}">
                     
-                	{{-- TODO: authenticated staff id --}}
-                	<input type="hidden" name="staff_id" value="10">
+
+                	<input type="hidden" name="staff_id" value="{{ Auth::user()->staff_id }}">
 
                     <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
                         <legend class="w-auto">Thông tin nghiệp vụ</legend>
@@ -127,7 +134,7 @@
                 
                 let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
                 $('#workplan').prop('href', `${url}/${jobId}`);
-
+                
                 initializeJobValues(jobId);
             }
 

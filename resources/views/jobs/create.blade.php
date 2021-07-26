@@ -1,5 +1,5 @@
 @extends('layouts.job-crud', [
-	'routeName' => 'jobs.store',
+	'routeName' => 'jobs.action',
 	'method' => 'POST', 
 	'staff' => $staff,
 	'jobs' => $jobs,
@@ -185,7 +185,14 @@
 			'name' => 'job_files[]',
 			'label' => 'Tệp nội dung',
 		])
+
+		<button type="button" class="btn btn-light" id="file-count">
+			<i class="fas fa-file"></i>
+			<sup><span class="badge badge-success"></span></sup>
+		</button>
 	</div>
+	<label class="mt-3"> (Kích thước tệp không vượt quá 10mb) </label>
+
 @endsection
 
 
@@ -219,6 +226,9 @@
 			<input type="hidden" name="nhan-xet-id" id="nhan-xet-id">
 		</div>
 	</div>
+
+
+
 @endsection
 
 @section('assign-button-group')
@@ -249,7 +259,30 @@
 
 @section('custom-script')
 	<script>
+
+
+
+		const addRowToTable = (tableId, idx,  data) => {
+			let row = $('<tr/>', {
+				'class': 'data-row',
+			});    
+			let content = $('<td/>', {id: idx}).append(data);
+			row.append(content);
+
+			$(`#${tableId} tbody`).append(row);
+    	}
+
+		const resetTable = tableId => {
+			$(`#${tableId} tbody tr`).remove();
+		}
+
+ 
+
+
 		$(document).ready(function() {
+			$('#file-count').hide();
+
+
 
 			$('button[value="reset"]').click(function () {
 				$('.selectpicker').each(function () {
@@ -276,7 +309,57 @@
 					$('#note').val('');
 					$('#note-wrapper').show();
 				}
-			})
+			});
+
+
+			$('input:file').change(function(e) {
+
+				const files = e.target.files;
+				
+				if (files.length > 0) {
+					let cnt = 0;
+					
+
+					resetTable('files');
+
+					for (let i = 0; i < files.length; i++) {
+						const file = files[i];
+						const fileSize = ((file.size / 1024) / 1024).toFixed(4); // MB
+						
+						if (fileSize <= 10) {
+							const newLink = $('<a/>', {
+								href: URL.createObjectURL(file),
+								text: file.name,
+								target: '_blank'
+            				});
+							addRowToTable('files', i, newLink);
+							cnt++;
+						}
+
+					}
+
+					if (cnt > 0) {
+
+						$('#file-count span').html(cnt);
+						$('#file-count').show();
+					}
+
+					
+				}
+				else {
+					$('#file-count').hide();
+				}
+			});
+
+
+			$('#file-count').click(function() {
+
+				$('#file-modal').modal('show');
+				
+			});
+
+
+
 		});
 
 	</script>
