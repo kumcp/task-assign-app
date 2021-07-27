@@ -23,9 +23,9 @@ class StaffFactory extends Factory
     public function definition()
     {
         return [
-            'department_id' => 0,
-            'name' => $this->faker->userName,
-            'position' => $this->faker->jobTitle
+            'department_id' => 1,
+            'name' => $this->faker->userName(),
+            'position' => $this->faker->jobTitle()
         ];
     }
 

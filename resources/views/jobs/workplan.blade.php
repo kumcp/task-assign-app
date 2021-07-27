@@ -12,15 +12,23 @@
 
         </div>
         <div class="row ml-0">
-            @include('components.table', [
-                'cols' => ['Từ ngày', 'Đến ngày', 'Từ giờ', 'Đến giờ', 'Nội dung công việc'],
-                'rows' => [
-                    ['2/5/2021', '10/5/2021', '8:00', '17:30', 'Hoàn thành task 1'],
-                    ['2/5/2021', '10/5/2021', '8:00', '17:30', 'Hoàn thành task 1'],
-                    ['2/5/2021', '10/5/2021', '8:00', '17:30', 'Hoàn thành task 1'],
-                    ['2/5/2021', '10/5/2021', '8:00', '17:30', 'Hoàn thành task 1'],
+            @include('components.dynamic-table', [
+                'id' => 'right-table',
+                'cols' => [                              
+                    'Từ ngày' => 'from_date',        
+                    'Đến ngày' => 'to_date',               
+                    'Từ giờ' => 'from_time',   
+                    'Đến giờ' => 'to_time',
+                    'Nội dung công việc' => 'content',
+                    'checkbox' => 'workplan_ids[]'
                 ],
+                'rows' => $workPlans ?? [],                       
+                'min_row' => 4,                          
             ])
         </div>
-    </div>    
+    </div>
+    
+    <script>
+        
+    </script>
 @endsection

@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Job;
 use App\Models\JobAssign;
-
+use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -28,10 +28,12 @@ class JobFactory extends Factory
     public function definition()
     {
         $workingDay = $this->faker->randomElement([2, 3, 4, 5]);
+        $assigner = Staff::inRandomOrder()->first();
+
         return [
             'code' => Str::random(10),
-            'name' => $this->faker->word,
-            'assigner_id' => 0,
+            'name' => $this->faker->word(),
+            'assigner_id' => $assigner->id,
             'parent_id'    => NULL,
             'job_type_id' => 0,
             'project_id' => 0,
@@ -41,7 +43,7 @@ class JobFactory extends Factory
             'period_unit' => Job::PERIOD_UNIT_DAY,
             'lsx_amount' =>  NULL,
             'assign_amount' => NULL,
-            'description' => $this->faker->sentence,
+            'description' => $this->faker->sentence(),
         ];
     }
 }

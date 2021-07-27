@@ -67,11 +67,29 @@
                                 <a class="navbar-brand" href="{{ url('/jobs') }}">{{ config('app.name', 'Laravel') }}</a>
                             </h3>
                         </div>
+
+                        @if (Auth::user()->is_admin)
+                            @include('components.sidebar-content', ['options' => [
+                                ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới'],
+                                ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
+                                ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
+                                ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
+                                ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
+                                ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+
+                            ]])
+                        @else
+                            @include('components.sidebar-content', ['options' => [
+                                ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
+                                ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
+                                ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
+                                ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
+                                ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+
+                            ]])
+                        @endif
             
-                        @include('components.sidebar-content', ['options' => [
-                            ['link' => route('accounts.pending'), 'value' => 'Duyệt tài khoản mới'],
-                            ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
-                        ]])
+
             
             
                     </nav>

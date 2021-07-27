@@ -29,7 +29,7 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             
-            return redirect()->route('home');
+            return redirect()->route('jobs.index', ['type' => 'handling']);
         }
 
         return redirect()->route('login')->withInput()->with('error', 'Tài khoản hoặc mật khẩu không chính xác');
