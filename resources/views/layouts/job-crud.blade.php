@@ -9,8 +9,6 @@
                
                 <form action="{{route($routeName, $params ?? [])}}" method="{{$method}}">
                     @csrf
-                    
-                
 
                     <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
                         <legend class="w-auto">Thông tin nghiệp vụ</legend>

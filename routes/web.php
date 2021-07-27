@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AssigneeListController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
@@ -14,6 +15,10 @@ use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\ConfigController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffInfoController;
+use App\Http\Controllers\TimeSheetController;
+use App\Http\Controllers\TimesheetStatisticsController;
+use App\Http\Controllers\ProjectPlanController;
+use App\Http\Controllers\BackupMandayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +31,45 @@ use App\Http\Controllers\StaffInfoController;
 |
 */
 
+Route::redirect('/', '/jobs', 301);
 
+Route::get('/jobs', function () {
+    return view('jobs.index');
+})->name('jobs');
+
+Route::get('/jobs/create', function () {
+    return view('jobs.create');
+})->name('jobs.create');
+
+Route::get('/jobs/search', function () {
+    return view('jobs.search');
+})->name('jobs.search');
+
+Route::get('/amount-confirm', function () {
+    return view('jobs.amount-confirm');
+});
+
+Route::get('/jobs/update-history', function () {
+    return view('jobs.update-history');
+});
+
+Route::get('/jobs/workplan', function () {
+    return view('jobs.workplan');
+});
+
+Route::get('/project-types/create', function () {
+    return view('welcome');
+});
+Route::get('/priorities', function () {
+    return view('priority');
+});
+
+Route::get('/configurations', function () {
+    return view('configuration');
+});
+
+
+//================================== ROUTE VIEW =====================================================//
 
 // Project
 Route::prefix('project')->group(function () {
@@ -98,3 +141,24 @@ Route::post('/staff-info/{id}', [StaffInfoController::class, 'update'])->name('s
 
 Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
 Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.update');
+
+//Time Sheet
+Route::prefix('/timesheets')->group(function () {
+    Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
+    Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
+    Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
+    Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
+    Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
+});
+
+//Timesheet Statictics
+Route::get('/timesheet-statistics',[TimesheetStatisticsController::class, 'list'])->name('timesheet-statis.list');
+Route::post('/timesheet-statistics-search',[TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
+
+//Project Plan
+Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
+Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
+
+//Backup Manday
+Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
+Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');

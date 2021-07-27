@@ -18,10 +18,12 @@ class ProjectTypeController extends Controller
         $projectsType->common = $request->project_type_common;
         $projectsType->save();
     }
+
     public function list(){
         $projectsType = JobType::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.project-type.project-type', compact('projectsType'));
     }
+
     public function store(ProjectTypeRequest $request) {
         $projectsType = new JobType();
         // check mã code trùng hay không?
@@ -31,11 +33,13 @@ class ProjectTypeController extends Controller
         $this->insertData($request, $projectsType);
         return redirect()->route('project-type.list')->with('success','Đã thêm loại công việc thành công');
     }
+
     public function edit($id) {
         $projectType = JobType::findOrFail($id);
         $projectsType = JobType::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.project-type.project-type-edit', compact('projectType','projectsType'));
     }
+
     public function update(ProjectTypeRequest $request, $id) {
         $projectsType = JobType::findOrFail($id);
         // check mã code trùng hay không?
@@ -45,6 +49,7 @@ class ProjectTypeController extends Controller
         $this->insertData($request, $projectsType);
         return redirect()->route('project-type.list')->with('success','Đã cập nhật loại công việc thành công');
     }
+
     public function destroy($id) {
         $projectType = JobType::findOrFail($id);
         $projectType->delete();

@@ -21,6 +21,7 @@ class PriorityController extends Controller
         $priorities = Priority::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.priority.priority', compact('priorities'));
     }
+
     public function store(PriorityRequest $request) {
         $priorities = new Priority();
         // check mã code trùng hay không?
@@ -30,11 +31,13 @@ class PriorityController extends Controller
         $this->insertData($request, $priorities);
         return redirect()->route('priority.list')->with('success','Đã thêm độ ưu tiên thành công');
     }
+
     public function edit($id) {
         $priority = Priority::findOrFail($id);
         $priorities = Priority::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.priority.priority-edit', compact('priority','priorities'));
     }
+
     public function update(PriorityRequest $request, $id) {
         $priority = Priority::findOrFail($id);
         // check mã code trùng hay không?
@@ -44,6 +47,7 @@ class PriorityController extends Controller
         $this->insertData($request, $priority);
         return redirect()->route('priority.list')->with('success','Đã cập nhật độ ưu tiên thành công');
     }
+
     public function destroy($id) {
         $priorities = Priority::findOrFail($id);
         $priorities->delete();

@@ -16,10 +16,12 @@ class ProjectController extends Controller
         $project->name = $request->project_name;
         $project->save();
     }
+
     public function list(){
         $projects = Project::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.project.project', compact('projects'));
     }
+
     public function store(ProjectRequest $request) {
         $project = new Project();
         // check mã code trùng hay không?
@@ -29,11 +31,13 @@ class ProjectController extends Controller
         $this->insertData($request, $project);
         return redirect()->route('project.list')->with('success','Đã thêm dự án thành công');
     }
+
     public function edit($id) {
         $project = Project::findOrFail($id);
         $projects = Project::orderBy('id', 'desc')->paginate(DEFAULT_PAGINATE);
         return view('site.project.project-edit',compact('project','projects'));
     }
+
     public function update(ProjectRequest $request, $id) {
         $project = Project::findOrFail($id);
         // check mã code trùng hay không?
@@ -43,6 +47,7 @@ class ProjectController extends Controller
         $this->insertData($request, $project);
         return redirect()->route('project.list')->with('success','Đã cập nhật án thành công');
     }
+
     public function destroy($id) {
         $project = Project::findOrFail($id);
         $project->delete();

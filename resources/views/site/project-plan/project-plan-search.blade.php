@@ -43,10 +43,8 @@
                     'edit_route' => 'skill.edit'
                 ])
 
-        {{$jobAssigns->links()}}
-
-        <div class="text-center">
-            <a href="#" class="ml-3 btn btn-success"> <i class="fas fa-eye"></i> Xem chi tiết</a>
-        </div>
+    <div class="text-center">
+        <a href="#" class="ml-3 btn btn-success"> <i class="fas fa-eye"></i> Xem chi tiết</a>
+    </div>
 
 @endsection

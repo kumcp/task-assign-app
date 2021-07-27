@@ -39,12 +39,13 @@
                      'checked' => 0
                 ])
             </div>
-            @include('components.buttons', [
+
+            @include('components.button-group', [
                 'buttons' => [
                     ['iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
-                    ['iconClass' => 'fas fa-trash', 'value' => 'Xóa' ],
                 ]
             ])
+            <a href="" class="btn btn-light"> <i class="fas fa-trash"></i> Xóa </a>
         </form>
     </fieldset>
 @endsection

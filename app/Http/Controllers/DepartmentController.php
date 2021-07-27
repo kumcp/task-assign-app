@@ -17,7 +17,6 @@ class DepartmentController extends Controller
         return response()->json($reformat, Response::HTTP_OK);
     }
 
-
     private function reformat($collection, $textAttr, $childAttr, $stop = false)
     {
         $reformat = [];
