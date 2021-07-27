@@ -2,30 +2,67 @@
 
 @section('content')
     <div class="container">
+
+		@error('jobs')
+			@include('components.flash-message-modal', [
+				'modalId' => 'errorModal',
+				'alertClass' => 'alert alert-danger',
+				'message' => $errors->first('jobs')
+			])
+		@enderror
+
+		
+
+
         <div class="row mb-4 ml-0">
-            <form action="#" class="w-100">
-                <div class="form-group-row mb-3">
+            <form action="{{ route('jobs.search')}}" method="POST" class="w-100">
+                @csrf
+
+				
+				<input type="hidden" name="type" value="handling">
+
+
+
+				<div class="form-group-row mb-3">
                     @include('components.select', [
-						'name' => 'job_type',
+						'name' => 'job_type_id',
 						'label' => 'Loại công việc',
-						'options' => ['Tất cả', 'Dự án', 'Training']
+						'options' => $jobTypes
 					])
 					@include('components.select', [
-						'name' => 'site.project.project',
+						'name' => 'project_id',
 						'label' => 'Dự án',
-						'options' => ['Tất cả', 'ABC', 'CodeStar']
+						'options' => $projects
 					])
 
                 </div>
+
+				@isset($all)
+					<div class="form-group-row mb-3">
+						@include('components.select', [
+							'name' => 'status',
+							'label' => 'Trạng thái',
+							'options' => []
+						])
+						@include('components.select', [
+							'name' => 'assessment',
+							'label' => 'Đánh giá',
+							'options' => []
+						])
+
+					</div>
+				@endisset
+
+
                 <div class="form-group-row mb-3">
                     @include('components.select', [
-						'name' => 'assigner',
+						'name' => 'assigner_id',
 						'label' => 'Người giao',
-						'options' => ['Tất cả', 'Hoang Huy Quan']
+						'options' => $assigners
 					])
 
 					@include('components.input-text', [
-						'name' => 'job_name',
+						'name' => 'name',
 						'label' => 'Tên công việc'
 					])
 					
@@ -47,44 +84,151 @@
 					<button type="submit" class="btn btn-light">
 						<i class="fas fa-search"></i>
 					</button>
-					<button type="submit" class="btn btn-light">
+					<button type="button" id="reset-btn" class="btn btn-light">
 						<i class="fas fa-redo"></i>
 					</button>
 
 				</div>
-				<div class="row ml-0 mb-5">
-					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item" role="presentation">
-						  <a class="nav-link active" id="direct-tab" data-toggle="tab" href="#direct" role="tab" aria-controls="direct" aria-selected="true">Công việc trực tiếp xử lý</a>
-						</li>
-						<li class="nav-item" role="presentation">
-						  <a class="nav-link" id="related-tab" data-toggle="tab" href="#related" role="tab" aria-controls="related" aria-selected="false">Công việc liên quan</a>
-						</li>
-					</ul>
-					<div class="tab-content" id="myTabContent">
-						<div class="tab-pane fade show active" id="direct" role="tabpanel" aria-labelledby="direct-tab">
-							{{-- TODO: Thêm bảng công việc trực tiếp xử lý --}}
-						</div>
-						<div class="tab-pane fade" id="related" role="tabpanel" aria-labelledby="related-tab">
-							{{-- TODO: Thêm bảng công việc trực liên quan --}}
+
+			</form>
+
+			<form action="{{ route('jobs.detailAction')}}" method="POST" class="w-100">
+				@csrf
+				
+				@isset($all)
+				
+					@yield('table')
+
+				@else
+
+					<div class="row ml-0 mb-5">
+						<ul class="nav nav-tabs" id="myTab" role="tablist">
+							<li class="nav-item" role="presentation">
+							<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $left_title }}</a>
+							</li>
+							<li class="nav-item" role="presentation">
+							<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $right_title }}</a>
+							</li>
+						</ul>
+						<div class="tab-content w-100" id="myTabContent">
+							<div class="tab-pane fade show active w-100" id="left" role="tabpanel" aria-labelledby="left-tab">
+
+								@yield('left-tab-table')
+								
+							</div>
+							<div class="tab-pane" id="right" role="tabpanel" aria-labelledby="right-tab">
+
+								@yield('right-tab-table')
+								
+							</div>
 						</div>
 					</div>
-				</div>
+
+				@endisset
+				
+
+				@yield('button-group')
 
 				@include('components.button-group', [
 					'parentClass' => 'btn-group offset-1',
 					'buttons' => [
 						['iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'detail'], 
 						['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
-                        ['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
-						['iconClass' => 'fas fa-tasks', 'value' => 'Giao xử lý', 'action' => 'assign'], 
+						['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
+						['iconClass' => 'fas fa-user-plus', 'value' => 'Giao xử lý', 'action' => 'assign'], 
 						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
-                        ['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
+						['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
 						['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
 					] 
 				])
-				
+
+
             </form>
         </div>
     </div>   
+
+	<script>
+		$(document).ready(function () {
+			const handleReset = () => {
+				$('select').prop('selectedIndex', -1);
+				$('.form-group-row input').each(function() {
+					$(this).val(null);
+				});
+			}
+
+			const initializeSelectInput = () => {
+				$('select').prop('selectedIndex', -1);
+			}
+
+			initializeSelectInput();
+			
+			
+			$('input:checkbox').each(function() {
+				$(this).prop('checked', false);
+			});
+
+			$('#reset-btn').click(function() {
+				handleReset();
+			});
+
+
+			$('button[value="detail"]').prop('disabled', true);
+
+
+			$('#left-table thead th input:checkbox').change(function() {
+				$('#left-table input:checkbox').not(this).prop('checked', this.checked).change();
+			});
+
+			$('#right-table thead th input:checkbox').change(function() {
+				$('#right-table input:checkbox').not(this).prop('checked', this.checked).change();
+			});
+
+			$('#left tbody input:checkbox').change(function() {
+				if (this.checked) {
+					const jobId = $(this).closest('tr').attr('id');
+					$(this).val(jobId);
+					$('button[value="detail"]').prop('disabled', false);
+				}
+				else {
+					$('#left thead input:checkbox').prop('checked', false);
+					$(this).removeAttr('value');
+
+					if ($('#left tbody input:checkbox:checked').length === 0) {
+						$('button[value="detail"]').prop('disabled', true);
+					}
+				}
+			});
+
+			$('#right tbody input:checkbox').change(function() {
+				if (this.checked) {
+					const jobId = $(this).closest('tr').attr('id');
+					$(this).val(jobId);
+					$('button[value="detail"]').prop('disabled', false);
+						
+				}
+				else {
+					$('#right thead input:checkbox').prop('checked', false);
+					$(this).removeAttr('value');
+
+					if ($('#right tbody input:checkbox:checked').length === 0) {
+						$('button[value="detail"]').prop('disabled', true);
+					}
+				}
+			});
+
+
+			const setCloseTimeout = (modalSelector, timeout) => {
+				$(modalSelector).modal("show").on("shown.bs.modal", function () {
+					window.setTimeout(function () {
+						$(modalSelector).modal("hide");
+					}, timeout);
+				});
+ 		    }
+
+        	setCloseTimeout("#errorModal", 5000);
+		})
+	</script>
+
+	@yield('custom-script')
+
 @endsection

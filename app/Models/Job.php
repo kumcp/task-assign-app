@@ -22,6 +22,8 @@ class Job extends Model
         'period_unit' => self::PERIOD_UNIT_DAY,
     ];
 
+    protected $guarded = [];
+
     public function parent()
     {
         return $this->belongsTo(Job::class, 'parent_id');
@@ -44,7 +46,7 @@ class Job extends Model
 
     public function files()
     {
-        return $this->belongsToMany(File::class);
+        return $this->belongsToMany(File::class, 'job_files');
     }
 
     public function assigner()
@@ -57,12 +59,19 @@ class Job extends Model
         return $this->belongsToMany(Staff::class, 'job_assigns')->using(JobAssign::class)->withPivot('role', 'direct_report', 'sms');
     }
 
+    public function jobAssigns()
+    {
+        return $this->hasMany(JobAssign::class);
+    }
+
     public function updateHistories()
     {
         return $this->hasMany(UpdateJobHistory::class);
     }
-    public function jobAssigns()
+
+
+    public function isActive()
     {
-        return $this->hasMany(JobAssign::class);
+        return $this->status == 'active';
     }
 }

@@ -1,11 +1,16 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+
+use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ProjectsController;
+use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AssigneeListController;
+use App\Http\Controllers\WorkPlanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectTypeController;
@@ -31,7 +36,7 @@ use App\Http\Controllers\BackupMandayController;
 |
 */
 
-Route::redirect('/', '/jobs', 301);
+Route::redirect('/', '/login', 301);
 
 Route::get('/jobs', function () {
     return view('jobs.index');
@@ -162,3 +167,18 @@ Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->n
 //Backup Manday
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
+
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
+    Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
+    Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
+    Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
+    Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
+    Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
+});
+
+
+
+Route::get('/workplans/create/{job_id?}', [WorkPlanController::class, 'create'])->name('workplans.create');
+Route::post('/workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
+Route::post('/workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
