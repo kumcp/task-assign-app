@@ -18,10 +18,12 @@ class RegisterController extends Controller
     }
 
 
-    public function store(RegisterRequest $request) 
+    public function store(RegisterRequest $request)
     {
- 
-        $newStaff = Staff::create(['name' => $request->name]); 
+        // TODO: Default Department
+        $fakeDepartment = Department::first();
+
+        $newStaff = Staff::create(['name' => $request->name, 'department_id' => $fakeDepartment->id, 'position' => '?']);
 
         StaffInfo::create([
             'date_of_birth' => $request->has('dob') ? $request->dob : null,
@@ -35,12 +37,11 @@ class RegisterController extends Controller
         Account::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'staff_id' => $newStaff->id, 
+            'staff_id' => $newStaff->id,
         ]);
 
 
 
         return redirect()->route('login')->with('success', 'Tạo tài khoản thành công');
-
     }
 }

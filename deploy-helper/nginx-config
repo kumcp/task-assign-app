@@ -1,20 +1,18 @@
-
 server {
-	listen 9003 default_server;
-	listen [::]:9003 default_server;
+        listen 80;
 
-	root /home/kum/projects/web/php/task-assign-app;
+        root /home/ec2-user/task-assign-app/public;
+        server_name _;
+        index index.php index.html;
+		
+        location / {
+                try_files $uri $uri/ =404;
+        }
 
-	index index.html index.htm index.nginx-debian.html index.php;
+        location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php-fpm/www.sock;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                include fastcgi_params;
+        }
 
-	server_name _;
-
-	location / {
-		try_files $uri $uri/ public/index.php;
-	}
-	
-	location ~ \.php$ {
-		include snippets/fastcgi-php.conf;
-		fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
-	}
 }
