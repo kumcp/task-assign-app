@@ -3,13 +3,10 @@
 use App\Http\Controllers\AccountController;
 
 use App\Http\Controllers\JobsController;
-use App\Http\Controllers\ProjectsController;
-use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\WorkPlanController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectController;
@@ -122,7 +119,7 @@ Route::prefix('process-method')->group(function () {
 });
 
 // Config
-Route::get('config',[ConfigController::class, 'list'])->name('config.list');
+Route::get('config', [ConfigController::class, 'list'])->name('config.list');
 
 Route::get('/register', [RegisterController::class, 'register']);
 Route::post('/register', [RegisterController::class, 'store'])->name('register');
@@ -150,15 +147,15 @@ Route::post('/staff/{id}', [StaffController::class, 'update'])->name('staff.upda
 //Time Sheet
 Route::prefix('/timesheets')->group(function () {
     Route::get('/', [TimeSheetController::class, 'create'])->name('timesheet.create');
-    Route::post('/store',[TimeSheetController::class, 'store'])->name('timesheet.store');
+    Route::post('/store', [TimeSheetController::class, 'store'])->name('timesheet.store');
     Route::get('/edit/{id}', [TimeSheetController::class, 'edit'])->name('timesheet.edit');
     Route::post('/update/{id}', [TimeSheetController::class, 'update'])->name('timesheet.update');
     Route::get('/delete/{id}', [TimeSheetController::class, 'destroy'])->name('timesheet.destroy');
 });
 
 //Timesheet Statictics
-Route::get('/timesheet-statistics',[TimesheetStatisticsController::class, 'list'])->name('timesheet-statis.list');
-Route::post('/timesheet-statistics-search',[TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
+Route::get('/timesheet-statistics', [TimesheetStatisticsController::class, 'list'])->name('timesheet-statis.list');
+Route::post('/timesheet-statistics-search', [TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
 
 //Project Plan
 Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
@@ -168,7 +165,7 @@ Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->n
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
 
-Route::group(['middleware' => ['auth']], function() {
+Route::group(['middleware' => ['auth']], function () {
     Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
     Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
     Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
