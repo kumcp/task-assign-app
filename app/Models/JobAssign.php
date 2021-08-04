@@ -63,9 +63,6 @@ class JobAssign extends Model
         return $this->hasMany(AmountConfirm::class);
     }
 
-    public function job(){
-        return $this->belongsTo(Job::class);
-    }
 
     public function staff(){
         return $this->belongsTo(Staff::class);
