@@ -85,7 +85,6 @@
 #sidebar ul li.active>a,
 a[aria-expanded="true"] {
     color: #fff;
-    background: #6d7fcc;
 }
 
 a[data-toggle="collapse"] {
@@ -99,6 +98,8 @@ a[data-toggle="collapse"] {
     right: 20px;
     transform: translateY(-50%);
 }
+
+
 
 ul ul a {
     font-size: 0.9em !important;

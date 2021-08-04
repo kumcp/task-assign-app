@@ -3,9 +3,11 @@
 use App\Http\Controllers\AmountConfirmController;
 use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\JobAssignController;
 use App\Http\Controllers\JobsController;
 use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\UpdateJobHistoryController;
+use App\Http\Controllers\WorkPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

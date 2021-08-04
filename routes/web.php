@@ -22,7 +22,7 @@ use App\Http\Controllers\TimesheetStatisticsController;
 use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
 use App\Http\Controllers\JobAssignController;
-use App\Models\AmountConfirm;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -35,16 +35,13 @@ use App\Models\AmountConfirm;
 |
 */
 
-Route::redirect('/', '/login', 301);
+Route::redirect('/', '/jobs?type=handling', 301);
 
 
 Route::get('/jobs/update-history', function () {
     return view('jobs.update-history');
 });
 
-Route::get('/jobs/workplan', function () {
-    return view('jobs.workplan');
-});
 
 Route::get('/project-types/create', function () {
     return view('welcome');
@@ -170,10 +167,13 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
     Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
     Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
+    Route::post('/jobs/update-assignee-list', [JobsController::class, 'updateAssigneeList'])->name('jobs.updateAssigneeList');
 });
 
 
+Route::post('job-assigns/update-status', [JobAssignController::class, 'updateStatus'])->name('job-assigns.updateStatus');
+Route::post('job-assign/delete', [JobAssignController::class, 'delete'])->name('job-assigns.delete');
 
-Route::get('/workplans/create/{job_id?}', [WorkPlanController::class, 'create'])->name('workplans.create');
-Route::post('/workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
-Route::post('/workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
+Route::get('workplans/create/{jobId}', [WorkPlanController::class, 'create'])->name('workplans.create');
+Route::post('workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
+Route::post('workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
