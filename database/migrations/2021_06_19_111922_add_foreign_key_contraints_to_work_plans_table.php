@@ -26,7 +26,7 @@ class AddForeignKeyContraintsToWorkPlansTable extends Migration
     public function down()
     {
         Schema::table('work_plans', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('job_assign_id');
+            $table->dropForeign(['job_assign_id']);
         });
     }
 }

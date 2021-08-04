@@ -2,18 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Staff extends Model
 {
+    use HasFactory;
+
+    protected $fillable = ['name', 'department_id', 'position'];
+
     public function account()
     {
         return $this->hasOne(Account::class);
     }
-    
-    public function jobs()
+
+    public function jobsCreated()
     {
-        return $this->belongsToMany(Job::class)->using(JobAssign::class)->withPivot('role', 'direct_report', 'sms');
+        return $this->hasMany(Job::class);
+    }
+
+    public function assignment()
+    {
+        return $this->hasMany(JobAssign::class);
+    }
+
+    public function jobsAssigned()
+    {
+        return $this->belongsToMany(Job::class, 'job_assigns')->using(JobAssign::class)->withPivot('role', 'direct_report', 'sms');
     }
 
     public function files()
@@ -29,5 +44,15 @@ class Staff extends Model
     public function communicationHistories()
     {
         return $this->hasMany(CommunicationHistory::class);
+    }
+
+    public function amountConfirms()
+    {
+        return $this->hasMany(AmountConfirm::class);
+    }
+
+    public function info()
+    {
+        return $this->hasOne(StaffInfo::class);
     }
 }

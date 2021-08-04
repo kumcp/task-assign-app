@@ -17,6 +17,7 @@ class AddForeignKeyContraintsToJobAssignsTable extends Migration
             $table->foreign('job_id')->references('id')->on('jobs')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreign('staff_id')->references('id')->on('staff')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreign('process_method_id')->references('id')->on('process_methods')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreign('parent_id')->references('id')->on('job_assigns')->cascadeOnUpdate()->cascadeOnDelete();
         });
     }
 
@@ -28,8 +29,9 @@ class AddForeignKeyContraintsToJobAssignsTable extends Migration
     public function down()
     {
         Schema::table('job_assigns', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('job_id');
-            $table->dropConstrainedForeignId('staff_id');
+            $table->dropForeign(['job_id']);
+            $table->dropForeign(['staff_id']);
+            $table->dropForeign(['process_method_id']);
         });
     }
 }

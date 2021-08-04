@@ -17,10 +17,12 @@ class CreateJobAssignsTable extends Migration
             $table->id()->unsigned();
             $table->unsignedBigInteger('job_id');
             $table->unsignedBigInteger('staff_id');
-            // $table->string('role');
-            $table->unsignedBigInteger('process_method_id')->nullable();
+            $table->unsignedBigInteger('process_method_id');
+            $table->unsignedBigInteger('parent_id');
             $table->boolean('direct_report')->nullable();
             $table->text('sms')->nullable();
+            $table->string('status');
+            $table->text('deny_reason')->nullable();
             $table->timestamps();
         });
     }
