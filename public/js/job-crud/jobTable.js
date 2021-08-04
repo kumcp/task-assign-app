@@ -1,3 +1,20 @@
+const addRowToTable = (tableId, idx,  data) => {
+    let row = $('<tr/>', {
+        'class': 'data-row',
+    });    
+    let content = $('<td/>', {id: idx}).append(data);
+    row.append(content);
+
+    $(`#${tableId} tbody`).append(row);
+}
+
+
+
+
+const resetTable = tableId => {
+    $(`#${tableId} tbody tr`).remove();
+}
+
 const addDataToRow = (row, history) => {
     $('#update-histories-table th[scope="col"]').each(function () {
         const key = $(this).attr('data-value');
@@ -35,7 +52,7 @@ const resetUpdateHistoriesTable = () => {
     });
 }
 
-const handleRowClick = (id) => {
+const handleRowClick = (id, readOnly=false) => {
 
     $('.alert').each(function () {
         $(this).alert('close');
@@ -43,9 +60,11 @@ const handleRowClick = (id) => {
 
     $('#job_id').val(id).change();
     $('#history-workplan').show();
-    initializeJobValues(id);
+    initializeJobValues(id, readOnly);
     
     let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
     $('#workplan').prop('href', `${url}/${id}`);
+
+    $('button[value="assignee-detail"]').show();
 
 }

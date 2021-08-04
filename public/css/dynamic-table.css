@@ -1,3 +1,8 @@
+.dynamic-table {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
 .dynamic-table thead tr {
     background-color: rgb(137, 180, 216);
 }
@@ -10,3 +15,4 @@
 .dynamic-table tbody tr.data-row:hover {
     cursor: pointer;
 }
+
