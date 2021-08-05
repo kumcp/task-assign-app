@@ -5,7 +5,7 @@
     <select name="{{$name}}" id="{{$name}}" class="{{$selectClass ?? 'custom-select w-25'}}">
         
         @isset($defaultText)
-            <option value="" selected disabled hidden>{{ $defaultText }}</option>
+            <option value="" selected disabled hidden>{{$defaultText}}</option>
         @endisset
 
         
@@ -15,4 +15,5 @@
         
     </select>
 </div>
+{!!showErrors($errors, $name)!!}
 

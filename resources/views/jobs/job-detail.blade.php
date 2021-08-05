@@ -1,7 +1,8 @@
 @extends('layouts.job-crud', [
-	'routeName' => 'jobs.updateStatus',
+	'routeName' => 'job-assigns.updateStatus',
 	'method' => 'POST', 
-	'job_id' => $jobId ?? null
+	'job_id' => $jobId ?? null,
+	'editable' => false 
 ])
 
 
@@ -163,43 +164,18 @@
 @endsection
 
 
-@section('assignee-info')
-	
 
-
-
-	<div class="form-group-row mb-3 offset-10">
-		<button class="btn btn-info">Rút gọn</button>
-	</div>
-
-	<div id="short-list">
-		<div class="form-group-row mb-3">
-			@include('components.input-text', [
-				'name' => 'chu-tri',
-				'label' => 'Chủ trì', 
-				'readonly' => true
-			])
-
-		</div>
-		<div class="form-group-row mb-3">
-			@include('components.input-text', [
-				'name' => 'phoi-hop[]', 
-				'label' => 'Phối hợp', 
-				'readonly' => true
-			])
-		</div>
-		<div class="form-group-row mb-3">
-			@include('components.input-text', [
-				'name' => 'nhan-xet',
-				'label' => 'Theo dõi, nhận xét', 
-				'readonly' => true
-			])
-		</div>
-	</div>
-@endsection
 
 @section('assign-button-group')
-	{{-- TODO: Thêm 2 link xem chi tiết + bô sung --}}
+
+	<div class="text-center">
+		@include('components.button-group', [
+			'parentClass' => 'btn-group',
+			'buttons' => [
+				['type' => 'button', 'iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'assignee-detail'], 
+			] 
+		])
+	</div>
 	
 @endsection
 
@@ -268,6 +244,8 @@
 			});
 
 		});
+
+
 
 	</script>
 @endsection

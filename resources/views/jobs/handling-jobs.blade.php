@@ -1,6 +1,7 @@
 @extends('jobs.index', [
     'left_title' => 'Công việc trực tiếp xử lý',
-    'right_title' => 'Công việc liên quan'
+    'right_title' => 'Công việc liên quan',
+    'type' => $type
 ])
 
 

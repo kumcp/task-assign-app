@@ -1,6 +1,6 @@
 @extends('jobs.index', [
-    'left_title' => 'Công việc đang chờ nhận',
-    'right_title' => 'Công việc chưa có người nhận',
+    'left_title' => 'Công việc đã giao xử lý',
+    'right_title' => 'Công việc chuyển tiếp, bổ sung',
     'type' => $type
 ])
 
@@ -9,14 +9,18 @@
     @include('components.dynamic-table', [
         'id' => 'left-table',
         'cols' => [                               
-            'Mã dự án' => 'project_code',         
-            'Tên công việc' => 'name',                 
+            'Mã dự án' => 'project_code',        
+            'Tên công việc' => 'name',               
             'Người giao' => 'assigner',   
+            'Khác' => 'others',
             'Hạn xử lý' => 'deadline',
             'KL giao' => 'assign_amount',
+            'Số ngày còn lại' => 'remaining',
+            'Trạng thái' => 'status',
+            'Đánh giá' => 'evaluation',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $newAssignedJobs,                      
+        'rows' => $createdJobs,                      
         'min_row' => 4,                             
     ])
 @endsection
@@ -29,11 +33,15 @@
             'Mã dự án' => 'project_code',        
             'Tên công việc' => 'name',               
             'Người giao' => 'assigner',   
+            'Khác' => 'others',
             'Hạn xử lý' => 'deadline',
             'KL giao' => 'assign_amount',
+            'Số ngày còn lại' => 'remaining',
+            'Trạng thái' => 'status',
+            'Đánh giá' => 'evaluation',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $unassignedJobs,                       
+        'rows' => $forwardJobs,                       
         'min_row' => 4,                          
     ])
 @endsection
