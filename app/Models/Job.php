@@ -71,10 +71,6 @@ class Job extends Model
         return $this->hasMany(JobAssign::class, 'job_id');
     }
 
-    public function jobAssigns()
-    {
-        return $this->hasMany(JobAssign::class);
-    }
 
     public function updateHistories()
     {

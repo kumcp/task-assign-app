@@ -14,16 +14,33 @@ class JobAssignController extends Controller
     const DEFAULT_PAGINATE = 15;
 
     public function index(Request $request) {
+        
         $jobAssigns = [];
 
         if ($request->has('jobIds')) {
+
+            $staffId = $request->input('staffId');
             $jobIds = $request->input('jobIds');
 
             $jobAssigns = JobAssign::whereIn('job_id', $jobIds)->with([
                 'processMethod',
-                'assignee'
+                'assignee',
+                'job'
             ])
             ->get();
+
+
+            foreach ($jobAssigns as $jobAssign) {
+                $job = $jobAssign->job;
+
+                if ($job->assigner_id == $staffId) {
+                    $jobAssign->self_assigned = true;
+                }
+                else {
+                    $jobAssign->self_assigned = false;
+                }
+
+            }
             
         }
 
@@ -42,7 +59,11 @@ class JobAssignController extends Controller
         $jobAssign = JobAssign::where([
             'job_id' => $jobId, 
             'staff_id' => $staffId
-        ])->first();
+        ])
+        ->with('processMethod')
+        ->first();
+
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
 
         switch ($action) {
             case 'accept':
@@ -55,17 +76,23 @@ class JobAssignController extends Controller
 
                 if ($jobAssign) {
                     $jobAssign->update(['status' => 'accepted']);
+
+                    if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
+                        $job->update(['status' => 'active']);
+                    }
                 }
                 else {
-                    $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
                     JobAssign::create([
                         'job_id' => $jobId,
                         'staff_id' => $staffId,
-                        'process_method_id' => $mainProcessMethod->id
+                        'process_method_id' => $mainProcessMethod->id,
+                        'status' => 'accepted',
                     ]);
+
+                    $job->update(['status' => 'active']);
+
                 }
 
-                $job->update(['status' => 'active']);
 
                 
 
@@ -82,25 +109,23 @@ class JobAssignController extends Controller
 
                 $denyReason = $request->input('deny_reason');
 
-                if (!$denyReason)
+                if (!$denyReason) {
                     return view('jobs.job-detail', [
                         'jobs' => $jobs,
                         'jobId' => $jobId,
                     ]);
-                
+                }
 
                 if ($jobAssign) {
                     $jobAssign->update([
                         'status' => 'rejected',
                         'deny_reason' => $denyReason
                     ]);
+
+                    if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
+                        $job->update(['status' => 'pending']);
+                    }
                 }
-
-
-                $job->update(['status' => 'rejected']);
-                
-
-
 
                 return view('jobs.job-detail', [
                     'jobs' => $jobs,

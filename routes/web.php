@@ -155,7 +155,7 @@ Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('bac
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
 
 Route::get('assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list.index');
-Route::post('assignee-list', [AssigneeListController::class, 'store'])->name('assignee-list.store');
+Route::post('assignee-list', [AssigneeListController::class, 'action'])->name('assignee-list.action');
 
 
 Route::group(['middleware' => ['auth']], function () {

@@ -68,12 +68,7 @@ class AssigneeListController extends Controller
             }
         }
 
-
-        
-
-
         return view('jobs.assignee-list', compact('jobs', 'processMethods'));
-
 
     }
 
@@ -96,7 +91,7 @@ class AssigneeListController extends Controller
     }
 
 
-    public function store(Request $request) 
+    public function action(Request $request) 
     {
 
         $action = $request->input('action');
@@ -226,7 +221,6 @@ class AssigneeListController extends Controller
                     return redirect()->back()->with('success', 'Giao xử lý thành công');
         
                 } catch (Exception $e) {
-                    dd($e->getMessage());
                     return redirect()->back()->with('error', 'Đã có lỗi xảy ra');
                 }
     
@@ -239,6 +233,11 @@ class AssigneeListController extends Controller
         }
 
         else {
+
+            if (!$request->has('delete_ids')) {
+                return redirect()->back()->withErrors(['delete_ids' => 'Chưa chọn đối tượng để xóa']);
+            }
+
             $jobAssignIds = $request->input('delete_ids');
 
             try {
