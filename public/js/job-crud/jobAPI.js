@@ -31,8 +31,8 @@ const getWorkPlans = (jobId, assigneeId=null, options={}) => {
 }
 
 
-const getJobAssigns = (jobIds, options) => {
-    let url = '/api/job-assigns?';
+const getJobAssigns = (assigneeId, jobIds, options) => {
+    let url = `/api/job-assigns?staffId=${assigneeId}&`;
 
     jobIds.forEach(jobId => {
         url += `jobIds[]=${jobId}&`

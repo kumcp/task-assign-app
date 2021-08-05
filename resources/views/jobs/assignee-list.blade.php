@@ -56,9 +56,10 @@
                     @include('components.checkboxes')
                 </div>
                 <div class="col-md-8">
-                    <form action="{{ route('assignee-list.store') }}" method="POST" class="w-100">
+                    <form action="{{ route('assignee-list.action') }}" method="POST" class="w-100">
                         @csrf
                         
+                        <input type="hidden" name="staff_id" value="{{ Auth::user()->staff_id }}">
 
                         <div class="form-group-row">
 
@@ -69,7 +70,7 @@
                                     <a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">Bổ sung/Chuyển tiếp</a>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">Đối tượng xử lý đã bổ sung/chuyển tiếp</a>
+                                    <a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">Đối tượng đã chọn xử lý</a>
                                 </li>
                             </ul>
                             <div class="tab-content w-100 mt-3" id="myTabContent">
@@ -177,10 +178,9 @@
 
         const initializeAssigneeTable = () => {
 
-            if ($('#jobs option').length > 1) {
-                $('#jobs').prop('selectedIndex', -1);
-            } 
             
+            const assigneeId = $('#staff_id').val();
+
             let jobIds = [];
 
             $('input[name="job_ids[]"]').each(function() {
@@ -188,7 +188,7 @@
             });
 
             if (jobIds.length > 0) {
-                getJobAssigns(jobIds).then(jobAssigns => {
+                getJobAssigns(assigneeId, jobIds).then(jobAssigns => {
                     jobAssigns.forEach(jobAssign => {
 
                         const data = {
@@ -200,8 +200,9 @@
                             processMethodName: jobAssign.process_method.name,
                             directReport: jobAssign.direct_report,
                             sms: jobAssign.sms,
-                            deadline: jobAssign.deadline
-                        }
+                            deadline: jobAssign.deadline,
+                            readonly: !jobAssign.self_assigned
+                        };
 
                         addRowToAssigneeTable('added-assignee-table', data, true);
                     });

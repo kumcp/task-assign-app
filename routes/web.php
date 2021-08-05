@@ -156,7 +156,6 @@ Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])-
 Route::get('assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list.index');
 Route::post('assignee-list', [AssigneeListController::class, 'action'])->name('assignee-list.action');
 
-
 Route::get('amount-confirms/create', [AmountConfirmController::class, 'create'])->name('amount-confirms.create');
 Route::post('amount-confirms', [AmountConfirmController::class, 'action'])->name('amount-confirms.action');
 

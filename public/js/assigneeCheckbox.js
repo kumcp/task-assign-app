@@ -17,14 +17,17 @@ const addRowToAssigneeTable = (tableId, data, addCheckboxCol=false) => {
         $('<td/>').append($('<input/>', {
             type: 'checkbox',
             class: 'direct_report'
-        }).prop('checked', data.directReport)
+        })
+        .prop('checked', data.directReport)
+        .prop('disabled', data.readonly)
     ));
 
     row.append(
         $('<td/>').append($('<input/>', {
-            type: 'date',
+            type: data.readonly ? 'text' : 'date',
             class: 'deadline',
-            value: data.deadline
+            value: data.deadline,
+            readonly: data.readonly
         }))
     );
                     
@@ -32,7 +35,9 @@ const addRowToAssigneeTable = (tableId, data, addCheckboxCol=false) => {
         $('<td/>').append($('<input/>', {
             type: 'checkbox',
             class: 'sms'
-        }).prop('checked', data.sms)
+        })
+        .prop('checked', data.sms)
+        .prop('disabled', data.readonly)
 
     ));      
 
@@ -42,6 +47,7 @@ const addRowToAssigneeTable = (tableId, data, addCheckboxCol=false) => {
                 name: 'job_assign_ids[]',
                 type: 'checkbox',
             })
+            .prop('disabled', data.readonly)
     
         ));     
     }
