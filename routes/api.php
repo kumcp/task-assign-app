@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\JobAssignController;
 use App\Http\Controllers\JobsController;
 use App\Http\Controllers\UpdateJobHistoryController;
+use App\Http\Controllers\WorkPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,3 +29,9 @@ Route::get('department', [DepartmentController::class, 'index'])->name('deparmen
 Route::get('jobs/{id}', [JobsController::class, 'show'])->name('jobs.show');
 
 Route::get('update-job-histories', [UpdateJobHistoryController::class, 'index'])->name('update_job_histories.index');
+
+Route::get('assignee-list/{jobId}', [AssigneeListController::class, 'show'])->name('assignee-list.show');
+
+Route::get('workplans/{jobId}/{assigneeId?}', [WorkPlanController::class, 'show'])->name('workplans.show');
+
+Route::get('job-assigns', [JobAssignController::class, 'index'])->name('job-assigns.index');

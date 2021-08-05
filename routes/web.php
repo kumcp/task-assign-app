@@ -21,6 +21,7 @@ use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\TimesheetStatisticsController;
 use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
+use App\Http\Controllers\JobAssignController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,19 +34,10 @@ use App\Http\Controllers\BackupMandayController;
 |
 */
 
-Route::redirect('/', '/login', 301);
+Route::redirect('/', '/jobs?type=handling', 301);
 
-Route::get('/jobs', function () {
-    return view('jobs.index');
-})->name('jobs');
 
-Route::get('/jobs/create', function () {
-    return view('jobs.create');
-})->name('jobs.create');
 
-Route::get('/jobs/search', function () {
-    return view('jobs.search');
-})->name('jobs.search');
 
 Route::get('/amount-confirm', function () {
     return view('jobs.amount-confirm');
@@ -55,9 +47,6 @@ Route::get('/jobs/update-history', function () {
     return view('jobs.update-history');
 });
 
-Route::get('/jobs/workplan', function () {
-    return view('jobs.workplan');
-});
 
 Route::get('/project-types/create', function () {
     return view('welcome');
@@ -165,6 +154,10 @@ Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->n
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
 
+Route::get('assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list.index');
+Route::post('assignee-list', [AssigneeListController::class, 'store'])->name('assignee-list.store');
+
+
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
     Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
@@ -172,10 +165,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');
     Route::post('/jobs/detail', [JobsController::class, 'detailAction'])->name('jobs.detailAction');
     Route::post('/jobs/update-status', [JobsController::class, 'updateStatus'])->name('jobs.updateStatus');
+    Route::post('/jobs/update-assignee-list', [JobsController::class, 'updateAssigneeList'])->name('jobs.updateAssigneeList');
 });
 
 
+Route::post('job-assigns/update-status', [JobAssignController::class, 'updateStatus'])->name('job-assigns.updateStatus');
+Route::post('job-assign/delete', [JobAssignController::class, 'delete'])->name('job-assigns.delete');
 
-Route::get('/workplans/create/{job_id?}', [WorkPlanController::class, 'create'])->name('workplans.create');
-Route::post('/workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
-Route::post('/workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
+Route::get('workplans/create/{jobId}', [WorkPlanController::class, 'create'])->name('workplans.create');
+Route::post('workplans', [WorkPlanController::class, 'store'])->name('workplans.store');
+Route::post('workplans/delete', [WorkPlanController::class, 'delete'])->name('workplans.delete');
