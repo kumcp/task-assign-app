@@ -6,7 +6,7 @@
 
     @else
         
-        <textarea type="text" name="{{$name}}" id="{{$name}}" class="form-control d-inline w-75">{{ old($name) }}</textarea>
+        <textarea type="text" name="{{$name}}" id="{{$name}}" class="form-control d-inline w-75">{{ $value ?? old($name) }}</textarea>
 
     @endif
     <br>{!!showErrors($errors, $name)!!}

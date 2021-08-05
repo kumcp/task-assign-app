@@ -16,14 +16,14 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
+
 
 class JobsController extends Controller
 {
     const DEFAULT_PAGINATE = 15;
-
+    const MAIN_ASSIGNEE = 1;
 
     public function index(Request $request)
     {
@@ -70,24 +70,28 @@ class JobsController extends Controller
                     $request->flash();
 
 
-                    return view('jobs.pending-jobs', compact('newAssignedJobs', 'unassignedJobs', 'jobTypes', 'assigners', 'projects'));
+                    return view('jobs.pending-jobs', compact('newAssignedJobs', 'unassignedJobs', 'jobTypes', 'assigners', 'projects', 'type'));
 
                 case 'handling': 
                     [$directJobs, $relatedJobs] = $this->getHandlingJobs($staffId, $condition);
                     
                     $request->flash();
                     
-                    return view('jobs.handling-jobs', compact('directJobs', 'relatedJobs', 'jobTypes', 'assigners', 'projects'));
+                    return view('jobs.handling-jobs', compact('directJobs', 'relatedJobs', 'jobTypes', 'assigners', 'projects', 'type'));
                 
                 case 'assigner': 
-                    $createdJobs = $this->getAssignerJobs($staffId, $condition);
-                
+                    [$createdJobs, $forwardJobs] = $this->getAssignerJobs($staffId, $condition);
+                    
+                    $request->flash();
+                    
+                    return view('jobs.assigner-jobs', compact('createdJobs', 'forwardJobs', 'jobTypes', 'assigners', 'projects', 'type'));
             }
 
         }
         else {
             $jobs = $this->getAllJobsByStaffId($staffId);
-            return view('jobs.index', compact($jobs));
+
+            return view('jobs.all-jobs', compact('jobs'));
         }
 
     }
@@ -100,11 +104,38 @@ class JobsController extends Controller
             'type', 
             'project', 
             'priority', 
-            'assigner', 
+            'assigner',
+            'assignees',
+            'jobAssigns.processMethod',
             'files',
         ])
         ->where('id', $id)
         ->first();
+
+        $status = $job->status;
+
+        $job->status = __('jobStatus.' . $status, [], 'vi');
+
+        $assignees = $job->assignees;
+        $jobAssigns = $job->jobAssigns;
+
+        foreach($assignees as $assignee) {
+            $id = $assignee->id;
+            $processMethodId = $assignee->pivot->process_method_id;
+            
+            $jobAssign = array_filter($jobAssigns->toArray(), function($item) use ($id, $processMethodId){
+                return ($item['staff_id'] == $id && $item['process_method_id'] == $processMethodId);
+            });
+
+            $jobAssign = array_values($jobAssign)[0];
+            
+        
+            $assignee->pivot->process_method = $jobAssign['process_method']['name'];
+
+        }
+
+        $job->assignees = $assignees;
+
 
         return response($job);
     }
@@ -128,13 +159,15 @@ class JobsController extends Controller
     public function detailAction(Request $request)
     {   
         $action = $request->input('action');
-        
+
+        $jobIds = $request->input('job_ids');
+
+
         
         switch ($action) {
             
             case 'detail':
                 
-                $jobIds = $request->input('job_ids');
                 $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
 
                 if (count($jobIds) == 1) {
@@ -151,16 +184,48 @@ class JobsController extends Controller
                 
 
             case 'finish':
-                // TODO: finish function
+                
+                if (count($jobIds) != 1) {
+                    return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
+                }
+
+                $jobId = $jobIds[0];
+                $staffId = Auth::user()->staff_id;
+
+                $job = Job::find($jobId);
+
+                if (in_array($job->status, ['unfinished', 'finished', 'canceled'])) {
+                    return redirect()->back()->with('error', 'Công việc đã được đánh giá kết thúc');
+                }
+                
+                if ($job->status == 'active') {
+                    $jobAssign = JobAssign::where(['job_id' => $jobId, 'staff_id' => $staffId])->with('processMethod')->first();
+
+                    if ($jobAssign->processMethod->assignee == $this::MAIN_ASSIGNEE) {
+                        $job->status = 'finished';
+                    }
+                    else {
+                        $jobAssign->status = 'finished';
+                    }
+
+                }
+
+
+
+
+
                 break;
 
             case 'search': 
                 // TODO: redirect to search view
-                break;
+                return redirect()->route('jobs.index');
+
             
             case 'assign':
-                // TODO: assign view function
-                break;
+
+                return redirect()->route('assignee-list.index', [
+                    'jobIds' => $jobIds,
+                ]);
             
             case 'timesheet': 
                 // TODO: timesheet view function
@@ -177,172 +242,61 @@ class JobsController extends Controller
     }
 
 
-    
-
-    public function updateStatus(Request $request) {
-        $action = $request->input('action');
-        $jobId = $request->input('job_id');
-        $staffId = $request->input('staff_id');
-        
-        $job = Job::findOrFail($jobId);
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
-
-        $jobAssign = JobAssign::where([
-            'job_id' => $jobId, 
-            'staff_id' => $staffId
-        ])->first();
-
-        switch ($action) {
-            case 'accept':
-                $workplanRequired = Configuration::where('field', 'workplan')->first('value')->value;
-                
-                if ($workplanRequired == 'true') {
-
-                    if ($jobAssign) {
-                        $request->session()->put('job_assign_id', $jobAssign->id);
-                    }
-
-                    else {
-                        $request->session()->put([
-                            'job_id' =>  $jobId,
-                            'staff_id' => $staffId
-                        ]);
-                    }
-                    return redirect()->route('workplans.create');
-                }
-
-                if ($jobAssign) {
-                    $jobAssign->update(['status' => 'accepted']);
-                }
-                else {
-                    $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
-                    JobAssign::create([
-                        'job_id' => $jobId,
-                        'staff_id' => $staffId,
-                        'process_method_id' => $mainProcessMethod->id
-                    ]);
-                }
-
-                $job->update(['status' => 'active']);
-
-                
-
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
-                    'jobId' => $jobId,
-                    'success' => 'Nhận việc thành công'
-                ]);
-                    
-
-
-
-            case 'reject': 
-
-                $denyReason = $request->input('deny_reason');
-
-                if (!$denyReason)
-                    return view('jobs.job-detail', [
-                        'jobs' => $jobs,
-                        'jobId' => $jobId,
-                    ]);
-                
-
-                if ($jobAssign) {
-                    $jobAssign->update([
-                        'status' => 'rejected',
-                        'deny_reason' => $denyReason
-                    ]);
-                }
-
-
-                $job->update(['status' => 'rejected']);
-                
-
-
-
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
-                    'jobId' => $jobId,
-                    'success' => 'Từ chối công việc thành công'
-                ]);
-
-            case 'exchange': 
-                //TODO: exchange function
-                break;
-        }
-    }
-
 
     public function action(Request $request)
     {
 
-        $action = $request->input('action');
-        switch ($action) {
-            case 'save': 
-                $result = $this->save($request->all());
-                if ($result['status']) {
-                    return redirect()->route('jobs.create')->with('success', $result['message']);
-                }
-                else {
-                    return redirect()->route('jobs.create')->withInput()->withErrors($result['message']);
-                }
 
-            case 'save_copy': 
-                $result = $this->save($request->all());
-                if ($result['status']) {
-                    return redirect()->route('jobs.create')->withInput()->with('success', $result['message']);
-                }
-                else {
-                    return redirect()->route('jobs.create')->withErrors($result['message']);
-                }
+
+
+        $action = $request->input('action');
+        
+        switch ($action) {
+            case 'save' || 'save_copy': 
+                return $this->save($request->all());
 
             case 'delete': 
                 $id = $request->input('job_id');
-                if (!$id) { 
-                    return redirect()->route('jobs.create')->withErrors([
-                        'job_id' => 'Chưa chọn công việc để xóa'
-                    ]);
-                }
-
-
-                $result = $this->destroy($id);
-
-                if ($result['status']) {
-                    return redirect()->route('jobs.create')->with('success', $result['message']);
-                }
-                else {
-                    return redirect()->route('jobs.create')->withInput()->withErrors($result['message']);
-                }
+                return $this->destroy($id);
                 
             case 'search': 
-                return redirect()->route('jobs.search');
+                return redirect()->route('jobs.index');
 
-            
         }
-
 
     }
     
     private function destroy ($id) 
     {
+
+        if (!$id) {
+            return redirect()->route('jobs.create')->withInput()->with('error', 'Chưa chọn công việc để xóa');
+        }
+        
         $job = Job::find($id);
         try {
+            
             if ($job) {
+                
                 $job->delete();
-                return ['status' => true, 'message' => 'Xóa công việc thành công'];
+                return redirect()->route('jobs.create')->with('success', 'Xóa công việc thành công');
+            
             }
             else {
-                return ['status' => false, 'message' => 'Chưa chọn công việc'];
+                
+                return redirect()->route('jobs.create')->withInput()->with('error', 'Công việc không tồn tại');
+
             }
 
         }
         catch (Exception $e) {
-            return ['status' => false, 'message' => $e->getMessage()];
+            return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
         }
         
     } 
 
     private function save($data) {
+        
         $jobId = $data['job_id'];
 
         if ($jobId) {
@@ -362,8 +316,7 @@ class JobsController extends Controller
         }
 
         if ($validator->fails()) {
-            dd($validator->errors());
-            return ['status' => false, 'message' => $validator->errors()];
+            return redirect()->route('jobs.create')->withInput()->withErrors($validator->errors());
         }
 
         $tableCols = DB::getSchemaBuilder()->getColumnListing('jobs');
@@ -414,8 +367,10 @@ class JobsController extends Controller
                                     break;
 
                                 case "parent_id": 
+                                    
                                     $parentJob = Job::find($job['parent_id']);
                                     $newParentJob = Job::find($value);
+                                    
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Việc cha',
@@ -426,8 +381,10 @@ class JobsController extends Controller
                                     break;
 
                                 case "job_type_id": 
+                                    
                                     $jobType = JobType::find($job['job_type_id']);
                                     $newJobType = JobType::find($value);
+                                    
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Loại công việc',
@@ -438,8 +395,10 @@ class JobsController extends Controller
                                     break;
 
                                 case "process_method_id":
+                                    
                                     $processMethod = ProcessMethod::find($job['process_method_id']);
                                     $newProcessMethod = ProcessMethod::find($value);
+                                    
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Hình thức xử lý',
@@ -450,8 +409,10 @@ class JobsController extends Controller
                                     break;
 
                                 case "priority_id": 
+                                    
                                     $priority = Priority::find($job['priority_id']);
                                     $newPriority = Priority::find($value);
+                                    
                                     array_push($jobUpdates, new UpdateJobHistory([
                                         "job_id" => $jobId,
                                         "field" => 'Loại công việc',
@@ -512,72 +473,128 @@ class JobsController extends Controller
                 }
             }
 
-            $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
-            return ['status' => true, 'message' => $message];
+
         }
         catch (Exception $e) {
-            dd($e->getMessage());
-            return ['status' => false, 'message' => $e->getMessage()];
+
+            return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
+
         }
         
-        //TODO: insert into job_assigns table
+
+
+        if ((isset($data['phoi-hop']) || isset($data['nhan-xet'])) && !isset($data['chu-tri'])) {
+            return redirect()->route('jobs.create')->withInput()->with('error', 'Vui lòng chọn người chủ trì');
+        }
+
+        $processMethods = [
+            'chu-tri' => 'chủ trì',
+            'phoi-hop' => 'phối hợp',
+            'nhan-xet' => 'nhận xét'
+        ];
+
+
+            
+        foreach ($processMethods as $key => $value) {
+            if (isset($data[$key])) {
+                
+                $processMethod = ProcessMethod::where('name', $value)->first();
+                
+                $result = $this->assignJob($data[$key], $processMethod, $job->id);
+
+                if (!$result['success']) {
+                    return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
+                }
+            }
+        }
+
+
+
+
+       
+
+
+        $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
+
+        if ($jobId) {
+            return redirect()->route('jobs.create')->withInput()->with('success', $message);
+
+        }
+        return redirect()->route('jobs.create')->with('success', $message);
+
+
+
+
     }
 
 
+    private function assignJob($assignees, $processMethod, $jobId) {
+        
+        try {
+            foreach($assignees as $assignee) {
+            
+                $assignee = json_decode($assignee, true);
+                
+                JobAssign::create([
+                    'job_id' => $jobId,
+                    'staff_id' => $assignee['staff_id'],
+                    'process_method_id' => $processMethod->id,
+                    'direct_report' => $assignee['direct_report'] ?? null,
+                    'deadline' => $assignee['deadline'] ?? null,
+                    'sms' => $assignee['sms'] ?? null
+                ]);
+    
+            }
+            return ['success' => true];
+        } 
+        catch (Exception $e) {
+            return ['success' => false, 'message' => $e->getMessage()];
+        }
 
+    }
 
 
     private function getHandlingJobs($staffId, $condition=[]) 
     {
-        try {
-
-
-
-            $directJobs = Job::with([
-                'jobAssigns' => function ($query) use ($staffId){
-                    $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
-                }, 
-                'jobAssigns.processMethod',
-                'jobAssigns.timeSheets',
-                'project:id,code', 
-                'assigner:id,name', 
-            ])
-            ->where($condition)
-            ->whereHas('jobAssigns', function ($query) use ($staffId) {
+        $directJobs = Job::with([
+            'jobAssigns' => function ($query) use ($staffId){
                 $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
-            })->get();
+            }, 
+            'jobAssigns.processMethod',
+            'project:id,code', 
+            'assigner:id,name', 
+        ])
+        ->where($condition)
+        ->whereNotIn('status', ['pending', 'finished', 'canceled'])
+        ->whereHas('jobAssigns', function ($query) use ($staffId) {
+            $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
+        })->get();
 
 
-            $relatedJobs = Job::with([
-                'jobAssigns' => function ($query) use ($staffId){
-                    $query->where('staff_id', $staffId)->whereNotNull('parent_id');
-                }, 
-                'jobAssigns.parent.assignee:id,name',
-                'jobAssigns.processMethod',
-                'jobAssigns.timeSheets',
-                'project:id,code', 
-                'assigner:id,name', 
-            ])
-            ->where($condition)
-            ->whereHas('jobAssigns', function ($query) use ($staffId) {
+        $relatedJobs = Job::with([
+            'jobAssigns' => function ($query) use ($staffId){
                 $query->where('staff_id', $staffId)->whereNotNull('parent_id');
-            })->get();
+            }, 
+            'jobAssigns.parent.assignee:id,name',
+            'jobAssigns.processMethod',
+            'project:id,code', 
+            'assigner:id,name', 
+        ])
+        ->where($condition)
+        ->whereNotIn('status', ['pending', 'finished', 'canceled'])
+        ->whereHas('jobAssigns', function ($query) use ($staffId) {
+            $query->where('staff_id', $staffId)->whereNotNull('parent_id');
+        })->get();
 
 
 
 
-            $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
-            $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
-            
+        $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
+        $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
+        
 
 
-            return [$reformatedDirectJobs, $reformatedRelatedJobs];
-
-
-        } 
-        catch (Exception $e) {
-            dd($e);
-        }
+        return [$reformatedDirectJobs, $reformatedRelatedJobs];
         
     }
 
@@ -617,19 +634,37 @@ class JobsController extends Controller
 
     private function getAssignerJobs($staffId, $condition=null) 
     {
-        $createdJobs = Job::where('assigner_id', $staffId)->get();
+        $createdJobs = Job::where('assigner_id', $staffId)->with([
+            'project:id,code',
+            'assigner:id,name'
+        ])->get();
         
-        // TODO: get forward jobs 
-        return $createdJobs;
+
+        $forwardJobs = Job::with([
+            'project:id,code',
+            'assigner:id,name'
+        ])
+        ->whereHas('jobAssigns', function($query) use ($staffId){
+            $query->where('staff_id', $staffId);
+        })
+        ->whereHas('jobAssigns.children')
+        ->get();
+
+
+
+        $reformatedCreatedJobs = $this->reformatAssignerJobs($createdJobs);
+        
+        $reformatedForwardJobs = $this->reformatAssignerJobs($forwardJobs);
+
+        return [$reformatedCreatedJobs, $reformatedForwardJobs];
     }
 
     private function getAllJobsByStaffId($staffId, $condition=null)
     {
 
         $allJobs = Job::with([
-            'jobAssigns' => function ($query) use ($staffId) {
-                $query->where('staff_id', $staffId);
-            }
+            'jobAssigns',
+            'assignees',
         ])
         ->where($condition)
         ->whereNotIn('status', ['rejected', 'cancelled'])
@@ -639,9 +674,11 @@ class JobsController extends Controller
                 $query->where('staff_id', $staffId);
             });
 
-        })->get();
+        })
+        ->get();
         
-        dd($allJobs);
+        $reformatedAllJobs = $this->reformatAllJobs($allJobs);
+        return $reformatedAllJobs;
 
 
 
@@ -675,10 +712,80 @@ class JobsController extends Controller
             $item->project_code = $item->project ? $item->project->code : null;
             $item->assigner = $item->assigner->name; 
             if ($item->jobAssigns->count()) {
-                
                 $item->job_assign_id = $item->jobAssigns[0]->id;
             }
         }
+
+        return $jobs;
+    }
+
+    private function reformatAssignerJobs($jobs)
+    {
+        foreach ($jobs as $item) {
+            $item->project_code = $item->project ? $item->project->code : null;
+            $item->assigner = $item->assigner->name;
+            $item->others = null;
+            $item->remaining = null;
+            $item->evaluation = null;
+
+        }
+
+        return $jobs;
+    }
+
+    public function reformatAllJobs($jobs)
+    {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+
+        foreach ($jobs as $job) {
+            
+            $mainAssignee = null;
+            $mainJobAssign = null;
+            $others = [];
+
+            $assignees = $job->assignees;
+            $jobAssigns  = $job->jobAssigns;
+
+            foreach ($jobAssigns as $jobAssign) {
+                if ($jobAssign->process_method_id == $mainProcessMethod->id) {
+                    $mainJobAssign = $jobAssign;
+                    break;
+                }
+            }
+            
+            if ($mainJobAssign) {
+
+                foreach ($assignees as $assignee) {
+                    if ($assignee->id == $mainJobAssign->staff_id) {
+                        $mainAssignee = $assignee;
+                        break;
+                    }
+                }
+              
+            }
+
+
+            foreach ($assignees as $assignee) {
+                if (!$mainAssignee || $assignee->id != $mainAssignee->id) {
+                    
+                    $others[] = $assignee->name;
+                }
+            }
+
+
+    
+            
+            
+            $job->project_code = $job->project ? $job->project->code : null;
+            $job->assigner = $job->assigner->name;
+            $job->main_assignee = $mainAssignee ? $mainAssignee->name :null;
+            $job->others = implode(',', $others);
+            $job->remaining = null;
+            $job->evaluation = null;
+
+
+        }
+
 
         return $jobs;
     }

@@ -19,7 +19,6 @@
                 @csrf
 
 				
-				<input type="hidden" name="type" value="handling">
 
 
 
@@ -27,12 +26,12 @@
                     @include('components.select', [
 						'name' => 'job_type_id',
 						'label' => 'Loại công việc',
-						'options' => $jobTypes
+						'options' => $jobTypes ?? []
 					])
 					@include('components.select', [
 						'name' => 'project_id',
 						'label' => 'Dự án',
-						'options' => $projects
+						'options' => $projects ?? []
 					])
 
                 </div>
@@ -58,7 +57,7 @@
                     @include('components.select', [
 						'name' => 'assigner_id',
 						'label' => 'Người giao',
-						'options' => $assigners
+						'options' => $assigners ?? []
 					])
 
 					@include('components.input-text', [
@@ -94,9 +93,12 @@
 
 			<form action="{{ route('jobs.detailAction')}}" method="POST" class="w-100">
 				@csrf
+
+				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
+
 				
 				@isset($all)
-				
+			
 					@yield('table')
 
 				@else
@@ -145,6 +147,123 @@
 
             </form>
         </div>
+    </div>   
+
+	<script>
+		$(document).ready(function () {
+			const handleReset = () => {
+				$('select').prop('selectedIndex', -1);
+				$('.form-group-row input').each(function() {
+					$(this).val(null);
+				});
+			}
+
+			const initializeSelectInput = () => {
+				$('select').prop('selectedIndex', -1);
+			}
+
+			initializeSelectInput();
+			
+			$('th input:checkbox').prop('disabled', true);
+			
+			$('input:checkbox').each(function() {
+				$(this).prop('checked', false);
+			});
+
+			$('#reset-btn').click(function() {
+				handleReset();
+			});
+
+
+			$('button[value="detail"]').prop('disabled', true);
+
+
+			$('#left-table thead th input:checkbox').change(function() {
+				$('#left-table input:checkbox').not(this).prop('checked', this.checked).change();
+			});
+
+			$('#right-table thead th input:checkbox').change(function() {
+				$('#right-table input:checkbox').not(this).prop('checked', this.checked).change();
+			});
+
+			$('#left tbody input:checkbox').change(function() {
+				if (this.checked) {
+					const jobId = $(this).closest('tr').attr('id');
+					$(this).val(jobId);
+
+					const processMethod = $(this).closest('tr').find('td.process_method').text();
+
+					$('button[value="detail"]').prop('disabled', false);
+
+					
+					$('tr.data-row').each(function() {
+						if ($(this).find('td.process_method').text() !== processMethod) {
+							$(this).find('input:checkbox').prop('disabled', true);
+						}
+					});
+
+				}
+				else {
+					$('#left thead input:checkbox').prop('checked', false);
+					$(this).removeAttr('value');
+
+					if ($('input:checkbox:checked').length === 0) {
+						$('tr.data-row input:checkbox').prop('disabled', false);
+					}
+
+					if ($('#left tbody input:checkbox:checked').length === 0) {
+						$('button[value="detail"]').prop('disabled', true);
+					}
+				}
+			});
+
+			$('#right tbody input:checkbox').change(function() {
+				if (this.checked) {
+					const jobId = $(this).closest('tr').attr('id');
+					$(this).val(jobId);
+
+					const processMethod = $(this).closest('tr').find('td.process_method').text();
+
+
+					$('tr.data-row').each(function() {
+						if ($(this).find('td.process_method').text() !== processMethod) {
+							$(this).find('input:checkbox').prop('disabled', true);
+						}
+					});
+
+					$('button[value="detail"]').prop('disabled', false);
+						
+				}
+				else {
+					$('#right thead input:checkbox').prop('checked', false);
+					$(this).removeAttr('value');
+
+					if ($('input:checkbox:checked').length === 0) {
+						$('tr.data-row input:checkbox').prop('disabled', false);
+					}
+
+					if ($('#right tbody input:checkbox:checked').length === 0) {
+						$('button[value="detail"]').prop('disabled', true);
+					}
+				}
+			});
+
+
+			const setCloseTimeout = (modalSelector, timeout) => {
+				$(modalSelector).modal("show").on("shown.bs.modal", function () {
+					window.setTimeout(function () {
+						$(modalSelector).modal("hide");
+					}, timeout);
+				});
+ 		    }
+
+        	setCloseTimeout("#errorModal", 5000);
+		})
+	</script>
+
+	@yield('custom-script')
+
+		
     </div>   
 
 	<script>

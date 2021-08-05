@@ -88,7 +88,7 @@
                        ])
                     </form>
 
-                    @include('components.modal', [
+                    @include('components.warning-modal', [
                         'href' => route('timesheet.destroy',['id'=>$timeSheet->id]),
                         'messages' => 'Bạn có chắc chắn xóa time sheets?'
                     ])
