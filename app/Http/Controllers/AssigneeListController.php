@@ -194,6 +194,8 @@ class AssigneeListController extends Controller
                             $mappedForwardJobAssigns = array_map(function($jobAssign) use ($currentJobAssign) {
                                 
                                 $jobAssign['parent_id'] = $currentJobAssign->id;
+                                $jobAssign['process_method_id'] = $currentJobAssign->process_method_id;
+
                                 return $jobAssign;
         
                             }, $forwardJobAssigns);
@@ -202,6 +204,7 @@ class AssigneeListController extends Controller
                                 
                                 $jobAssign['parent_id'] = $currentJobAssign->id;
                                 $jobAssign['is_additional'] = true;
+                                
                                 return $jobAssign;
         
                             }, $otherJobAssigns);
@@ -251,11 +254,6 @@ class AssigneeListController extends Controller
 
         }
         
-        
-        
-
-
-       
         
     }
 

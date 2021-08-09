@@ -54,12 +54,12 @@ class JobAssign extends Pivot
 
     public function timeSheets()
     {
-        return $this->hasMany(TimeSheet::class);
+        return $this->hasMany(TimeSheet::class, 'job_assign_id');
     }
 
     public function amountConfirms()
     {
-        return $this->hasMany(AmountConfirm::class);
+        return $this->hasMany(AmountConfirm::class, 'job_assign_id');
     }
 
 
