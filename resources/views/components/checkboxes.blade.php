@@ -11,8 +11,8 @@
 
     $(document).ready(function() {
 
+        var jobAssigns = [];
 
-        
 
 
         const tree = $('#tree').tree({
@@ -22,13 +22,37 @@
             autoload: true,
 
         });
+
+        const resetAssigneeTable = tableId => {
+            $(`#${tableId} tbody tr`).remove();
+
+            $('input[name="job_assigns[]"]').remove();
+
+        }
         
+        const renderAssigneeTable = (tableId) => {
+
+            resetAssigneeTable(tableId);
+
+            jobAssigns.forEach(jobAssign => {
+                const assigneeInfo = jobAssign.data;
+                addRowToAssigneeTable(tableId, assigneeInfo);
+                addHiddenInput(assigneeInfo);
+            });
+
+        }
+
+        const showWarningModal = (message) => {
+            $('#warning-modal p').text(message);
+            $('#warning-modal').modal('show');
+        }
 
 
         tree.on('checkboxChange', function(e, $node, record, state) {
 
             if (record.id) {
                
+           
 
                 const assigneeName = record.text;
                 const assigneeId = record.id;
@@ -38,7 +62,7 @@
                 
                 const duplicate = $(`#assignee-table tr[data-process-method-id="${processMethodId}"]#${assigneeId}`);
 
-                if (state === 'checked' && duplicate.length === 0) {
+                if (state === 'checked') {
 
                     const assigneeInfo = {
                         assigneeId: assigneeId,
@@ -50,20 +74,62 @@
                         deadline: null
 
                     };
-                    addRowToAssigneeTable('assignee-table', assigneeInfo);
+                    
+                    jobAssigns.push({
+                        id: $node.data('id'),
+                        data: assigneeInfo
+                    });
 
-                    addHiddenInput(assigneeInfo);
+                    if (duplicate.length > 0) {
+                       
+                        tree.uncheck($node);   
+
+                        showWarningModal('Đối tượng đã được chọn với hình thức xử lý này');
+
+
+
+                    }
+                    else if (processMethodName === 'chuyển tiếp') {
+
+                        const forwardRows = $(`#assignee-table td.process_method:contains("${processMethodName}")`);
+
+                        if (forwardRows.length > 0) {
+                            tree.uncheck($node);   
+
+                            showWarningModal('Chỉ được chuyển tiếp cho 1 đối tượng');
+                        }
+                        else {
+                            renderAssigneeTable('assignee-table');
+                        }
+
+                    }
+                    else if (processMethodName === 'chủ trì') {
+                        const mainAssigneeRows = $(`#assignee-table td.process_method:contains("${processMethodName}")`);
+
+                        if (mainAssigneeRows.length > 0) {
+                            tree.uncheck($node);   
+
+                            showWarningModal('Chỉ được bổ sung 1 đối tượng chủ trì');
+                        }
+                        else {
+                            renderAssigneeTable('assignee-table');
+                        }
+                    }
+                    else {
+                        renderAssigneeTable('assignee-table');
+                    }
+                   
 
                     
 
                 }
-                else if (state === 'unchecked' && duplicate.length > 0) {
-                    
-                    removeFromAssigneeTable('assignee-table', assigneeId, processMethodId);
-                    removeHiddenInput(`input[data-process-method-id="${processMethodId}"]#${assigneeId}`);
+                else {
 
 
-                    
+                    jobAssigns = jobAssigns.filter(jobAssign => jobAssign.id !== $node.data('id'));
+
+                    renderAssigneeTable('assignee-table');
+
                 }
                    
                 
