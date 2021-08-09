@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="{{ asset('css/assign-list.css') }}">
     <link rel="stylesheet" href="{{ asset('css/dynamic-table.css') }}">
 
+    @include('components.flash-message-modal', [
+        'modalId' => 'warning-modal',
+        'alertClass' => 'alert alert-warning',
+        'message' => '',
+    ])
 
     @if ($errors->any())
         
@@ -59,7 +64,7 @@
                     <form action="{{ route('assignee-list.action') }}" method="POST" class="w-100">
                         @csrf
                         
-                        <input type="hidden" name="staff_id" value="{{ Auth::user()->staff_id }}">
+                        <input type="hidden" name="staff_id" id="staff_id" value="{{ Auth::user()->staff_id }}">
 
                         <div class="form-group-row">
 
@@ -187,6 +192,10 @@
                 jobIds.push($(this).val());
             });
 
+
+
+
+
             if (jobIds.length > 0) {
                 getJobAssigns(assigneeId, jobIds).then(jobAssigns => {
                     jobAssigns.forEach(jobAssign => {
@@ -244,6 +253,7 @@
                 
                 const target = $(e.target);
 
+
                 if (target.attr('name') !== 'job_assign_ids[]') {
                     let newVal = null;
                     
@@ -256,6 +266,7 @@
 
                     
                     const jobAssignId = target.closest('tr').attr('id');
+                    const processMethodId = target.closest('tr').find('select').val();
                     const sms = target.closest('tr').find('.sms').prop('checked');
                     const directReport = target.closest('tr').find('.direct_report').prop('checked');
                     const deadline = target.closest('tr').find('.deadline').val();
@@ -266,6 +277,7 @@
                     if (input.length === 0) {
                         addOldJobAssignInput({
                             id: jobAssignId,
+                            processMethodId: processMethodId,
                             sms: sms,
                             directReport: directReport,
                             deadline: deadline ? deadline : null,
@@ -306,6 +318,12 @@
 
             });
 
+
+            $('#warning-modal').on("shown.bs.modal", function () {
+                window.setTimeout(function () {
+                    $('#warning-modal').modal("hide");
+                }, 3000);
+            });
 
             $('#error-modal').modal("show").on("shown.bs.modal", function () {
                 window.setTimeout(function () {

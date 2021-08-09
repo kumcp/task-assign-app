@@ -11,7 +11,28 @@ const addRowToAssigneeTable = (tableId, data, addCheckboxCol=false) => {
 
     row.append($('<td/>', {class: 'name'}).text(data.assigneeName));
 
-    row.append($('<td/>', {class: 'process_method'}).text(data.processMethodName));
+
+    if (!data.readonly) {
+        let processMethodOptions = $('<select/>', {
+            name: 'process_method_id',
+            class: 'process_method_id'
+        });
+        
+        $('#process_method option').each(function() {
+            processMethodOptions.append($('<option/>', {
+                value: $(this).val(),
+                text: $(this).text()
+            })
+            .prop('selected', data.processMethodId === parseInt($(this).val()))
+            );
+        });
+
+        row.append($('<td/>', {class: 'process_method'}).append(processMethodOptions));
+
+    }
+    else {
+        row.append($('<td/>', {class: 'process_method'}).text(data.processMethodName));
+    }
 
     row.append(
         $('<td/>').append($('<input/>', {
