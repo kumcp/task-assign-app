@@ -19,18 +19,35 @@ class JobSeeder extends Seeder
      */
     public function run()
     {
+        if (count(Priority::take(10)->get()) === 0) {
+            Priority::factory()->count(10)->create();
+        }
+
+        if (count(JobType::take(10)->get()) === 0) {
+            JobType::factory()->count(10)->create();
+        }
+
+        if (count(Project::take(10)->get()) === 0) {
+            Project::factory()->count(10)->create();
+        }
+
+        if (count(Staff::take(10)->get()) === 0) {
+            Staff::factory()->count(10)->create();
+        }
+
+
         $listPriority = Priority::take(10)->get()->random();
         $listJobType = JobType::take(10)->get()->random();
         $listProject = Project::take(10)->get()->random();
         $listStaff = Staff::take(10)->get()->random();
 
         Job::factory()->count(10)->create(
-            [   'assigner_id' => $listPriority->id,
+            [
+                'assigner_id' => $listPriority->id,
                 'job_type_id' => $listJobType->id,
                 'project_id' => $listProject->id,
                 'priority_id' => $listStaff->id,
             ]
         );
-
     }
 }

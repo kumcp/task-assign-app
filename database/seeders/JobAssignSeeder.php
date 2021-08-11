@@ -13,7 +13,7 @@ use Illuminate\Database\Seeder;
 class JobAssignSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Generate data for Job Assign
      *
      * @return void
      */
@@ -24,7 +24,8 @@ class JobAssignSeeder extends Seeder
         $listProcessMethod = ProcessMethod::take(10)->get()->random();
 
         JobAssign::factory()->count(10)->create(
-            [   'job_id' => $listJob->id,
+            [
+                'job_id' => $listJob->id,
                 'staff_id' => $listStaff->id,
                 'process_method_id' => $listProcessMethod->id,
             ]
