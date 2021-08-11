@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
-
+use App\Http\Controllers\AmountConfirmController;
 use App\Http\Controllers\JobsController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\LoginController;
@@ -21,6 +21,8 @@ use App\Http\Controllers\TimeSheetController;
 use App\Http\Controllers\TimesheetStatisticsController;
 use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
+use App\Http\Controllers\JobAssignController;
+use App\Models\AmountConfirm;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,7 +167,15 @@ Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->n
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-maday.list');
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
 
-Route::group(['middleware' => ['auth']], function () {
+
+Route::get('assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list.index');
+Route::post('assignee-list', [AssigneeListController::class, 'action'])->name('assignee-list.action');
+
+
+Route::get('amount-confirms/create', [AmountConfirmController::class, 'create'])->name('amount-confirms.create');
+Route::post('amount-confirms', [AmountConfirmController::class, 'action'])->name('amount-confirms.action');
+
+Route::group(['middleware' => ['auth']], function() {
     Route::get('/jobs/create', [JobsController::class, 'create'])->name('jobs.create');
     Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
     Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');

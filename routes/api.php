@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AmountConfirmController;
+use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobsController;
 use App\Http\Controllers\UpdateJobHistoryController;
@@ -26,3 +28,13 @@ Route::get('department', [DepartmentController::class, 'index'])->name('deparmen
 Route::get('jobs/{id}', [JobsController::class, 'show'])->name('jobs.show');
 
 Route::get('update-job-histories', [UpdateJobHistoryController::class, 'index'])->name('update_job_histories.index');
+
+Route::get('assignee-list/{jobId}', [AssigneeListController::class, 'show'])->name('assignee-list.show');
+
+Route::get('workplans/{jobId}/{assigneeId?}', [WorkPlanController::class, 'show'])->name('workplans.show');
+
+Route::get('job-assigns', [JobAssignController::class, 'index'])->name('job-assigns.index');
+
+Route::get('amount-confirms', [AmountConfirmController::class, 'index'])->name('amount_confirms.index');
+Route::get('amount-confirms/{id}', [AmountConfirmController::class, 'show'])->name('amount-confirms.show');
+Route::post('amount-confirms', [AmountConfirmController::class, 'queryAmountConfirm'])->name('amount-confirms.query');
