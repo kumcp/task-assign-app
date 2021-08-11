@@ -26,6 +26,8 @@ class TimeSheetFactory extends Factory
             'job_assign_id' => 0,
             'from_date' => Carbon::now(),
             'to_date' => Carbon::tomorrow(),
+            'from_time' => Carbon::now(),
+            'to_time' => Carbon::now(),
             'content' => $this->faker->sentence,
         ];
     }
