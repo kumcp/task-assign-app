@@ -32,3 +32,12 @@ const getValueSelector = selector => document.querySelector(selector).value;
 const setValue = (selector, value) => {
     $(selector).val(value)
 }
+
+
+const setCloseTimeout = (modalSelector, timeout) => {
+    $(modalSelector).modal("show").on("shown.bs.modal", function () {
+        window.setTimeout(function () {
+            $(modalSelector).modal("hide");
+        }, timeout);
+    });
+}
