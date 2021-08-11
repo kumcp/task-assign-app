@@ -213,10 +213,8 @@
                 const oldConfirmAmount = parseInt($('#old_confirm_amount').val());
                 const assignAmount = parseInt($('#assign_amount').val());
                 
-                console.log(confirmAmount, oldConfirmAmount, assignAmount);
                 
                 if (confirmAmount) {
-                    console.log((oldConfirmAmount + confirmAmount));
                     $('#confirm_percentage').val((oldConfirmAmount + confirmAmount) * 100 / assignAmount);
                 }
                 else {
