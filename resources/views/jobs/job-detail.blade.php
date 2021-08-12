@@ -1,7 +1,7 @@
 @extends('layouts.job-crud', [
 	'routeName' => 'job-assigns.updateStatus',
 	'method' => 'POST', 
-	'job_id' => $jobId ?? null,
+	'jobId' => $jobId ?? null,
 	'editable' => false 
 ])
 

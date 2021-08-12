@@ -28,6 +28,21 @@ const addDataToRow = (row, history) => {
     });
 }
 
+const addRowToTable = (tableId, idx,  data) => {
+    let row = $('<tr/>', {
+        'class': 'data-row',
+    });    
+    let content = $('<td/>', {id: idx}).append(data);
+    row.append(content);
+
+    $(`#${tableId} tbody`).append(row);
+}
+
+const resetTable = tableId => {
+    $(`#${tableId} tbody tr`).remove();
+}
+
+
 const generateUpdateHistoriesTable = () => {
     const jobId = $('#job_id').val();
 

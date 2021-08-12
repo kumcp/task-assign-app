@@ -2,12 +2,13 @@
 	'routeName' => 'jobs.action',
 	'method' => 'POST', 
 	'staff' => $staff,
-	'jobs' => $jobs,
+	'jobs' => $createdJobs,
 	'projects' => $projects,
 	'jobTypes' => $jobTypes,
 	'priorities' => $priorities,
 	'processMethods' => $processMethods,
 	'editable' => true
+	'jobId' => $jobId ?? null,
 
 ])
 
@@ -18,7 +19,7 @@
 
 
 @section('message')
-	@if (session('success'))
+	@if (Session::has('success'))
 		@include('components.flash-message-modal', [
 			'modalId' => 'successModal',
 			'alertClass' => 'alert alert-sucess',
@@ -32,11 +33,15 @@
 			'alertClass' => 'alert alert-danger',
 			'message' => session('error')
 		])
+
+		{{ Session::put('error', null) }}
+
 	@endif
 @endsection
 
 
 @section('job-info')
+
 	<div class="form-group-row mb-3">
 
 
@@ -127,9 +132,9 @@
 		@include('components.searchable-input-text', [
 			'name' => 'parent_job',
 			'label' => 'Việc cha', 
-			'options' => $jobs, 
+			'options' => $relatedJobs, 
 		])
-		<input type="hidden" name="parent_id" id="parent_id" value="{{ old('parent_id') }}">
+		<input type="hidden" name="parent_id" id="parent_id" value="{{ $parentJobId ?? old('parent_id') }}">
 
 	
 	</div>
@@ -240,7 +245,7 @@
 			['iconClass' => 'fas fa-edit', 'type' => 'button', 'value' => 'Sửa', 'action' => 'edit'], 
 			['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
 			['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'],
-			['iconClass' => 'fas fa-redo', 'type' => 'button', 'value' => 'Tạo mới', 'action' => 'reset'], 
+			['iconClass' => 'fas fa-redo', 'value' => 'Tạo mới', 'action' => 'reset'], 
 		] 
 	])
 
@@ -251,44 +256,42 @@
 
 @section('custom-script')
 	<script>
+
+		const initializeChildJob = parentJob => {
+			
+			setSelectedValue('#project_code', parentJob.project_id);
+			setSelectedValue('#job_type', parentJob.job_type_id);
+			setSelectedValue('#priority_name', parentJob.priority_id);
+
+			$('#deadline').val(parentJob.deadline);
+			$('#period').val(parentJob.period);
+
+			if (parentJob.files.length > 0) {
+            	$('#file-count span').html(parentJob.files.length);
+				$('#file-count').show();
+
+        	}
+
+        	initializeFileTable('files', parentJob.files);
+			
+			
+		}
+
+
 		$(document).ready(function() {
 
-			if ($('#job_type_id').val() !== null) {
-				const jobTypeId = $('#job_type_id').val();
-				setSelectedValue('#job_type', jobTypeId);
+			const parentId = $('#parent_id').val();
+			if (parentId) {
+				setSelectedValue('#parent_job',  parentId);
+
+				getJob(parentId).then(parentJob => {
+					console.log(parentJob);
+					initializeChildJob(parentJob);
+				});
+				
 			}
 
-			$('button[value="reset"]').click(function () {
-				$('.selectpicker').each(function () {
-					$(this).val('');
-					$(this).selectpicker('refresh')
-				})
-				$('input').each(function () {
-					if ($(this).attr('name') === 'status') {
-						$(this).val('Chưa nhận');
-					}
-					else if ($(this).attr('name') !== 'authenticated_name' && $(this).attr('name') !== 'authenticated_id') {
-						$(this).val('');
-					}
-		
-				})
-
-				$('#assigner_name').val($('#authenticated_name').val());
-				$('#assigner_id').val($('#authenticated_id').val());
-
-				$('#period_unit').prop('selectedIndex', -1);
-				$('textarea').val('');
-				$('#history-workplan').hide();
-				$('#note-wrapper').hide();
-
-				resetTable('files');
-				$('#file-count span').html(null);
-				$('#file-count').hide();
-
-				resetHiddenInputs();
-				resetFullAssigneeTable('full-assignee-table');
-				resetAssigneeDisplayValues();
-			});
+			$('#file-count').hide();
 
 			$('button[value="edit"]').click(function () {
 				const jobId = $('#job_id').val();
@@ -530,6 +533,18 @@
 
 
 
+
+			$('#parent_job').change(function() {
+				const val = $(this).val();
+				if (val.length > 0) {
+					const parentId = val[0];
+
+					getJob(parentId).then(parentJob => {
+						console.log(parentJob)
+						initializeChildJob(parentJob);
+					});
+				}
+			})
 
 
 

@@ -1,22 +1,20 @@
 // MAIN FUNCTIONS
-const initializeJobValues = (jobId, readOnly=false) => {
 
+const initializeFileTable = (tableId, files) => {
+    resetTable(tableId);
 
-    const initializeFileTable = (tableId, files) => {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const newLink = $('<a/>', {
-                href: `http://127.0.0.1:8000/storage/${file.dir}/${file.name}`,
-                text: file.name,
-                target: '_blank'
-            });
-            addRowToTable(tableId, i, newLink);
-        }
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const newLink = $('<a/>', {
+            href: `http://127.0.0.1:8000/storage/${file.dir}/${file.name}`,
+            text: file.name,
+            target: '_blank'
+        });
+        addRowToTable(tableId, i, newLink);
     }
+}
 
-
-
-
+const initializeJobValues = (jobId) => {
 
     getJob(jobId).then(job => {
 
@@ -45,10 +43,16 @@ const initializeJobValues = (jobId, readOnly=false) => {
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
+        if (job.status !== 'Chưa nhận') {
+            $('button[value="accept"]').prop('disabled', true);
+        }
 
         if (job.files.length > 0) {
-            $('#file-count').show();
             $('#file-count span').html(job.files.length);
+            $('#file-count').show();
+        }
+        else {
+            $('#file-count').hide();
         }
 
         initializeFileTable('files', job.files);

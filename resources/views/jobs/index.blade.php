@@ -138,7 +138,8 @@
 						['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
 						['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
 						['iconClass' => 'fas fa-user-plus', 'value' => 'Giao xử lý', 'action' => 'assign'], 
-						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
+						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'],
+						['iconClass' => 'fas fa-plus', 'value' => 'Tạo việc', 'action' => 'job_create'], 
 						['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
 						['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
 					] 

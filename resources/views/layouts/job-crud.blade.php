@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap-select.css') }}">
     <link rel="stylesheet" href="{{ asset('css/file-input.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dynamic-table.css') }}">
+
 
     @include('components.file-modal')
 
@@ -18,8 +20,20 @@
         @yield('message')
 
 
-        <div class="row">
-        
+        <div class="row mb-5">
+            <div class="col offset-9">
+                @include('components.input-text', [
+                    'name' => 'created_date',
+                    'labelClass' => 'form-label',
+                    'label' => 'Ngày tạo',
+                    'textClass' => 'd-inline ml-5',
+                    'inputClass' => 'form-control d-inline w-50',
+                    'readonly' => true
+                ])
+            </div>
+
+            
+        </div>
 
         <div class="row">
 
@@ -30,7 +44,7 @@
 
                 <form id="job-form" action="{{route($routeName, $params ?? [])}}" method="{{$method}}" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="job_id" id="job_id" value="{{ $job_id ?? old('job_id') }}">
+                    <input type="hidden" name="job_id" id="job_id" value="{{ $jobId ?? old('job_id') }}">
                     
                     <input type="hidden" name="editable" id="editable" value="{{ $editable ? 1 : 0 }}">
 
@@ -221,6 +235,9 @@
 
 
         $(document).ready(function () {
+
+            const today = new Date().toLocaleDateString('id');
+            $('#created_date').val(today);
             
             if ($('#job_id').val() !== '') {
                 const jobId = $('#job_id').val();
@@ -328,5 +345,3 @@
 
     
 @endsection
-
-
