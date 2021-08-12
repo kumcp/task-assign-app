@@ -12,6 +12,7 @@ use App\Models\ProcessMethod;
 use App\Models\Project;
 use App\Models\Staff;
 use App\Models\UpdateJobHistory;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Validator;
 
 class JobsController extends Controller
 {
-    const DEFAULT_PAGINATE = 15;
+    const DEFAULT_PAGINATE = 20;
     const MAIN_ASSIGNEE = 1;
 
     public function index(Request $request)
@@ -140,10 +141,31 @@ class JobsController extends Controller
         return response($job);
     }
 
-    public function create($jobId=null)
+    public function create(Request $request, $jobId=null)
     {
         
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
+        $staffId = Auth::user()->staff_id;
+
+        $parentJobId = $request->input('parentId');
+
+        $relatedJobs = Job::with(
+            'jobAssigns'
+        )
+        ->where('assigner_id', $staffId)
+        ->whereNotIn('status', ['finished', 'canceled'])
+        ->orWhereHas('jobAssigns', function ($query) use ($staffId) {
+            $query->where([
+                'staff_id' => $staffId,
+                'status' => 'accepted'
+            ]);
+        })
+        ->get();
+
+        $createdJobs = Job::where('assigner_id', $staffId)
+        ->orderBy('created_at', 'DESC')
+        ->paginate($this::DEFAULT_PAGINATE);
+
+
         $staff = Staff::all();
         $projects = Project::all();
         $jobTypes = JobType::all();
@@ -151,7 +173,7 @@ class JobsController extends Controller
         $processMethods = ProcessMethod::all();
     
         
-        return view('jobs.create', compact('staff', 'jobs', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId'));
+        return view('jobs.create', compact('relatedJobs', 'createdJobs', 'staff', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId', 'parentJobId'));
 
     }
 
@@ -199,6 +221,11 @@ class JobsController extends Controller
                 return redirect()->route('amount-confirms.create', ['job_id' => $jobId]);
                 break;
 
+            case 'job_create': 
+                $jobId = $jobIds[0];
+                return redirect()->route('jobs.create', ['parentId' => $jobId]);
+    
+
             case 'exchange': 
                 // TODO: exchange view function
                 break;
@@ -217,6 +244,9 @@ class JobsController extends Controller
 
             case 'save_copy': 
                 return $this->save($request->all(), true);
+
+            case 'reset': 
+                return redirect()->route('jobs.create');
 
             case 'delete': 
                 $id = $request->input('job_id');
@@ -262,20 +292,34 @@ class JobsController extends Controller
         $jobId = $data['job_id'];
 
         if ($jobId) {
-            $validator = Validator::make($data, [ 
+            
+            $rules = [ 
                 'assigner_id' => 'required', 
                 'name' => ['required', 'string'], 
                 'deadline' => ['required', 'date'],
-            ]);
+            ];
+
         }
         else {
-            $validator = Validator::make($data, [
+            
+            $rules = [
                 'code' => 'unique:jobs', 
                 'assigner_id' => 'required', 
                 'name' => ['required', 'string'], 
                 'deadline' => ['required', 'date'],
-            ]);
+            ];
+
         }
+
+        $messages = [
+            'code.unique' => 'Mã dự án đã được sử dụng',
+            'assigner_id.required' => 'Người giao việc là bắt buộc',
+            'name.required' => 'Tên công việc là bắt buộc',
+            'deadline.required' => 'Hạn xử lý là bắt buộc',
+            'deadline.date' => 'Hạn xử lý phải là ngày'
+        ];
+
+        $validator = Validator::make($data, $rules, $messages);
 
         if ($validator->fails()) {
             return redirect()->route('jobs.create')->withInput()->withErrors($validator->errors());
@@ -497,6 +541,7 @@ class JobsController extends Controller
     }
 
 
+
     private function getHandlingJobs($staffId, $condition=[]) 
     {
         $directJobs = Job::with([
@@ -515,7 +560,7 @@ class JobsController extends Controller
                 ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
-
+       
         $relatedJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
                 $query->where('staff_id', $staffId)
@@ -535,14 +580,9 @@ class JobsController extends Controller
                 ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
-
-
-
         $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
         $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
         
-
-
         return [$reformatedDirectJobs, $reformatedRelatedJobs];
         
     }
@@ -642,17 +682,32 @@ class JobsController extends Controller
     private function reformatHandlingJobs($jobs, $related = false) 
     {
 
-        foreach ($jobs as $item) {
-            $item->project_code = $item->project ? $item->project->code : null;
-            $item->assigner = $item->assigner->name;
-            $item->process_method  = $item->jobAssigns[0]->processMethod->name;
-            $item->timesheet_amount = null;
-            $item->finished_percent = null;
-            $item->remaining = null;
-            $item->job_assign_id = $item->jobAssigns[0]->id;
+        foreach ($jobs as $job) {
+            $job->project_code = $job->project ? $job->project->code : null;
+            $job->assigner = $job->assigner->name;
+            $job->process_method  = $job->jobAssigns[0]->processMethod->name;
+
+            $job->job_assign_id = $job->jobAssigns[0]->id;
             
-            if ($related)
-                $item->forward = $item->jobAssigns[0]->parent->assignee->name;
+            if ($related) {
+                $job->forward = $job->jobAssigns[0]->parent->assignee->name;
+            }
+
+            $deadline = Carbon::parse($job->deadline);
+            $now = Carbon::now();
+            
+            $job->remaining = $now->greaterThanOrEqualTo($deadline) ? 0 : $now->diffInDays($deadline);
+
+            $timeSheets = $job->timeSheets;
+            $timeSheetAmount = 0;
+
+            foreach ($timeSheets as $timeSheet) {
+                $timeSheetAmount += $timeSheet->workAmountInManday();
+            }
+        
+            $job->timesheet_amount = $timeSheetAmount;
+            $job->finished_percent = $timeSheetAmount / $job->assign_amount;
+
 
 
         }
@@ -665,7 +720,7 @@ class JobsController extends Controller
             
             $item->project_code = $item->project ? $item->project->code : null;
             $item->assigner = $item->assigner->name; 
-            if ($item->jobAssigns->count()) {
+            if ($item->jobAssigns->count() > 0) {
                 $item->job_assign_id = $item->jobAssigns[0]->id;
             }
         }
