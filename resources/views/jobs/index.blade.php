@@ -18,10 +18,6 @@
             <form action="{{ route('jobs.search')}}" method="POST" class="w-100">
                 @csrf
 
-				
-
-
-
 				<div class="form-group-row mb-3">
                     @include('components.select', [
 						'name' => 'job_type_id',
@@ -97,6 +93,8 @@
 				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
 				
+				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
+
 				@isset($all)
 			
 					@yield('table')

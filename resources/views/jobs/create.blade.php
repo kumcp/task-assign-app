@@ -253,6 +253,17 @@
 	
 @endsection
 
+@section('jobs-table')
+	@include('components.dynamic-table', [
+		'cols' => [
+			'Tên công việc' => 'name',
+		],
+		'rows' => $createdJobs ?? [],
+		'min_row' => 5,
+		'pagination' => true
+	])
+@endsection
+
 
 @section('custom-script')
 	<script>

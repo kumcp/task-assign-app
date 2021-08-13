@@ -179,6 +179,57 @@
 	
 @endsection
 
+@section('jobs-table')
+
+	@if ($numTables == 1)
+		@include('components.dynamic-table', [
+			'cols' => [
+				'Tên công việc' => 'name',
+			],
+			'rows' => $table ?? [],
+			'min_row' => 5,
+		])
+	@else
+		<div class="row ml-0 mb-3">
+			<ul class="nav flex-column nav-tabs" id="myTab" role="tablist">
+				<li class="nav-item" role="presentation">
+				<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $left_title ?? 'Công việc trực tiếp xử lý' }}</a>
+				</li>
+				<li class="nav-item" role="presentation">
+				<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $right_title ?? 'Công việc liên quan' }}</a>
+				</li>
+			</ul>
+			<div class="tab-content w-100" id="myTabContent">
+				<div class="tab-pane fade show active w-100" id="left" role="tabpanel" aria-labelledby="left-tab">
+
+					@include('components.dynamic-table', [
+						'cols' => [
+							'Tên công việc' => 'name',
+						],
+						'rows' => $leftTable ?? [],
+						'min_row' => 5,
+					])
+					
+				</div>
+				<div class="tab-pane" id="right" role="tabpanel" aria-labelledby="right-tab">
+
+					@include('components.dynamic-table', [
+						'cols' => [
+							'Tên công việc' => 'name',
+						],
+						'rows' => $rightTable ?? [],
+						'min_row' => 5,
+					])
+					
+				</div>
+			</div>
+		</div>
+	@endif
+	
+
+
+@endsection
+
 
 
 @section('deny-reason-modal')

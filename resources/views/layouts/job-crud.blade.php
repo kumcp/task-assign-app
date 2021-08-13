@@ -167,15 +167,8 @@
                 </form>
             </div>
             <div class="col-md-3">
-                @include('components.dynamic-table', [
-                    'cols' => [
-                        'Tên công việc' => 'name',
-                    ],
-                    'id' => 'jobs-table',
-                    'rows' => $jobs ?? [],
-                    'min_row' => 5,
-                    'pagination' => true
-                ])
+                @yield('jobs-table')
+
                 <div id="history-workplan" style="display: none">
                     <a href=""  class="btn btn-link p-0 mb-1 text-decoration-none" data-toggle="modal" data-target="#update-job-histories">Lịch sử công việc</a>
                     
