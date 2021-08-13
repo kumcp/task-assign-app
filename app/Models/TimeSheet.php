@@ -109,4 +109,5 @@ class TimeSheet extends Model
     {
         return $query->belongsToJob($jobId)->belongsToAssignee($assigneeId);
     }
+
 }
