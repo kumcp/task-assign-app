@@ -39,41 +39,15 @@ class AmountConfirmController extends Controller
         $amountConfirms = [];
 
         if ($job->assignees->count() > 0) {
-            
-            $assignees = [];
-            $jobAssigns = [];
 
-            if ($job->assigner_id != $confirmAssigneeId) {
-                $confirmJobAssign = $job->jobAssigns->where('staff_id', $confirmAssigneeId)->first();
-
-                foreach ($job->jobAssigns as $jobAssign) {
-                    
-                    if ($jobAssign->parent_id == $confirmJobAssign->id && !$jobAssign->direct_report) {                        
-                        $jobAssigns[] = $jobAssign;
-                    }    
-                }
+            if ($job->assigner_id == $confirmAssigneeId) {
+                [$amountConfirms, $assignees] = $this->filterAmountConfirmsAndAssignees($job);
             }
             else {
-                foreach ($job->jobAssigns as $jobAssign) {
-                    
-                    if (!$jobAssign->parent_id || $jobAssign->direct_report) {
-                        $jobAssigns[] = $jobAssign;
-                    }
+                $confirmJobAssign = $job->jobAssigns->where('staff_id', $confirmAssigneeId)->first();
 
-                }
+                [$amountConfirms, $assignees] = $this->filterAmountConfirmsAndAssignees($job, false, $confirmJobAssign->id);
             }
-
-            foreach ($jobAssigns as $jobAssign) {
-
-                $assignees[] = $jobAssign->assignee;
-
-                foreach ($jobAssign->amountConfirms as $amountConfirm) {
-                    $amountConfirm->assignee_name = $jobAssign->assignee->name;
-                    $amountConfirms[] = $amountConfirm;
-                }
-            }
-
-
 
             $job->assignees = $assignees;
 
@@ -84,14 +58,13 @@ class AmountConfirmController extends Controller
 
     }
 
-
-    public function queryAmountConfirm(Request $request) {
+    public function queryAmountConfirm(Request $request) 
+    {
 
 
         if (!($request->has('id') || $request->has(['staffId', 'month']))) {
             return response('', 400);
         }
-
 
         if ($request->has('id')) {
             $amountConfirmId = $request->input('id');
@@ -108,35 +81,13 @@ class AmountConfirmController extends Controller
             }
 
             $jobAssign = $amountConfirm->jobAssign;
-            
-            if (!$jobAssign) {
-                return response('', 400);
-            }
-
-
-            $oldAmountConfirm = AmountConfirm::where(
-                'job_assign_id', $jobAssign->id
-            )
-            ->whereDate('month', '<', $amountConfirm->month)
-            ->sum('confirm_amount');
 
             $time = Carbon::parse($amountConfirm->month);
-
-            $timeSheets = TimeSheet::where('job_assign_id', $jobAssign->id)
-            ->whereMonth('from_date', $time->month)
-            ->whereYear('from_date', $time->year)
-            ->get();
-
-
-            
 
         }
         else {
             $staffId = $request->input('staffId');
-            $time = $request->input('month');
-
-            $monthYear = explode('-', $time);
-
+            $time = Carbon::parse($request->input('month'));
 
             $jobId = $request->input('jobId');
 
@@ -144,57 +95,26 @@ class AmountConfirmController extends Controller
                 'job_id' => $jobId,
                 'staff_id' => $staffId
             ])
-            ->with('job')
+            ->with([
+                'job',
+                'amountConfirms',
+                'amountConfirms.jobAssign'
+            ])
             ->first();
 
             if (!$jobAssign) {
                 return response('', 400);
             }
 
-            $assignAmount = $jobAssign->job->assign_amount;
-
-            $oldAmountConfirm = AmountConfirm::where(
-                'job_assign_id', $jobAssign->id
-            )
-            ->whereDate('month', '<', Carbon::parse($time))
-            ->sum('confirm_amount');
-    
-
-
-            $amountConfirm = AmountConfirm::where(
-                'job_assign_id', $jobAssign->id
-            )
-            ->whereMonth('month', $monthYear[1])
-            ->whereYear('month', $monthYear[0])
-            ->with('jobAssign')
-            ->first();
-
-            $timeSheets = TimeSheet::where('job_assign_id', $jobAssign->id)
-            ->whereMonth('from_date', $monthYear[1])
-            ->whereYear('from_date', $monthYear[0])
-            ->get();
-
-
+            $amountConfirm = $jobAssign->amountConfirms->filter(function($amountConfirm) use ($time) {
+                $confirmTime = Carbon::parse($amountConfirm->month);
+                return $time->month == $confirmTime->month && $time->year == $confirmTime->year;
+            })->first();
 
         }
 
+        [$oldAmountConfirm, $oldAmountConfirmPercent, $requestAmount, $requestAmountPercent] = $this->calculateAmountAndPercent($amountConfirm, $jobAssign, $time);
 
-
-        $assignAmount = $jobAssign->job->assign_amount;
-
-        $oldAmountConfirmPercent = $oldAmountConfirm * 100 / $assignAmount;
-
-
-        $totalTimeSheetAmount = 0;
-        
-        foreach ($timeSheets as $timeSheet) {
-            $totalTimeSheetAmount += $timeSheet->workAmountInManday();
-        }
-
-
-        $requestAmount = $amountConfirm ? $amountConfirm->request_amount : $totalTimeSheetAmount;
-        
-        $requestPercent = ($oldAmountConfirm + $requestAmount) * 100 / $assignAmount;
 
 
         if (!$amountConfirm) {
@@ -202,39 +122,32 @@ class AmountConfirmController extends Controller
                 'old_confirm_amount' => $oldAmountConfirm,
                 'old_confirm_percentage' => $oldAmountConfirmPercent,
                 'request_amount' => $requestAmount,
-                'request_percentage' => $requestPercent
+                'request_percentage' => $requestAmountPercent
             ]);
         }
 
         $amountConfirm->old_confirm_amount = $oldAmountConfirm;
         $amountConfirm->old_confirm_percentage = $oldAmountConfirmPercent;
         $amountConfirm->request_amount = $requestAmount;
-        $amountConfirm->request_percentage = $requestPercent;
+        $amountConfirm->request_percentage = $requestAmountPercent;
 
         return response()->json($amountConfirm);
 
 
     }
 
+    
 
-    public function action(Request $request) {
+
+    public function action(Request $request) 
+    {
         $action = $request->input('action');
 
         try {
 
             if ($action == 'save') {
 
-
-                $rules = [
-                    'confirm_amount' => ['required', 'lte:request_amount'],
-                ];
-        
-                $messages = [
-                    'confirm_amount.required' => 'Khối lượng xác nhận là bắt buộc',
-                    'confirm_amount.lte' => 'Khối lượng xác nhận không được vượt quá khối lượng đề nghị'
-                ];
-        
-                $validator = Validator::make($request->all(), $rules, $messages);
+                $validator = $this->makeValidator($request->all());
         
                 if ($validator->fails()) {
                     return redirect()->back()->withInput()->withErrors($validator->errors());
@@ -244,89 +157,12 @@ class AmountConfirmController extends Controller
                 $amountConfirmId = $request->input('amount_confirm_id');
 
                 if ($amountConfirmId) {
-
-                    
-                    $amountConfirm = AmountConfirm::find($amountConfirmId);
-                    
-                    if (!$amountConfirm) {
-                        return redirect()->back()->withInput()->with('error', 'Không tìm thấy xác nhận sản lượng');
-                    }
-
-                    $amountConfirm->update([
-                        'confirm_amount' => $request->input('confirm_amount'),
-                        'percentage_on' => $request->input('confirm_percentage'),
-                        'quality' => $request->input('quality'),
-                        'note' => $request->input('note')
-                    ]);
-
-                    return redirect()->back()->with('success', 'Xác nhận sản lượng thành công');
-    
+  
+                    return $this->updateAmountConfirm($amountConfirmId, $request);
     
                 }
-        
-                $jobId = $request->input('job_id');
-                
-                $staffId = $request->input('assignee');
-        
-                $confirmAssigneeId = Auth::user()->staff_id;
 
-                $confirmAssigneeJobAssign = JobAssign::where([
-                    'job_id' => $jobId,
-                    'staff_id' => $staffId
-                ])
-                ->with('job')
-                ->first();
-        
-                $jobAssign = JobAssign::where([
-                    'job_id' => $jobId,
-                    'staff_id' => $staffId
-                ])
-                ->first();
-
-                $monthYear = explode('-', $request->input('month'));
-
-                $amountConfirm = AmountConfirm::where(
-                    'job_assign_id', $jobAssign->id
-                )
-                ->whereMonth('month', $monthYear[1])
-                ->whereYear('month', $monthYear[0])
-                ->first();
-
-                if ($amountConfirm) {
-
-                    $amountConfirm->update([
-                        'confirm_amount' => $request->input('confirm_amount'),
-                        'percentage_on' => $request->input('confirm_percentage'),
-                        'quality' => $request->input('quality'),
-                        'note' => $request->input('note')
-                    ]);
-                }
-                else {
-                    AmountConfirm::create([
-                        'job_assign_id' => $jobAssign->id,
-                        'staff_id' => $confirmAssigneeId,
-                        'month' => Carbon::parse($request->input('month')),
-                        'confirm_amount' => $request->input('confirm_amount'),
-                        'request_amount' => $request->input('request_amount'),
-                        'percentage_on' => $request->input('confirm_percentage'),
-                        'quality' => $request->input('quality'),
-                        'note' => $request->input('note')
-                    ]);
-
-                    if ($confirmAssigneeJobAssign && $jobAssign->parent_id == $confirmAssigneeJobAssign->id && !$jobAssign->is_additional) {
-                        AmountConfirm::create([
-                            'job_assign_id' => $confirmAssigneeJobAssign->id,
-                            'staff_id' => $confirmAssigneeJobAssign->job->assigner_id,
-                            'month' => Carbon::parse($request->input('month')),
-                            'confirm_amount' => 0,
-                            'request_amount' => $request->input('confirm_amount'),
-                            'percentage_on' => $request->input('confirm_percentage'),
-                        ]);
-                    }
-                }
-                
-                return redirect()->back()->with('success', 'Xác nhận sản lượng thành công');
-    
+                return $this->createOrUpdateAmountConfirm($request);
     
             }
             else if ($action == 'reset') {
@@ -348,12 +184,179 @@ class AmountConfirmController extends Controller
                 return redirect()->back()->with('success', 'Xóa xác nhận sản lượng thành công');
         
             }
-
-
         } catch (Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
         }
 
+    }
+
+    private function filterAmountConfirmsAndAssignees($job, $isAssigner=true, $parentJobAssignId=null) 
+    {
+        $assignees = [];
+        $amountConfirms = [];
+
+        if ($isAssigner) {
+            $jobAssigns = $job->jobAssigns->filter(function($jobAssign) {
+                return !$jobAssign->isForwardOrAdditional() || $jobAssign->isDirectReport();
+            });
+        }
+        else {
+            $jobAssigns = $job->jobAssigns->filter(function($jobAssign) use ($parentJobAssignId) {
+                return $jobAssign->isChildOf($parentJobAssignId) && !$jobAssign->isDirectReport();
+            });
+        }
+
+        foreach ($jobAssigns as $jobAssign) {
+
+            $assignees[] = $jobAssign->assignee;
+
+            foreach ($jobAssign->amountConfirms as $amountConfirm) {
+                $amountConfirm->assignee_name = $jobAssign->assignee->name;
+                $amountConfirms[] = $amountConfirm;
+            }
+        }
+
+        return [$amountConfirms, $assignees];
+
+    }
+
+
+    private function calculateAmountAndPercent($amountConfirm, $jobAssign, $time) {  
+        
+        $oldAmountConfirm = null;
+        $oldAmountConfirmPercent = null;
+        $requestAmount = null; 
+        $requestAmountPercent = null;
+        
+        $assignAmount = $jobAssign->job->assign_amount;
+        
+        if ($assignAmount) {
+            $oldAmountConfirm = AmountConfirm::where(
+                'job_assign_id', $jobAssign->id
+            )
+            ->whereDate('month', '<', $time)
+            ->sum('confirm_amount');
+    
+            $timeSheets = TimeSheet::where('job_assign_id', $jobAssign->id)
+            ->whereMonth('from_date', $time->month)
+            ->whereYear('from_date', $time->year)
+            ->get();
+    
+    
+            $oldAmountConfirmPercent = $oldAmountConfirm * 100 / $assignAmount;
+    
+            $totalTimeSheetAmount = 0;
+    
+            foreach ($timeSheets as $timeSheet) {
+                $totalTimeSheetAmount += $timeSheet->workAmountInManday();
+            }
+    
+    
+            $requestAmount = $amountConfirm ? $amountConfirm->request_amount : $totalTimeSheetAmount;
+            $requestAmountPercent = ($oldAmountConfirm + $requestAmount) * 100 / $assignAmount;
+        }
+
+        return [$oldAmountConfirm, $oldAmountConfirmPercent, $requestAmount, $requestAmountPercent];
+
+    }
+
+    private function makeValidator($data) 
+    {
+        $rules = [
+            'confirm_amount' => ['required', 'lte:request_amount'],
+        ];
+
+        $messages = [
+            'confirm_amount.required' => 'Khối lượng xác nhận là bắt buộc',
+            'confirm_amount.lte' => 'Khối lượng xác nhận không được vượt quá khối lượng đề nghị'
+        ];
+
+        return Validator::make($data, $rules, $messages);
+    }
+
+    private function updateAmountConfirm($id, $request)
+    {
+        $amountConfirm = AmountConfirm::find($id);
+        
+        if (!$amountConfirm) {
+            return redirect()->back()->withInput()->with('error', 'Không tìm thấy xác nhận sản lượng');
+        }
+
+        $amountConfirm->update([
+            'confirm_amount' => $request->input('confirm_amount'),
+            'percentage_on' => $request->input('confirm_percentage'),
+            'quality' => $request->input('quality'),
+            'note' => $request->input('note')
+        ]);
+
+        return redirect()->back()->with('success', 'Xác nhận sản lượng thành công');
+    }
+
+    private function createOrUpdateAmountConfirm($request)
+    {
+        $jobId = $request->input('job_id');
+        $staffId = $request->input('assignee');
+        $time = Carbon::parse($request->input('month'));
+
+        $confirmAssigneeId = Auth::user()->staff_id;
+
+        $confirmAssigneeJobAssign = JobAssign::where([
+            'job_id' => $jobId,
+            'staff_id' => $confirmAssigneeId
+        ])
+        ->with('job')
+        ->first();
+
+        $jobAssign = JobAssign::where([
+            'job_id' => $jobId,
+            'staff_id' => $staffId
+        ])
+        ->first();
+
+
+
+        $amountConfirm = AmountConfirm::where(
+            'job_assign_id', $jobAssign->id
+        )
+        ->whereMonth('month', $time->month)
+        ->whereYear('month', $time->year)
+        ->first();
+
+        if ($amountConfirm) {
+
+            $amountConfirm->update([
+                'confirm_amount' => $request->input('confirm_amount'),
+                'percentage_on' => $request->input('confirm_percentage'),
+                'quality' => $request->input('quality'),
+                'note' => $request->input('note')
+            ]);
+        }
+        else {
+            AmountConfirm::create([
+                'job_assign_id' => $jobAssign->id,
+                'staff_id' => $staffId,
+                'month' => $time,
+                'confirm_amount' => $request->input('confirm_amount'),
+                'request_amount' => $request->input('request_amount'),
+                'percentage_on' => $request->input('confirm_percentage'),
+                'quality' => $request->input('quality'),
+                'note' => $request->input('note')
+            ]);
+
+            if ($jobAssign->isForward()) {
+                AmountConfirm::create([
+                    'job_assign_id' => $confirmAssigneeJobAssign->id,
+                    'staff_id' => $confirmAssigneeJobAssign->job->assigner_id,
+                    'month' => $time,
+                    'confirm_amount' => 0,
+                    'request_amount' => $request->input('confirm_amount'),
+                    'percentage_on' => $request->input('confirm_percentage'),
+                ]);
+            }
+
+        }
+        
+        return redirect()->back()->with('success', 'Xác nhận sản lượng thành công');
     }
 
 
