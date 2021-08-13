@@ -165,25 +165,24 @@ class AmountConfirmController extends Controller
                 return $this->createOrUpdateAmountConfirm($request);
     
             }
-            else if ($action == 'reset') {
-
-                return redirect()->route('amount-confirms.create', ['job_id' => $request->input('job_id')]);
             
+            if ($action == 'reset') {
+                return redirect()->route('amount-confirms.create', ['job_id' => $request->input('job_id')]);
             }
-            else {
-                $amountConfirmId = $request->input('amount_confirm_id');            
-                $amountConfirm = AmountConfirm::find($amountConfirmId);
 
-                if (!$amountConfirm) {
-                    return redirect()->back()->withInput()->with(
-                        'error', 'Không tìm thấy xác nhận sản lượng'
-                    );
-                }
-    
-                $amountConfirm->delete();
-                return redirect()->back()->with('success', 'Xóa xác nhận sản lượng thành công');
-        
+            $amountConfirmId = $request->input('amount_confirm_id');            
+            $amountConfirm = AmountConfirm::find($amountConfirmId);
+
+            if (!$amountConfirm) {
+                return redirect()->back()->withInput()->with(
+                    'error', 'Không tìm thấy xác nhận sản lượng'
+                );
             }
+
+            $amountConfirm->delete();
+            return redirect()->back()->with('success', 'Xóa xác nhận sản lượng thành công');
+        
+            
         } catch (Exception $e) {
             return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
         }
