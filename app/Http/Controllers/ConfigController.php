@@ -9,9 +9,10 @@ class ConfigController extends Controller
 {
 
     public function list(){
-        $configurations = Configuration::getAll();
+        $configurations = Configuration::getSystemConfiguration();
         return view('site.config.configuration', compact('configurations'));
     }
+    
     public function update(Request $request){
 
         $data = $request->only([

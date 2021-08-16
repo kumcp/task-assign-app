@@ -71,6 +71,7 @@ class Configuration extends Model
     public static function set($fieldName, $value)
     {
         $config = Configuration::where('field', $fieldName)->first();
+        
         if ($config) {
             $config->update($value);
             $config->refresh();
@@ -78,23 +79,15 @@ class Configuration extends Model
         else {
             $config = Configuration::create($value);
         }
+
         return $config;
     }
 
-    public static function getAll()
+    public static function gets($fieldNames)
     {
         $configurations = [];
         
-        $fieldNames = [
-            Configuration::CONFIG_JOB_CODE,
-            Configuration::CONFIG_JOB_ACCEPT,
-            Configuration::CONFIG_PERIOD, 
-            Configuration::CONFIG_WORKPLAN,
-            Configuration::CONFIG_PRODUCTION_AMOUNT,
-            Configuration::CONFIG_ASSIGN_AMOUNT,
-        ];
-
-        $configurationsInDB = Configuration::all();
+        $configurationsInDB = Configuration::whereIn('field', $fieldNames)->get();
 
         foreach ($fieldNames as $fieldName) {
             $config = $configurationsInDB->where('field', $fieldName)->first();
@@ -110,5 +103,21 @@ class Configuration extends Model
         return $configurations;
 
     }
+
+    public static function getSystemConfiguration()
+    {
+        $fieldNames = [
+            Configuration::CONFIG_JOB_CODE,
+            Configuration::CONFIG_JOB_ACCEPT,
+            Configuration::CONFIG_PERIOD, 
+            Configuration::CONFIG_WORKPLAN,
+            Configuration::CONFIG_PRODUCTION_AMOUNT,
+            Configuration::CONFIG_ASSIGN_AMOUNT,
+        ];
+
+        return Configuration::gets($fieldNames);
+
+    }
+
 
 }
