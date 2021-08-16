@@ -7,11 +7,7 @@ use Illuminate\Http\Request;
 
 class ConfigController extends Controller
 {
-    public function updateField(Request $request, $field, $id){
-        $config[$id] = Configuration::where('field',$field)->first();
-        $config[$id]->value = $request->$field;
-        $config[$id]->save();
-    }
+
     public function list(){
         $configurations = Configuration::all();
 
