@@ -93,10 +93,20 @@ class Configuration extends Model
             Configuration::CONFIG_PRODUCTION_AMOUNT,
             Configuration::CONFIG_ASSIGN_AMOUNT,
         ];
-        
+
+        $configurationsInDB = Configuration::all();
+
         foreach ($fieldNames as $fieldName) {
-            $configurations[] = Configuration::get($fieldName);
+            $config = $configurationsInDB->where('field', $fieldName)->first();
+            
+            if (!$config) {
+                $configurations[] = Configuration::set($fieldName, Configuration::DEFAULT_VALUE[$fieldName]);
+            }
+            else{
+                $configurations[] = $config;
+            }
         }
+        
         return $configurations;
 
     }
