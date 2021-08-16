@@ -15,7 +15,7 @@ class TimeSheet extends Model
     }
 
     public function timeDate(){
-        $fromTime = strtotime($this->form_time);
+        $fromTime = strtotime($this->from_time);
         $toTime = strtotime($this->to_time);
 
         $fromDate = strtotime($this->from_date);
@@ -32,5 +32,22 @@ class TimeSheet extends Model
         $jod_period = $this->jobAssign->job->period*8;
 
         return number_format(($dateDiff/$jod_period)*100, 2, '.', '');
+    }
+
+    public function workAmountInManday() {
+        $fromTime = strtotime($this->from_time);
+        $toTime = strtotime($this->to_time);
+
+        $fromDate = strtotime($this->from_date);
+        $toDate = strtotime($this->to_date);
+
+        $absHour = abs($toTime - $fromTime);
+        $hour = floor($absHour / (60 * 60));
+
+        $absDate = floor($toDate - $fromDate);
+        $date = floor($absDate / (60 * 60 * 24));
+
+        $workAmount = $hour * ($date + 1) / 8;
+        return $workAmount;
     }
 }

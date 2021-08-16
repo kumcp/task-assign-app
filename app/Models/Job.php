@@ -54,19 +54,27 @@ class Job extends Model
         return $this->belongsTo(Staff::class, 'assigner_id');
     }
 
-    public function assignee()
+    public function assignees()
     {
-        return $this->belongsToMany(Staff::class, 'job_assigns')->using(JobAssign::class)->withPivot('role', 'direct_report', 'sms');
+        return $this->belongsToMany(Staff::class, 'job_assigns')->using(JobAssign::class)->withPivot(
+            'process_method_id', 
+            'parent_id', 
+            'direct_report', 
+            'sms', 
+            'status', 
+            'deny_reason'
+        );
     }
 
     public function jobAssigns()
     {
-        return $this->hasMany(JobAssign::class);
+        return $this->hasMany(JobAssign::class, 'job_id');
     }
+
 
     public function updateHistories()
     {
-        return $this->hasMany(UpdateJobHistory::class);
+        return $this->hasMany(UpdateJobHistory::class, 'job_id');
     }
 
 
