@@ -14,7 +14,8 @@ class TimeSheet extends Model
         return $this->belongsTo(JobAssign::class, 'job_assign_id');
     }
 
-    public function timeDate(){
+    public function timeDate()
+    {
         $fromTime = strtotime($this->from_time);
         $toTime = strtotime($this->to_time);
 
@@ -29,9 +30,12 @@ class TimeSheet extends Model
 
         $dateDiff = $hour*($date+1);
 
-        $jod_period = $this->jobAssign->job->period*8;
+        if ($this->jobAssign->job->period) {
+            $jod_period = $this->jobAssign->job->period*8;
+            return number_format(($dateDiff/$jod_period)*100, 2, '.', '');
+        }
+        return null;
 
-        return number_format(($dateDiff/$jod_period)*100, 2, '.', '');
     }
 
     public function workAmountInHour()

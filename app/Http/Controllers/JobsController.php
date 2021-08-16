@@ -131,7 +131,6 @@ class JobsController extends Controller
         
         $jobIds = $request->input('job_ids');
 
-
         switch ($action) {
             
             case 'detail':

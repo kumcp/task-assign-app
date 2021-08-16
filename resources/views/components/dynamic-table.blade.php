@@ -20,7 +20,7 @@
                 @foreach ($cols ?? [] as $key => $value)
                     @if ($value === 'pattern.modified')
                     @elseif ($key === 'checkbox')
-                        <td><input name="{{ $value }}" type="checkbox"></td>
+                        <td><input name="{{ $value }}" type="checkbox" value="{{$item['id']}}"></td>
                     @else
                         <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
                         </td>
