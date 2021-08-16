@@ -9,8 +9,7 @@ class ConfigController extends Controller
 {
 
     public function list(){
-        $configurations = Configuration::all();
-
+        $configurations = Configuration::getAll();
         return view('site.config.configuration', compact('configurations'));
     }
     public function update(Request $request){
@@ -25,8 +24,7 @@ class ConfigController extends Controller
         ]);
 
         foreach ($data as $field => $value) {
-            $config = Configuration::where('field', $field)->first();
-            $config->update(['value' => $value]);
+            Configuration::set($field, ['value' => $value]);
         }
       
         return redirect()->route('config.list')->with('success','Cập nhật cấu hình thành công');
