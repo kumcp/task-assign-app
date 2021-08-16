@@ -119,7 +119,10 @@ Route::prefix('process-method')->group(function () {
 });
 
 // Config
-Route::get('config', [ConfigController::class, 'list'])->name('config.list');
+Route::prefix('configurations')->group(function (){
+    Route::get('/',[ConfigController::class, 'list'])->name('config.list');
+    Route::post('/update',[ConfigController::class, 'update'])->name('config.update');
+});
 
 Route::get('/register', [RegisterController::class, 'register']);
 Route::post('/register', [RegisterController::class, 'store'])->name('register');

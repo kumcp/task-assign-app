@@ -3,78 +3,83 @@
 @section('content')
     <div class="container">
         <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
-            <legend class="w-auto">Cấu hình</legend>
-            <form action="#" class="flex-center" method="POST">
+            <legend class="w-auto">Cấu hình giao việc</legend>
+            @include('components.flash-message')
+            <form action="{{route('config.update')}}" class="offset-4" method="POST">
+            @csrf
             <div class="form-group-row mb-3">
                 @include('components.select', [
                     'name' => 'period', 
                     'label' => 'Kỳ',
                     'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
                     ],
+                    'checked' => $config[0]->value,
                 ])
             </div>
             <div class="form-group-row mb-3">
                 @include('components.select', [
-                    'name' => 'project_code', 
+                    'name' => 'job_code',
                     'label' => 'Mã công việc',
                     'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
                     ],
+                    'checked' => $config[1]->value,
                 ])
             </div>
             <div class="form-group-row mb-3">
                 @include('components.select', [
-                    'name' => 'lsx_amount', 
+                    'name' => 'production_volume',
                     'label' => 'Khối lượng LSX',
                     'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
                     ],
+                    'checked' => $config[2]->value,
                 ])
             </div>
-
             <div class="form-group-row mb-3">
                 @include('components.select', [
-                    'name' => 'assign_amount', 
+                    'name' => 'volume_interface',
                     'label' => 'Khối lượng giao',
                     'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
                     ],
+                    'checked' => $config[3]->value,
                 ])
             </div>
-
             <div class="form-group-row mb-3">
                 @include('components.select', [
-                    'name' => 'job_accept', 
+                    'name' => 'get_job',
                     'label' => 'Nhận việc',
                     'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
                     ],
+                    'checked' => $config[4]->value,
+                ])
+            </div>
+            <div class="form-group-row mb-5">
+                @include('components.select', [
+                    'name' => 'Implementation_plan',
+                    'label' => 'Kế hoạch thực hiện',
+                    'options' => [
+                        ['id' => 0, 'name' => 'Không'],
+                        ['id' => 1, 'name' => 'Có'],
+                    ],
+                    'checked' => $config[5]->value,
                 ])
             </div>
 
-            <div class="form-group-row mb-5">
-                @include('components.select', [
-                    'name' => 'work_plan', 
-                    'label' => 'Kế hoạch thực hiện',
-                    'options' => [
-                        ['value' => 0, 'display' => 'Không'],
-                        ['value' => 1, 'display' => 'Bắt buộc'],
-                    ],
-                ])
-            </div>
-            <div class="row offset-2">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i>
-                    <span>Lưu</span> 
-                </button>
-            </div>
-            
+            @include('components.button-group', [
+                    'buttons' => [
+                        ['class' => 'btn btn-primary', 'iconClass' => 'fas fa-save', 'value' => 'Lưu' ],
+                    ]
+            ])
+
         </form>
         </fieldset>
     </div>
