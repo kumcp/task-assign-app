@@ -13,16 +13,26 @@ class ConfigController extends Controller
         $config[$id]->save();
     }
     public function list(){
-        $config = Configuration::all();
-        return view('site.config.configuration', compact('config'));
+        $configurations = Configuration::all();
+
+        return view('site.config.configuration', compact('configurations'));
     }
     public function update(Request $request){
-        $this->updateField($request, 'period', 0);
-        $this->updateField($request, 'job_code', 1);
-        $this->updateField($request, 'production_volume', 2);
-        $this->updateField($request, 'volume_interface', 3);
-        $this->updateField($request, 'get_job', 4);
-        $this->updateField($request, 'Implementation_plan', 5);
+
+        $data = $request->only([
+            'period',
+            'job_code',
+            'production_volume',
+            'volume_interface',
+            'get_job',
+            'implementation_plan',
+        ]);
+
+        foreach ($data as $field => $value) {
+            $config = Configuration::where('field', $field)->first();
+            $config->update(['value' => $value]);
+        }
+      
         return redirect()->route('config.list')->with('success','Cập nhật cấu hình thành công');
     }
 
