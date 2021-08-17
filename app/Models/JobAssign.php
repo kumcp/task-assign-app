@@ -110,5 +110,10 @@ class JobAssign extends Pivot
         });
     }
 
+    public function scopeMainJobAssign($query)
+    {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+        return $query->where('process_method_id', $mainProcessMethod->id);
+    }
 
 }

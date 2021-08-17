@@ -36,6 +36,12 @@ class JobsController extends Controller
 
         $condition = [];
         if ($request->method() === 'POST') {
+
+            $action = $request->input('action');
+
+            if ($action == 'reset') {
+                return redirect()->back();
+            }
             
             foreach ($request->all() as $key => $value) {
                 if (!in_array($key, ['_token', 'type', 'from_date', 'to_date']) && $value)
@@ -86,7 +92,7 @@ class JobsController extends Controller
 
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
 
         $job = Job::with([
@@ -104,28 +110,22 @@ class JobsController extends Controller
 
         $status = $job->status;
 
-        $job->status = __('jobStatus.' . $status, [], 'vi');
+        $job->status = __('jobStatus.all_status.' . $status, [], 'vi');
 
-        $assignees = $job->assignees;
-        $jobAssigns = $job->jobAssigns;
-
-        foreach($assignees as $assignee) {
+        $jobAssigns = $job->jobAssigns;        
+        
+        foreach($job->assignees as $assignee) {
             $id = $assignee->id;
             $processMethodId = $assignee->pivot->process_method_id;
             
-            $jobAssign = array_filter($jobAssigns->toArray(), function($item) use ($id, $processMethodId){
-                return ($item['staff_id'] == $id && $item['process_method_id'] == $processMethodId);
-            });
-
-            $jobAssign = array_values($jobAssign)[0];
-            
+            $jobAssign = $jobAssigns->filter(function($assign) use ($id, $processMethodId){
+                return $assign->staff_id == $id && $assign->process_method_id = $processMethodId;
+            })
+            ->first();
         
-            $assignee->pivot->process_method = $jobAssign['process_method']['name'];
+            $assignee->pivot->process_method = $jobAssign->processMethod->name;
 
         }
-
-        $job->assignees = $assignees;
-
 
         return response($job);
     }
@@ -154,18 +154,18 @@ class JobsController extends Controller
         ->orderBy('created_at', 'DESC')
         ->paginate($this::DEFAULT_PAGINATE);
 
-
         $staff = Staff::all();
         $projects = Project::all();
         $jobTypes = JobType::all();
         $priorities = Priority::all();
         $processMethods = ProcessMethod::all();
-    
         
-        return view('jobs.create', compact('relatedJobs', 'createdJobs', 'staff', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId', 'parentJobId'));
+        //TODO get all system configurations
+        $systemConfig = $this->formatSystemConfig(Configuration::all());
+        
+        return view('jobs.create', compact('relatedJobs', 'createdJobs', 'staff', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId', 'parentJobId', 'systemConfig'));
 
     }
-
 
     public function detailAction(Request $request)
     {   
@@ -186,19 +186,27 @@ class JobsController extends Controller
                     return redirect()->route('jobs.create', ['jobId' => $jobId]);
                 }
 
+                $leftTitle = null;
+                $rightTitle = null;
                 $type = $request->input('type');
                 switch ($type) {
 
                     case 'pending': 
                         [$leftTableJobs, $rightTableJobs] = $this->getPendingJobs($staffId);
+                        $leftTitle = 'Công việc đang chờ nhận';
+                        $rightTitle = 'Công việc chưa có người nhận';
                         break;
 
                     case 'handling': 
                         [$leftTableJobs, $rightTableJobs] = $this->getHandlingJobs($staffId);
+                        $leftTitle = 'Công việc trực tiếp xử lý';
+                        $rightTitle = 'Công việc liên quan';
                         break;
                         
                     case 'assigner': 
                         [$leftTableJobs, $rightTableJobs] = $this->getAssignerJobs($staffId);
+                        $leftTitle = 'Công việc đã giao xử lý';
+                        $rightTitle = 'Công việc chuyển tiếp/bổ sung';
                         break;
 
                     default: 
@@ -219,7 +227,9 @@ class JobsController extends Controller
                     'jobId' => $jobId,
                     'numTables' => 2,
                     'leftTable' => $leftTableJobs,
-                    'rightTable' => $rightTableJobs
+                    'rightTable' => $rightTableJobs,
+                    'leftTitle' => $leftTitle,
+                    'rightTitle' => $rightTitle
                 ]);
                  
                 
@@ -260,7 +270,6 @@ class JobsController extends Controller
         }
     }
 
-
     public function action(Request $request)
     {
 
@@ -284,7 +293,6 @@ class JobsController extends Controller
                 return redirect()->route('jobs.index');
 
         }
-
     }
     
     private function destroy ($id) 
@@ -319,32 +327,46 @@ class JobsController extends Controller
     private function save($data, $flashInputs=false) {
         $jobId = $data['job_id'];
 
+        //TODO: get system configuration
+        $systemConfig = $this->formatSystemConfig(Configuration::all());
+
         if ($jobId) {
             
             $rules = [ 
                 'assigner_id' => 'required', 
                 'name' => ['required', 'string'], 
                 'deadline' => ['required', 'date'],
+                'period' => $systemConfig['period'] ? 'required' : '',
+                'code' => $systemConfig['job_code'] ? 'required' : '',
+                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
+                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
             ];
 
         }
         else {
             
             $rules = [
-                'code' => 'unique:jobs', 
+                'code' => $systemConfig['job_code'] ? ['required', 'unique:jobs'] : 'unique:jobs', 
                 'assigner_id' => 'required', 
                 'name' => ['required', 'string'], 
                 'deadline' => ['required', 'date'],
+                'period' => $systemConfig['period'] ? 'required' : '',
+                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
+                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
             ];
 
         }
 
         $messages = [
             'code.unique' => 'Mã dự án đã được sử dụng',
+            'code.required' => 'Mã dự án là bắt buộc',
             'assigner_id.required' => 'Người giao việc là bắt buộc',
             'name.required' => 'Tên công việc là bắt buộc',
             'deadline.required' => 'Hạn xử lý là bắt buộc',
-            'deadline.date' => 'Hạn xử lý phải là ngày'
+            'deadline.date' => 'Hạn xử lý phải là ngày',
+            'period.required' => 'Kỳ là bắt buộc',
+            'lsx_amount.required' => 'Khối lượng LSX là bắt buộc',
+            'assign_amount.required' => 'Khối lượng giao là bắt buộc',
         ];
 
         $validator = Validator::make($data, $rules, $messages);
@@ -356,7 +378,7 @@ class JobsController extends Controller
         $tableCols = DB::getSchemaBuilder()->getColumnListing('jobs');
         $jobData = array_filter(
             $data, 
-            fn($key) => in_array($key, $tableCols),
+            fn($key) => in_array($key, $tableCols) && $key != 'status',
             ARRAY_FILTER_USE_KEY
         );
         
@@ -481,6 +503,9 @@ class JobsController extends Controller
                 
             }
             else {
+                if ($systemConfig['get_job']) {
+                    $jobData['status'] = Job::STATUS_ACTIVE;
+                }
                 $job = Job::create($jobData);
             }
         
@@ -492,7 +517,6 @@ class JobsController extends Controller
                     
                     $originalFileName = ($file->getClientOriginalName());
                     $file->storeAs(File::UPLOAD_DIR, $originalFileName, 'public');
-
 
                     $newFile = File::create([
                         'staff_id' => $job->assigner_id, 
@@ -556,7 +580,8 @@ class JobsController extends Controller
                     'process_method_id' => $processMethod->id,
                     'direct_report' => $assignee['direct_report'] ?? null,
                     'deadline' => $assignee['deadline'] ?? null,
-                    'sms' => $assignee['sms'] ?? null
+                    'sms' => $assignee['sms'] ?? null,
+                    'status' => JobAssign::STATUS_PENDING
                 ]);
     
             }
@@ -589,7 +614,6 @@ class JobsController extends Controller
                 ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
-       
         $relatedJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
                 $query->where('staff_id', $staffId)
@@ -642,16 +666,9 @@ class JobsController extends Controller
         ->doesntHave('jobAssigns')
         ->get();
         
-        
-        
-        $reformatedNewAssignedJobs = $this->reformatPendingJobs($newAssignedJobs);
-        
+        $reformatedNewAssignedJobs = $this->reformatPendingJobs($newAssignedJobs);    
         $reformatedUnassignedJobs = $this->reformatPendingJobs($unassignedJobs);
-        
-
-        
-
-        
+    
         return [$reformatedNewAssignedJobs, $reformatedUnassignedJobs];
     }
 
@@ -673,10 +690,7 @@ class JobsController extends Controller
         ->whereHas('jobAssigns.children')
         ->get();
 
-
-
-        $reformatedCreatedJobs = $this->reformatAssignerJobs($createdJobs);
-        
+        $reformatedCreatedJobs = $this->reformatAssignerJobs($createdJobs);        
         $reformatedForwardJobs = $this->reformatAssignerJobs($forwardJobs);
 
         return [$reformatedCreatedJobs, $reformatedForwardJobs];
@@ -715,17 +729,13 @@ class JobsController extends Controller
             $job->project_code = $job->project ? $job->project->code : null;
             $job->assigner = $job->assigner->name;
             $job->process_method  = $job->jobAssigns[0]->processMethod->name;
-
-            $job->job_assign_id = $job->jobAssigns[0]->id;
             
+            $job->job_assign_id = $job->jobAssigns[0]->id;
             if ($related) {
                 $job->forward = $job->jobAssigns[0]->parent->assignee->name;
             }
 
-            $deadline = Carbon::parse($job->deadline);
-            $now = Carbon::now();
-            
-            $job->remaining = $now->greaterThanOrEqualTo($deadline) ? 0 : $now->diffInDays($deadline);
+            $job->remaining = $job->getRemaining();
 
             $timeSheetAmount = 0;
 
@@ -734,12 +744,8 @@ class JobsController extends Controller
                     $timeSheetAmount += $timeSheet->workAmountInManday();
                 }
             }
-
-        
             $job->timesheet_amount = $timeSheetAmount;
-
             $job->finished_percent = $job->assign_amount ? $timeSheetAmount / $job->assign_amount : null;
-
         }
         return $jobs;
     }
@@ -760,12 +766,22 @@ class JobsController extends Controller
 
     private function reformatAssignerJobs($jobs)
     {
-        foreach ($jobs as $item) {
-            $item->project_code = $item->project ? $item->project->code : null;
-            $item->assigner = $item->assigner->name;
-            $item->others = null;
-            $item->remaining = null;
-            $item->evaluation = null;
+        foreach ($jobs as $job) {
+            $job->project_code = $job->project ? $job->project->code : null;
+            $job->assigner = $job->assigner->name;
+            
+            $mainAssignee = $job->getMainAssignee();
+            $others = $job->getOtherAssignees();
+            $otherNames = $others->map(function($assignee) {
+                return $assignee->name;
+            });
+
+            $job->main_assignee = $mainAssignee ? $mainAssignee->name :null;
+            $job->others = implode(',', $otherNames->toArray());
+
+            $job->remaining = $job->getRemaining();
+            $job->evaluation = null;
+            $job->status = __('jobStatus.all_status.' . $job->status, [], 'vi');
 
         }
 
@@ -774,62 +790,36 @@ class JobsController extends Controller
 
     public function reformatAllJobs($jobs)
     {
-        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
 
         foreach ($jobs as $job) {
             
-            $mainAssignee = null;
-            $mainJobAssign = null;
-            $others = [];
+            $mainAssignee = $job->getMainAssignee();
+            $others = $job->getOtherAssignees();
+            $otherNames = $others->map(function($assignee) {
+                return $assignee->name;
+            });
 
-            $assignees = $job->assignees;
-            $jobAssigns  = $job->jobAssigns;
-
-            foreach ($jobAssigns as $jobAssign) {
-                if ($jobAssign->process_method_id == $mainProcessMethod->id) {
-                    $mainJobAssign = $jobAssign;
-                    break;
-                }
-            }
-            
-            if ($mainJobAssign) {
-
-                foreach ($assignees as $assignee) {
-                    if ($assignee->id == $mainJobAssign->staff_id) {
-                        $mainAssignee = $assignee;
-                        break;
-                    }
-                }
-              
-            }
-
-
-            foreach ($assignees as $assignee) {
-                if (!$mainAssignee || $assignee->id != $mainAssignee->id) {
-                    
-                    $others[] = $assignee->name;
-                }
-            }
-
-
-    
-            
-            
             $job->project_code = $job->project ? $job->project->code : null;
             $job->assigner = $job->assigner->name;
             $job->main_assignee = $mainAssignee ? $mainAssignee->name :null;
-            $job->others = implode(',', $others);
-            $job->remaining = null;
+            $job->others = implode(',', $otherNames->toArray());
+            $job->remaining = $job->getRemaining();
             $job->evaluation = null;
-
+            $job->status = __('jobStatus.all_status.' . $job->status, [], 'vi');
 
         }
-
 
         return $jobs;
     }
 
-    
+    private function formatSystemConfig($systemConfig)
+    {
+        $reformat = [];
+        foreach ($systemConfig as $config) {
+            $reformat[$config->field] = $config->value;
+        }
+        return $reformat;
+    }
 
     
 

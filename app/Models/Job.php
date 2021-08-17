@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,15 +11,18 @@ class Job extends Model
     use HasFactory;
 
     const STATUS_ACTIVE = 'active';
+    const STATUS_PENDING = 'pending';
     const STATUS_DEACTIVE = 'deactive';
     const PERIOD_UNIT_DAY = 'day';
-    const PERIOD_UNIT_HOUR = 'hour';
-    const PERIOD_UNIT_TERM = 'term';
+    const PERIOD_UNIT_WEEK = 'week';
+    const PERIOD_UNIT_MONTH = 'month';
+    const PERIOD_UNIT_QUARTER = 'quarter';
+    const PERIOD_UNIT_YEAR = 'year';
 
     // Default attribute when create Model
 
     protected $attributes = [
-        'status' => self::STATUS_ACTIVE,
+        'status' => self::STATUS_PENDING,
         'period_unit' => self::PERIOD_UNIT_DAY,
     ];
 
@@ -83,4 +87,38 @@ class Job extends Model
     {
         return $this->status == 'active';
     }
+
+    public function getRemaining()
+    {
+        $deadline = Carbon::parse($this->deadline);
+        $now = Carbon::now();
+        return $now->greaterThanOrEqualTo($deadline) ? 0 : $now->diffInDays($deadline);
+    }
+
+    public function getMainAssignee()
+    {
+        $mainJobAssign = JobAssign::with(
+            'assignee'
+        )
+        ->where('job_id', $this->id)
+        ->mainJobAssign()
+        ->first();
+        
+        return $mainJobAssign ? $mainJobAssign->assignee : null;
+    }
+
+    public function getOtherAssignees()
+    {
+        $mainAssignee = $this->getMainAssignee();
+        $assignees = $this->load('assignees')->assignees;
+        if ($mainAssignee) {
+            return $assignees->filter(function($assignee) use ($mainAssignee) {
+                return $assignee->id != $mainAssignee->id;
+            });
+        }
+        return $assignees;
+    }
+
+
+
 }
