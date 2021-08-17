@@ -71,19 +71,18 @@
 	<div class="form-group-row mb-3">
 
 		@include('components.searchable-input-text', [
-				'name' => 'project_code',
-				'label' => 'Mã dự án', 
-				'options' => $projects, 
-				'displayField' => 'code',
-				'hiddenField' => 'name',
-				'checked' => old('project_id')
-			])
+			'name' => 'project_code',
+			'label' => 'Mã dự án', 
+			'options' => $projects, 
+			'displayField' => 'code',
+			'hiddenField' => 'name'
+		])
 
-			@include('components.input-text', [
-				'name' => 'project_name',
-				'label' => '(Tên dự án)',
-				'readonly' => true,
-			])
+		@include('components.input-text', [
+			'name' => 'project_name',
+			'label' => '(Tên dự án)',
+			'readonly' => true,
+		])
 		<input type="hidden" name="project_id" id="project_id" value="{{ old('project_id') }}">
 		
 
@@ -113,6 +112,17 @@
 			'name' => 'period',
 			'label' => 'Kỳ',
 		])
+		@if ($systemConfig['period'])
+			<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
+		@endif
+		
+		@error('period')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('period')}}</span>
+		@enderror
+	
+	</div>
+
+	<div class="form-group-row mb-3">
 		@include('components.select', [
 			'name' => 'period_unit', 
 			'label' => 'Đơn vị',
@@ -124,9 +134,8 @@
 			'checked' => old('period_unit')
 
 		])
-
-	
 	</div>
+
 	<div class="form-group-row mb-3">
 
 		@include('components.searchable-input-text', [
@@ -144,10 +153,18 @@
 			'name' => 'code',
 			'label' => 'Mã CV'
 		])
+		@if ($systemConfig['job_code'])
+			<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
+		@endif
 		
+		@error('code')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('code')}}</span>
+		@enderror
+
 	</div>
 
 	<div class="form-group-row mb-3">
+	
 		@include('components.searchable-input-text', [
 			'name' => 'priority_name',
 			'label' => 'Độ ưu tiên', 
@@ -156,6 +173,7 @@
 		<input type="hidden" name="priority_id" id="priority_id" value="{{ old('priority_id') }}">
 
 	</div>
+
 	<div class="form-group-row mb-3">
 
 		@include('components.input-text', [
@@ -164,6 +182,9 @@
 		])
 		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
 		
+		@error('name')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('name')}}</span>
+		@enderror
 	
 	</div>
 
@@ -173,7 +194,13 @@
 			'name' => 'lsx_amount', 
 			'label' => 'Khối lượng LSX',
 		])
-		<label>(Man day)</label>
+		@if ($systemConfig['production_volume'])
+			<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
+		@endif
+		<label class="ml-4">(Man day)</label>
+		@error('lsx_amount')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('lsx_amount')}}</span>
+		@enderror
 
 
 	</div>
@@ -184,7 +211,15 @@
 			'name' => 'assign_amount', 
 			'label' => 'Khối lượng giao'
 		])
-		<label>(Man day)</label>
+		@if ($systemConfig['volume_interface'])
+			<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
+		@endif
+
+		<label class="ml-4">(Man day)</label>
+
+		@error('assign_amount')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('assign_amount')}}</span>
+		@enderror
 	</div>
 	<div class="form-group-row mb-3">
 		@include('components.input-date', [
@@ -193,6 +228,10 @@
 			'label' => 'Hạn xử lý',
 		])
 		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
+		
+		@error('deadline')
+			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('deadline')}}</span>
+		@enderror
 	</div>
 
 	<div class="form-group-row mb-3">
@@ -255,6 +294,7 @@
 
 @section('jobs-table')
 	@include('components.dynamic-table', [
+		'id' => 'jobs-table',
 		'cols' => [
 			'Tên công việc' => 'name',
 		],
@@ -266,43 +306,15 @@
 
 
 @section('custom-script')
+	<script src="{{ asset('js/fileInput.js') }}"></script>
 	<script>
-
-		const initializeChildJob = parentJob => {
-			
-			setSelectedValue('#project_code', parentJob.project_id);
-			setSelectedValue('#job_type', parentJob.job_type_id);
-			setSelectedValue('#priority_name', parentJob.priority_id);
-
-			$('#deadline').val(parentJob.deadline);
-			$('#period').val(parentJob.period);
-
-			if (parentJob.files.length > 0) {
-            	$('#file-count span').html(parentJob.files.length);
-				$('#file-count').show();
-
-        	}
-
-        	initializeFileTable('files', parentJob.files);
-			
-			
-		}
-
 
 		$(document).ready(function() {
 
-			const parentId = $('#parent_id').val();
-			if (parentId) {
-				setSelectedValue('#parent_job',  parentId);
-
-				getJob(parentId).then(parentJob => {
-					console.log(parentJob);
-					initializeChildJob(parentJob);
-				});
-				
-			}
+			initializeChildJob();
 
 			$('#file-count').hide();
+			handleFileCountClick();
 
 			$('button[value="edit"]').click(function () {
 				const jobId = $('#job_id').val();
@@ -316,42 +328,8 @@
 
 
 			$('input:file').change(function(e) {
-
 				const files = e.target.files;
-				
-				if (files.length > 0) {
-					let cnt = 0;
-					
-
-					resetTable('files');
-
-					for (let i = 0; i < files.length; i++) {
-						const file = files[i];
-						const fileSize = ((file.size / 1024) / 1024).toFixed(4); // MB
-						
-						if (fileSize <= 10) {
-							const newLink = $('<a/>', {
-								href: URL.createObjectURL(file),
-								text: file.name,
-								target: '_blank'
-            				});
-							addRowToTable('files', i, newLink);
-							cnt++;
-						}
-
-					}
-
-					if (cnt > 0) {
-
-						$('#file-count span').html(cnt);
-						$('#file-count').show();
-					}
-
-					
-				}
-				else {
-					$('#file-count').hide();
-				}
+				handleFileInputChange(files);
 			});
 
 			$('#file-count').hide();
@@ -538,23 +516,8 @@
 			});
 
 
-
-
-
-
-
-
-
 			$('#parent_job').change(function() {
-				const val = $(this).val();
-				if (val.length > 0) {
-					const parentId = val[0];
-
-					getJob(parentId).then(parentJob => {
-						console.log(parentJob)
-						initializeChildJob(parentJob);
-					});
-				}
+				initializeChildJob();
 			})
 
 

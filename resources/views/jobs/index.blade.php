@@ -76,10 +76,10 @@
 					])
 				</div>
 				<div class="btn-group offset-5" role="group">
-					<button type="submit" class="btn btn-light">
+					<button type="submit" class="btn btn-light" name="action" value="search">
 						<i class="fas fa-search"></i>
 					</button>
-					<button type="button" id="reset-btn" class="btn btn-light">
+					<button type="submit" id="reset-btn" class="btn btn-light" name="action" value="reset">
 						<i class="fas fa-redo"></i>
 					</button>
 
@@ -150,12 +150,6 @@
 
 	<script>
 		$(document).ready(function () {
-			const handleReset = () => {
-				$('select').prop('selectedIndex', -1);
-				$('.form-group-row input').each(function() {
-					$(this).val(null);
-				});
-			}
 
 			const initializeSelectInput = () => {
 				$('select').prop('selectedIndex', -1);
@@ -167,10 +161,6 @@
 			
 			$('input:checkbox').each(function() {
 				$(this).prop('checked', false);
-			});
-
-			$('#reset-btn').click(function() {
-				handleReset();
 			});
 
 
