@@ -1,4 +1,31 @@
 // MAIN FUNCTIONS
+const initializeChildJob = () => {
+	
+    const parentId = $('#parent_id').val();
+    if (parentId) {
+        setSelectedValue('#parent_job',  parentId);
+
+        getJob(parentId).then(parentJob => {
+
+            setSelectedValue('#project_code', parentJob.project_id);
+            setSelectedValue('#job_type', parentJob.job_type_id);
+            setSelectedValue('#priority_name', parentJob.priority_id);
+
+            $('#deadline').val(parentJob.deadline);
+            $('#period').val(parentJob.period);
+
+            if (parentJob.files.length > 0) {
+                $('#file-count span').html(parentJob.files.length);
+                $('#file-count').show();
+
+            }
+
+            initializeFileTable('files', parentJob.files);
+        });
+        
+    }
+    
+}
 
 const initializeFileTable = (tableId, files) => {
     resetTable(tableId);
@@ -12,6 +39,23 @@ const initializeFileTable = (tableId, files) => {
         });
         addRowToTable(tableId, i, newLink);
     }
+}
+
+const initializeDefaultValues = () => {
+    const today = new Date().toLocaleDateString('id');
+    $('#created_date').val(today);
+    
+    if ($('#job_id').val() !== '') {
+        const jobId = $('#job_id').val();
+        
+        let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
+        $('#workplan').prop('href', `${url}/${jobId}`);
+        
+        initializeJobValues(jobId);
+        
+    }
+    $("#period_unit").prop("selectedIndex", -1);
+
 }
 
 const initializeJobValues = (jobId) => {
@@ -43,9 +87,17 @@ const initializeJobValues = (jobId) => {
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
-        if (job.status !== 'Chưa nhận') {
-            $('button[value="accept"]').prop('disabled', true);
+        const curAssigneeId = $('#staff_id').val();
+        const curAssigneeList = job.assignees.filter(assignee => {
+            return assignee.id === curAssigneeId;
+        });
+        if (curAssigneeId !== job.assigner_id && curAssigneeList.length > 0) {
+            const curAssignee = curAssigneeList[0];
+            if (curAssignee.pivot.status !== 'pending') {
+                $('button[value="accept"]').prop('disabled', true);
+            } 
         }
+
 
         if (job.files.length > 0) {
             $('#file-count span').html(job.files.length);
@@ -65,6 +117,26 @@ const initializeJobValues = (jobId) => {
     });
 }
 
+const handleSelectInputsChange = () => {
+    selectInputs = [
+        {name: 'assigner_name', hiddenInputId: 'assigner_id'},
+        {name: 'project_code', hiddenInputId: 'project_id'},
+        {name: 'job_type', hiddenInputId: 'job_type_id'},
+        {name: 'parent_job', hiddenInputId: 'parent_id'},
+        {name: 'priority_name', hiddenInputId: 'priority_id'},
+        {name: 'chu-tri', hiddenInputId: 'chu-tri-id'},
+        {name: 'nhan-xet', hiddenInputId: 'nhan-xet-id'},
+    ];
+
+    selectInputs.forEach(element => {
+        handleOptionChange(element.name, element.hiddenInputId);
+    });
+
+    $('#project_code').change(function () {
+        const projectName = $(this).find(':selected').attr('data-hidden');
+        $('#project_name').val(projectName);
+    });
+}
 
 const handleOptionChange = (name, hiddenInputId) => {
     $(`#${name}`).change(function (e) {
@@ -74,8 +146,6 @@ const handleOptionChange = (name, hiddenInputId) => {
 
 
 // HELPER FUNCTIONS
-
-
 const setSelectedValue = (selector, value) => {
     $(selector).selectpicker('val', value);
     $(selector).selectpicker('refresh');
@@ -92,9 +162,5 @@ const setSelectedValueDynamic = (selector, selectedValue, inputValue) => {
         $(selector).val(inputValue);
     }
 }
-
-
-
-
 
 
