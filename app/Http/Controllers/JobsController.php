@@ -129,26 +129,20 @@ class JobsController extends Controller
     {   
         $action = $request->input('action');
         
-        
+        $jobIds = $request->input('job_ids');
+
+
         switch ($action) {
             
             case 'detail':
-                
-                $jobIds = $request->input('job_ids');
                 $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
-
-                if (count($jobIds) == 1) {
-
-                    return view('jobs.job-detail', [
-                        'jobs' => $jobs,
-                        'jobId' => $jobIds[0]
-                    ]);
-                    
+                if (count($jobIds) != 1) {
+                    return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
                 }
-
-                return redirect()->back()->withErrors(['jobs' => 'Chọn duy nhất một công việc']);
-                 
-                
+                return view('jobs.job-detail', [
+                    'jobs' => $jobs,
+                    'jobId' => $jobIds[0]
+                ]);                
 
             case 'finish':
                 // TODO: finish function
@@ -163,11 +157,16 @@ class JobsController extends Controller
                 break;
             
             case 'timesheet': 
-                // TODO: timesheet view function
-                break;
+                if (!$jobIds) {
+                    return redirect()->route('timesheet.create');
+                }
+                $jobId = $jobIds[0];
+                return redirect()->route('timesheet.create', ['job_id' => $jobId]);
 
             case 'amount_confirm': 
                 // TODO: amount confirm view function
+                $jobId = $jobIds[0];
+                return redirect()->route('amount-confirms.create', ['job_id' => $jobId]);
                 break;
 
             case 'exchange': 
@@ -253,13 +252,8 @@ class JobsController extends Controller
                         'deny_reason' => $denyReason
                     ]);
                 }
-
-
                 $job->update(['status' => 'rejected']);
                 
-
-
-
                 return view('jobs.job-detail', [
                     'jobs' => $jobs,
                     'jobId' => $jobId,

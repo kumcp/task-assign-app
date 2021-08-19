@@ -87,4 +87,27 @@ class JobAssign extends Pivot
         return $this->isForwardOrAdditional() && !$this->isAdditional();
     }
 
+    public function hasForwardChild()
+    {
+        $children = $this->load('children')->children;
+        foreach ($children as $child) {
+            if ($child->isForward()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function scopeDirectAssign($query, $staffId)
+    {
+        return $query->where([
+            'staff_id' => $staffId,
+            'parent_id' => null
+        ])
+        ->whereDoesntHave('children', function($q) {
+            $q->where('is_additional', 0);
+        });
+    }
+
+
 }

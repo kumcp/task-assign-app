@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcessMethodRequest;
 use App\Models\Job;
+use App\Models\JobAssign;
 use App\Models\ProcessMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -51,5 +52,26 @@ class ProcessMethodController extends Controller
         $process_method = ProcessMethod::findOrFail($id);
         $process_method->delete();
         return redirect()->route('process-method.list')->with('success','Đã xóa hình thức xử lý thành công');
+    }
+
+    public function queryProcessMethod(Request $request)
+    {
+        if (!$request->has(['job_id', 'staff_id'])) {
+            return response('Mã công việc và mã nhân viên là bắt buộc', 400);
+        }
+        $jobId = $request->input('job_id');
+        $staffId = $request->input('staff_id');
+        $jobAssign = JobAssign::where([
+            'job_id' => $jobId,
+            'staff_id' => $staffId
+        ])
+        ->with('processMethod')
+        ->first();
+
+        if (!$jobAssign) {
+            return response('Không tìm thấy đối tượng xử lý công việc này', 404);
+        }
+        return response()->json($jobAssign->processMethod);
+
     }
 }

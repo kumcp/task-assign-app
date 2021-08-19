@@ -165,6 +165,15 @@ class AmountConfirmController extends Controller
                 return $this->createOrUpdateAmountConfirm($request);
     
             }
+
+            if ($action == 'timesheet') {
+                $jobId = $request->input('job_id');
+                $assigneeId = $request->input('assignee');
+                return redirect()->route('timesheet.create', [
+                    'job_id' => $jobId,
+                    'staff_id' => $assigneeId
+                ]);
+            }
             
             if ($action == 'reset') {
                 return redirect()->route('amount-confirms.create', ['job_id' => $request->input('job_id')]);

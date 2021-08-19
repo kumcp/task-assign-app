@@ -10,7 +10,7 @@
 
         
         @foreach ($options as $option) 
-            <option value="{{$option['value'] ?? $option['id'] ?? $option}}" @if(isset($checked) && $checked == 1) {{'selected'}} @endif> {{$option['display'] ?? $option['name'] ?? $option}} </option>
+            <option value="{{$option['value'] ?? $option['id'] ?? $option}}" @if(isset($checked) && $checked == $option['id']) {{'selected'}} @endif> {{$option['display'] ?? $option['name'] ?? $option}} </option>
         @endforeach
         
     </select>
