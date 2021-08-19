@@ -4,6 +4,7 @@ use App\Http\Controllers\AmountConfirmController;
 use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobsController;
+use App\Http\Controllers\ProcessMethodController;
 use App\Http\Controllers\UpdateJobHistoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -38,3 +39,5 @@ Route::get('job-assigns', [JobAssignController::class, 'index'])->name('job-assi
 Route::get('amount-confirms', [AmountConfirmController::class, 'index'])->name('amount_confirms.index');
 Route::get('amount-confirms/{id}', [AmountConfirmController::class, 'show'])->name('amount-confirms.show');
 Route::post('amount-confirms', [AmountConfirmController::class, 'queryAmountConfirm'])->name('amount-confirms.query');
+
+Route::get('process-methods', [ProcessMethodController::class, 'queryProcessMethod'])->name('process-methods.query');

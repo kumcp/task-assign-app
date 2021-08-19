@@ -100,4 +100,9 @@ class TimeSheet extends Model
             $q->where('staff_id', $assigneeId);
         }); 
     }
+
+    public function scopeBelongsToJobAssign($query, $jobId, $assigneeId)
+    {
+        return $query->belongsToJob($jobId)->belongsToAssignee($assigneeId);
+    }
 }

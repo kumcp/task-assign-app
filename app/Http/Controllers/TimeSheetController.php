@@ -42,7 +42,7 @@ class TimeSheetController extends Controller
         }
         else {
             $directJobs = $this->getDirectJobs($staffId);
-            $timeSheets = $this->getTimeSheets($directJobs);
+            $timeSheets = $this->getTimeSheets($directJobs, $staffId);
         }
 
         return view('site.time-sheet.timesheet', compact('assignees', 'defaultJobId', 'defaultStaffId', 'job', 'timeSheets', 'directJobs', 'readonly'));
@@ -111,9 +111,9 @@ class TimeSheetController extends Controller
             return view('site.time-sheet.timesheet-edit', compact('assignees', 'job', 'timeSheets', 'timeSheet', 'readonly'));
         }
 
-        $timeSheets = TimeSheet::whereHas('jobAssign', function($query) use ($staffId){
-            $query->where(['staff_id' => $staffId]);
-        })->get();
+        $timeSheets = TimeSheet::belongsToJobAssign($job->id, $staffId)
+        ->orderBy('created_at', 'DESC')
+        ->get();
 
         $directJobs = $this->getDirectJobs($staffId);
         return view('site.time-sheet.timesheet-edit', compact('job', 'directJobs', 'timeSheets', 'timeSheet', 'readonly'));
@@ -202,20 +202,25 @@ class TimeSheetController extends Controller
         $timeSheets = TimeSheet::belongsToJob($jobId)->whereHas('jobAssign', function ($query) use ($assigneeId) {
             $query->where('staff_id', $assigneeId);
         })
+        ->orderBy('created_at', 'DESC')
         ->get();
         return $timeSheets;
     }
     
-    private function getTimeSheets($jobs)
+    private function getTimeSheets($jobs, $staffId)
     {
-        $timeSheets = [];
-        foreach ($jobs as $job) {
-            foreach ($job->jobAssigns as $jobAssign) {
-                foreach ($jobAssign->timeSheets as $timeSheet) {
-                    $timeSheets[] = $timeSheet;
-                }
-            }   
-        }
+        $jobIds = $jobs->map(function($job) {
+            return $job->id;
+        });
+        $timeSheets = TimeSheet::whereHas('jobAssign', function($query) use ($staffId) {
+            $query->where('staff_id', $staffId);
+        })
+        ->whereHas('jobAssign.job', function($query) use ($jobIds) {
+            $query->whereIn('id', $jobIds);
+        })
+        ->orderBy('created_at', 'DESC')
+        ->get();
+
         return $timeSheets;
     }
 
