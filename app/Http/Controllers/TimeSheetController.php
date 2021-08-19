@@ -7,55 +7,221 @@ use App\Models\Job;
 use App\Models\JobAssign;
 use App\Models\Staff;
 use App\Models\TimeSheet;
-
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TimeSheetController extends Controller
 {
     public const DEFAULT_PAGINATE = 15;
+    
 
-    private function insertData(TimeSheetRequest $request, $timeSheet){
-        //TODO: Chưa có flow từ page jobAssign chuyển sang, nên hiện lấy id đầu tiên trong DB
-        $jobAssignId = JobAssign::first()->id;
-        $timeSheet->job_assign_id = $jobAssignId;
-        $timeSheet->from_date = $request->from_date;
-        $timeSheet->to_date = $request->to_date;
-        $timeSheet->from_time = $request->from_time;
-        $timeSheet->to_time = $request->to_time;
-        $timeSheet->content = $request->content;
-        $timeSheet->save();
-    }
+    public function create(Request $request)
+    {
+        $staffId = Auth::user()->staff_id;
 
-    public function create(){
-        $timeSheets = TimeSheet::orderBy('id', 'desc')->paginate(self::DEFAULT_PAGINATE);
-        $nameJobs = Job::orderBy('name', 'ASC')->get();
-        $staffs = Staff::orderBy('name', 'ASC')->get();
-        return view('site.time-sheet.timesheet', compact('timeSheets', 'nameJobs', 'staffs'));
+        $readonly = false;
+        $assignees = [];
+        $directJobs = [];
+        $defaultStaffId = $request->input('staff_id');
+        $defaultJobId = $request->input('job_id');
+        $job = Job::with('assignees')->where('id', $defaultJobId)->first();
+
+        if ($job && $this->isReadOnly($job, $staffId)) {
+            $readonly = true;
+            $assignees = $job->assignees;
+            
+            if (!$defaultStaffId && $assignees->count() > 0) {
+                $firstAssignee = $assignees[0];
+                $defaultStaffId = $firstAssignee->id;
+            }
+
+            $timeSheets = $this->queryTimeSheets($job->id, $defaultStaffId);
+        }
+        else {
+            $directJobs = $this->getDirectJobs($staffId);
+            $timeSheets = $this->getTimeSheets($directJobs);
+        }
+
+        return view('site.time-sheet.timesheet', compact('assignees', 'defaultJobId', 'defaultStaffId', 'job', 'timeSheets', 'directJobs', 'readonly'));
     }
 
     public function store(TimeSheetRequest $request){
-        $timeSheet = new TimeSheet();
-        $this->insertData($request, $timeSheet);
-        return redirect()->route('timesheet.create')->with('success','Đã thêm timesheet thành công');
+
+        $jobId = $request->input('job_id');
+        $assigneeId = Auth::user()->staff_id;
+        $jobAssign = JobAssign::where([
+            'job_id' => $jobId,
+            'staff_id' => $assigneeId
+        ])
+        ->with('job')
+        ->first();
+        $job = $jobAssign->job;
+
+        $data = $request->only(['from_date', 'to_date', 'from_time', 'to_time','content']);
+
+        $fromDate = Carbon::parse($data['from_date']);
+        $toDate = Carbon::parse($data['to_date']);
+        $deadline = Carbon::parse($job->deadline);
+
+        if ($this->checkPastDueDeadline($fromDate, $toDate, $deadline)) {
+            return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
+        }
+
+        $data = array_merge(['job_assign_id' => $jobAssign->id], $data);
+        try {
+            TimeSheet::create($data);
+            return redirect()->route('timesheet.create', ['job_id' => $jobId])->with('success','Đã thêm timesheet thành công');
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
+        }   
+
+
     }
 
     public function edit($id){
-        $timeSheets = TimeSheet::orderBy('id', 'DESC')->paginate(self::DEFAULT_PAGINATE);
-        $job = TimeSheet::with('jobAssign')->findOrFail($id)->first();
-        $timeSheet = TimeSheet::findOrFail($id);
-        $nameJobs = Job::orderBy('id', 'DESC')->get();
-        $staffs = Staff::orderBy('name', 'DESC')->get();
-        return view('site.time-sheet.timesheet-edit', compact('job', 'timeSheets', 'staffs', 'nameJobs', 'timeSheet'));
+        $timeSheet = TimeSheet::with([
+            'jobAssign',
+            'jobAssign.job',
+            'jobAssign.job.assignees'
+        ])
+        ->where('id', $id)
+        ->first();
+
+        if (!$timeSheet) {
+            return redirect()->back()->with('error', 'Không tìm thấy timesheet');
+        }
+
+        $readonly = false;
+        
+        $job = $timeSheet->jobAssign->job;
+        $timeSheet->percentage_completed = $timeSheet->getPercentageCompleted();
+
+        $staffId = Auth::user()->staff_id;
+        
+        if ($this->isReadOnly($job, $staffId)) {
+            $readonly = true;
+            $assigneeId = $timeSheet->jobAssign->staff_id;
+            $timeSheets = $this->queryTimeSheets($job->id, $assigneeId);
+            $assignees = $job->assignees;
+            return view('site.time-sheet.timesheet-edit', compact('assignees', 'job', 'timeSheets', 'timeSheet', 'readonly'));
+        }
+
+        $timeSheets = TimeSheet::whereHas('jobAssign', function($query) use ($staffId){
+            $query->where(['staff_id' => $staffId]);
+        })->get();
+
+        $directJobs = $this->getDirectJobs($staffId);
+        return view('site.time-sheet.timesheet-edit', compact('job', 'directJobs', 'timeSheets', 'timeSheet', 'readonly'));
+
     }
 
     public function update(TimeSheetRequest $request, $id){
-        $timeSheet = TimeSheet::find($id);
-        $this->insertData($request, $timeSheet);
-        return redirect()->route('timesheet.create')->with('success','Đã sửa time sheet thành công');
+        $action = $request->input('action');
+        if ($action == 'reset') {
+            return redirect()->route('timesheet.create');
+        }
+
+        $timeSheet = TimeSheet::with([
+            'jobAssign',
+            'jobAssign.job'
+        ])
+        ->where('id', $id)
+        ->first();
+
+        $data = $request->only(['from_date', 'to_date', 'from_time', 'to_time','content']);
+
+        $job = $timeSheet->jobAssign->job;
+        $fromDate = Carbon::parse($data['from_date']);
+        $toDate = Carbon::parse($data['to_date']);
+        $deadline = Carbon::parse($job->deadline);
+        
+        if ($this->checkPastDueDeadline($fromDate, $toDate, $deadline)) {
+            return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
+        }
+
+        try {
+            $timeSheet->update($data);
+            return redirect()->route('timesheet.edit', ['id' => $id])->with('success','Đã sửa timesheet thành công');
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
+        }   
     }
 
     public function destroy($id) {
-        $timeSheet = TimeSheet::findOrFail($id);
-        $timeSheet->delete();
-        return redirect()->route('timesheet.create')->with('success','Đã xóa time sheets thành công');
+        $timeSheet = TimeSheet::find($id);
+        if (!$timeSheet) {
+            return redirect()->back()->withInput()->with('error', 'Không tìm thấy timesheet');
+        }
+
+        try {
+            $timeSheet->delete();
+            return redirect()->route('timesheet.create')->with('success','Đã xóa timesheet thành công');
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
+        } 
     }
+
+    private function isReadOnly($job, $staffId)
+    {
+        $jobAssign = JobAssign::where([
+            'job_id' => $job->id,
+            'staff_id' => $staffId
+        ])
+        ->first();
+        return $job->assigner_id == $staffId || ($jobAssign && $jobAssign->hasForwardChild());
+
+    }
+
+    private function getDirectJobs($staffId)
+    {
+        $directJobs = Job::with([
+            'jobAssigns' => function ($query) use ($staffId){
+                $query->directAssign($staffId);
+            }, 
+        ])
+        ->whereHas('jobAssigns', function ($query) use ($staffId) {
+            $query->directAssign($staffId);
+        })->get();
+        return $directJobs;
+    }
+
+    private function queryTimeSheets($jobId, $assigneeId)
+    {
+        if (!$assigneeId) {
+            return TimeSheet::belongsToJob($jobId)->get();
+        }
+        $timeSheets = TimeSheet::belongsToJob($jobId)->whereHas('jobAssign', function ($query) use ($assigneeId) {
+            $query->where('staff_id', $assigneeId);
+        })
+        ->get();
+        return $timeSheets;
+    }
+    
+    private function getTimeSheets($jobs)
+    {
+        $timeSheets = [];
+        foreach ($jobs as $job) {
+            foreach ($job->jobAssigns as $jobAssign) {
+                foreach ($jobAssign->timeSheets as $timeSheet) {
+                    $timeSheets[] = $timeSheet;
+                }
+            }   
+        }
+        return $timeSheets;
+    }
+
+    private function checkPastDueDeadline($fromDate, $toDate, $deadline)
+    {
+        return $fromDate->greaterThan($deadline) || $toDate->greaterThan($deadline);
+    }
+
 }
