@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Common\JobChecker;
 use App\Http\Requests\TimeSheetRequest;
 use App\Models\Job;
 use App\Models\JobAssign;
@@ -29,7 +30,7 @@ class TimeSheetController extends Controller
         $defaultJobId = $request->input('job_id');
         $job = Job::with('assignees')->where('id', $defaultJobId)->first();
 
-        if ($job && $this->isReadOnly($job, $staffId)) {
+        if ($job && $this->allowToModify($job, $staffId)) {
             $readonly = true;
             $assignees = $job->assignees;
             
@@ -66,7 +67,7 @@ class TimeSheetController extends Controller
         $toDate = Carbon::parse($data['to_date']);
         $deadline = Carbon::parse($job->deadline);
 
-        if ($this->checkPastDueDeadline($fromDate, $toDate, $deadline)) {
+        if (JobChecker::isPastDueDeadline($fromDate, $toDate, $deadline)) {
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
         }
 
@@ -103,7 +104,7 @@ class TimeSheetController extends Controller
 
         $staffId = Auth::user()->staff_id;
         
-        if ($this->isReadOnly($job, $staffId)) {
+        if ($this->allowToModify($job, $staffId)) {
             $readonly = true;
             $assigneeId = $timeSheet->jobAssign->staff_id;
             $timeSheets = $this->queryTimeSheets($job->id, $assigneeId);
@@ -140,7 +141,7 @@ class TimeSheetController extends Controller
         $toDate = Carbon::parse($data['to_date']);
         $deadline = Carbon::parse($job->deadline);
         
-        if ($this->checkPastDueDeadline($fromDate, $toDate, $deadline)) {
+        if (JobChecker::isPastDueDeadline($fromDate, $toDate, $deadline)) {
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
         }
 
@@ -170,7 +171,7 @@ class TimeSheetController extends Controller
         } 
     }
 
-    private function isReadOnly($job, $staffId)
+    private function allowToModify($job, $staffId)
     {
         $jobAssign = JobAssign::where([
             'job_id' => $job->id,
@@ -224,9 +225,5 @@ class TimeSheetController extends Controller
         return $timeSheets;
     }
 
-    private function checkPastDueDeadline($fromDate, $toDate, $deadline)
-    {
-        return $fromDate->greaterThan($deadline) || $toDate->greaterThan($deadline);
-    }
 
 }
