@@ -15,7 +15,7 @@ class TimesheetStatisticsController extends Controller
     private function formatField($timeStatistics){
         foreach ($timeStatistics as $timeStatistic) {
             $timeStatistic->job_name =  $timeStatistic->jobAssign->job->name;
-            $timeStatistic->staff_name = $timeStatistic->jobAssign->staff->name;
+            $timeStatistic->staff_name = $timeStatistic->jobAssign->assignee->name;
             $timeStatistic->finish = $timeStatistic->timeDate();
         }
     }
@@ -24,7 +24,7 @@ class TimesheetStatisticsController extends Controller
         $departments = Department::orderBy('id', 'DESC')->get();
         $staffs = Staff::orderBy('id', 'DESC')->get();
         $timeStatistics = TimeSheet::with('jobAssign.job')
-            ->with('jobAssign.staff')
+            ->with('jobAssign.assignee')
             ->orderBy('id', 'desc')->paginate(self::DEFAULT_PAGINATE);
         $this->formatField($timeStatistics);
         return view('site.timesheet-statistics.timesheet-statistics',
@@ -36,9 +36,9 @@ class TimesheetStatisticsController extends Controller
         $departments = Department::orderBy('id', 'DESC')->get();
         $staffs = Staff::orderBy('id', 'DESC')->get();
 
-        $query = TimeSheet::with('jobAssign.job')->with('jobAssign.staff');
+        $query = TimeSheet::with('jobAssign.job')->with('jobAssign.assignee');
         if (isset($request->department) && isset($request->object_handling)) {
-            $query = $query->whereHas('jobAssign.staff', function ($q) use($request) {
+            $query = $query->whereHas('jobAssign.assignee', function ($q) use($request) {
                 $q->where('department_id', $request->department)->where('id', $request->object_handling);
             });
         }

@@ -83,7 +83,7 @@ const initializeJobValues = (jobId) => {
             $('button[value="accept"]').prop('disabled', true);
         }
 
-        if (jobs.files.length > 0) {
+        if (job.files.length > 0) {
             $('#file-count span').html(job.files.length);
         }
 

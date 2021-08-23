@@ -28,25 +28,47 @@
         </fieldset>
 
     </div>
-    @include('components.table', [
-                    'fields' => [
-                        'name_job' => 'name',
-                        'object_handling' => 'name_oject',
-                        'phone' => 'phone',
-                        'email' => 'email',
-                        'name_deadline' => 'deadline',
-                        'delivery_volume' => 'delivery_volume',
-                        'timesheet_volume' => 'timesheet_volume',
-                        'finish' => 'finish',
-                       ],
-                    'items' => $jobAssigns,
-                    'edit_route' => 'skill.edit'
-                ])
+    <form action="{{ route('jobs.detailAction') }}" method="POST">
+        @csrf
 
-        {{$jobAssigns->links()}}
-
+        @include('components.dynamic-table', [
+            'cols' => [
+                'Tên công việc' => 'name',
+                'Đối tượng xử lý' => 'name_oject',
+                'SĐT' => 'phone',
+                'Email' => 'email',
+                'Hạn xử lý' => 'deadline',
+                'Khối lượng giao    ' => 'delivery_volume',
+                'Khối lượng timesheet' => 'timesheet_volume',
+                '% hoàn thành' => 'finish',
+                'checkbox' => 'job_ids[]'  
+            ],
+            'rows' => $jobAssigns,
+            'pagination' => true
+        ])
+    
         <div class="text-center">
-            <a href="#" class="ml-3 btn btn-success"> <i class="fas fa-eye"></i> Xem chi tiết</a>
+            <button class="ml-3 btn btn-primary" name="action" value="detail">Xem chi tiết</button>
         </div>
+    </form>
+
+
+    <script>
+        $(document).ready(function() {
+            $('thead input:checkbox').hide();
+            $('.pagination').css('justify-content', 'center');
+            
+            $('tbody input:checkbox').change(function() {
+                if (this.checked) {
+                    $('tbody input:checkbox').not(this).prop('disabled', true);
+                }
+                else {
+                    $('tbody input:checkbox').prop('disabled', false);
+                }
+            });
+        
+        })
+    </script>
+
 
 @endsection

@@ -74,8 +74,30 @@
                                 ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
                                 ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
                                 ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
-                                ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
                                 ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+                                [
+                                    'href' => 'search_categories',
+                                    'parentText' => 'Tra cứu/Tìm kiếm',
+                                    'children' => [
+                                        ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
+                                        ['link' => route('timesheet-statis.list'), 'value' => 'Thống kê timesheet'],
+                                        ['link' => route('project-plan.list'), 'value' => 'Kế hoạch dự án'],
+                                        ['link' => route('backup-manday.list'), 'value' => 'Tìm kiếm thời gian rảnh'],
+                                    ]
+                                ],
+                                [
+                                    'href' => 'system_categories',
+                                    'parentText' => 'Danh mục hệ thống',
+                                    'children' => [
+                                        ['link' => route('project.list'), 'value' => 'Mã dự án'],
+                                        ['link' => route('project-type.list'), 'value' => 'Loại công việc'],
+                                        ['link' => route('priority.list', ['type' => 'handling']), 'value' => 'Độ ưu tiên'],
+                                        ['link' => route('skill.list', ['type' => 'handling']), 'value' => 'Kỹ năng'],
+                                        ['link' => route('process-method.list'), 'value' => 'Hình thức xử lý'],
+                                        ['link' => route('config.list'), 'value' => 'Cấu hình'],
+
+                                    ]
+                                ]
 
                             ]])
                         @else
@@ -83,8 +105,17 @@
                                 ['link' => route('staff_info.show', ['id' => Auth::user()->staff_id]), 'value' => 'Thông tin cá nhân'],
                                 ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
                                 ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
-                                ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
                                 ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+                                [
+                                    'href' => 'search_categories',
+                                    'parentText' => 'Tra cứu/Tìm kiếm',
+                                    'children' => [
+                                        ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
+                                        ['link' => route('timesheet-statis.list'), 'value' => 'Thống kê timesheet'],
+                                        ['link' => route('project-plan.list'), 'value' => 'Kế hoạch dự án'],
+                                        ['link' => route('backup-manday.list'), 'value' => 'Tìm kiếm thời gian rảnh'],
+                                    ]
+                                ],
 
                             ]])
                         @endif

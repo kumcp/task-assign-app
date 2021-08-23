@@ -182,15 +182,6 @@
         });
 
 
-
-        const setCloseTimeout = (modalSelector, timeout) => {
-            $(modalSelector).modal("show").on("shown.bs.modal", function () {
-                window.setTimeout(function () {
-                    $(modalSelector).modal("hide");
-                }, timeout);
-            });
-        }
-
         setCloseTimeout("#successModal", 5000);
         setCloseTimeout("#errorModal", 5000);
 

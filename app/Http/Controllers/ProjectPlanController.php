@@ -9,39 +9,63 @@ class ProjectPlanController extends Controller
 {
     public const DEFAULT_PAGINATE = 15;
 
-    private function formatFeild($jobAssigns)
+    private function formatFields($jobAssigns)
     {
         foreach ($jobAssigns as $jobAssign) {
-            $jobAssign->phone = $jobAssign->staff->phone;
-            $jobAssign->email = $jobAssign->staff->email;
+            $jobAssign->phone = $jobAssign->assignee->account->phone;
+            $jobAssign->email = $jobAssign->assignee->account->email;
             $jobAssign->deadline = $jobAssign->job->deadline;
             $jobAssign->name = $jobAssign->job->name;
-            $jobAssign->name_oject = $jobAssign->staff->name;
-            $jobAssign->delivery_volume = $jobAssign->job->assign_amount;
-            $jobAssign->timesheet_volume = count($jobAssign->timeSheets);
-            // TODO: chưa tính được % hoàn thành nên để fix cứng finish
-            $jobAssign->finish = 'Loading... (%)';
+            $jobAssign->name_oject = $jobAssign->assignee->name;
+            $jobAssign->delivery_volume = $jobAssign->job->assign_amount ?? '?';
+
+            $amountConfirms = $jobAssign->amountConfirms;
+            $timeSheets = $jobAssign->timeSheets;
+            if ($amountConfirms->count() > 0) {
+                $jobAssign->timesheet_volume = $amountConfirms->sum('confirm_amount');
+            }
+            else {
+                $totalTimeSheetAmount = 0;
+    
+                foreach ($timeSheets as $timeSheet) {
+                    $totalTimeSheetAmount += $timeSheet->workAmountInManday();
+                }
+                $jobAssign->timesheet_volume = $totalTimeSheetAmount;
+            }
+
+            $jobAssign->finish = $jobAssign->job->assign_amount ? $jobAssign->timesheet_volume * 100 / $jobAssign->job->assign_amount : '?';
         }
     }
 
     public function list(){
         $projects = Project::orderBy('name', 'ASC')->get();
-        $jobAssigns = JobAssign::with(['job.project', 'staff', 'timeSheets'])
-            ->orderBy('id', 'ASC')->paginate(self::DEFAULT_PAGINATE);
-        $this->formatFeild($jobAssigns);
+        $jobAssigns = JobAssign::with([
+            'job.project', 
+            'assignee.account',
+            'amountConfirms', 
+            'timeSheets'
+        ])
+        ->orderBy('id', 'ASC')
+        ->paginate(self::DEFAULT_PAGINATE);
+        $this->formatFields($jobAssigns);
         return view('site.project-plan.project-plan', compact('jobAssigns','projects'));
     }
 
     public function search(Request $request){
         $projects = Project::orderBy('name', 'ASC')->get();
-        $query = JobAssign::with(['job.project', 'staff', 'timeSheets']);
+        $query = JobAssign::with([
+            'job.project',
+            'assignee.account', 
+            'amountConfirms',
+            'timeSheets'
+        ]);
         if (isset($request->project_id)) {
             $query = $query->whereHas('job.project', function ($q) use($request) {
                 $q->where('id', $request->project_id);
             });
         }
         $jobAssigns = $query->orderBy('id', 'ASC')->get();
-        $this->formatFeild($jobAssigns);
+        $this->formatFields($jobAssigns);
         return view('site.project-plan.project-plan-search', compact('jobAssigns','projects'));
     }
 }

@@ -42,7 +42,7 @@
                                  ['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search']
                              ]
                          ])
-                        <a href="{{route('backup-maday.list')}}"> <i class="fas fa-sync-alt"></i> Reset</a>
+                        <a href="{{route('backup-manday.list')}}"> <i class="fas fa-sync-alt"></i> Reset</a>
                     </div>
                 </form>
             </div>
