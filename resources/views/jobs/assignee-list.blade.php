@@ -13,7 +13,6 @@
     ])
 
     @if ($errors->any())
-        
         @include('components.flash-message-modal', [
             'modalId' => 'error-modal',
             'alertClass' => 'alert alert-danger',
@@ -23,11 +22,18 @@
     @endif
 
     @if (session('success'))
-
         @include('components.flash-message-modal', [
             'modalId' => 'success-modal',
             'alertClass' => 'alert alert-success',
             'message' => session('success')
+        ])
+    @endif
+
+    @if (session('error'))
+        @include('components.flash-message-modal', [
+            'modalId' => 'error-modal',
+            'alertClass' => 'alert alert-danger',
+            'message' => session('error')
         ])
     @endif
 
