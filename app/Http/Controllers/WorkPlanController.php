@@ -132,7 +132,7 @@ class WorkPlanController extends Controller
                     return redirect()->route('workplans.create', ['jobId' => $jobId])->with('success', 'Thêm kế hoạch công việc thành công');
                 }
 
-                $existingJobAssign->update(['status' => 'accepted']);
+                $existingJobAssign->update(['status' => 'active']);
 
                 $processMethod = $existingJobAssign->processMethod;
                 
@@ -174,7 +174,6 @@ class WorkPlanController extends Controller
 
         } 
         catch (Exception $e) {
-            dd($e->getMessage());
             return redirect()->back()->withInput()->withErrors(['errorMessage', $e->getMessage()]);
         }
         

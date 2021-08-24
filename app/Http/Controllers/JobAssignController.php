@@ -109,7 +109,7 @@ class JobAssignController extends Controller
     private function acceptJob($job, $staffId, $jobAssign)
     {
         $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
-        $workPlanRequired = Configuration::where('field', 'workplan')->first('value')->value;
+        $workPlanRequired = Configuration::where('field', 'implementation_plan')->first('value')->value;
                 
         if ($workPlanRequired) {
             return [

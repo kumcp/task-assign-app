@@ -212,8 +212,11 @@ class JobsController extends Controller
         $action = $request->input('action');
         
         switch ($action) {
-            case 'save' || 'save_copy': 
+            case 'save':
                 return $this->save($request->all());
+
+            case 'save_copy': 
+                return $this->save($request->all(), true);
 
             case 'delete': 
                 $id = $request->input('job_id');
@@ -255,8 +258,7 @@ class JobsController extends Controller
         
     } 
 
-    private function save($data) {
-        
+    private function save($data, $flashInputs=false) {
         $jobId = $data['job_id'];
 
         if ($jobId) {
@@ -405,8 +407,6 @@ class JobsController extends Controller
 
                 $job->update($jobData);
                 
-                
-
             }
             else {
                 $job = Job::create($jobData);
@@ -433,63 +433,46 @@ class JobsController extends Controller
                 }
             }
 
-
-        }
-        catch (Exception $e) {
-
-            return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
-
-        }
-        
-
-
-        if ((isset($data['phoi-hop']) || isset($data['nhan-xet'])) && !isset($data['chu-tri'])) {
-            return redirect()->route('jobs.create')->withInput()->with('error', 'Vui lòng chọn người chủ trì');
-        }
-
-        $processMethods = [
-            'chu-tri' => 'chủ trì',
-            'phoi-hop' => 'phối hợp',
-            'nhan-xet' => 'nhận xét'
-        ];
-
-
-            
-        foreach ($processMethods as $key => $value) {
-            if (isset($data[$key])) {
+            if ((isset($data['phoi-hop']) || isset($data['nhan-xet'])) && !isset($data['chu-tri'])) {
+                return redirect()->route('jobs.create')->withInput()->with('error', 'Vui lòng chọn người chủ trì');
+            }
+    
+            $processMethods = [
+                'chu-tri' => 'chủ trì',
+                'phoi-hop' => 'phối hợp',
+                'nhan-xet' => 'nhận xét'
+            ];
+    
+    
                 
-                $processMethod = ProcessMethod::where('name', $value)->first();
-                
-                $result = $this->assignJob($data[$key], $processMethod, $job->id);
-
-                if (!$result['success']) {
-                    return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
+            foreach ($processMethods as $key => $value) {
+                if (isset($data[$key])) {
+                    
+                    $processMethod = ProcessMethod::where('name', $value)->first();
+                    
+                    $result = $this->assignJob($data[$key], $processMethod, $job->id);
+    
+                    if (!$result['success']) {
+                        return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
+                    }
                 }
             }
+    
+            $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
+    
+            if ($jobId || $flashInputs) {
+                return redirect()->route('jobs.create')->withInput()->with('success', $message);
+            }
+
+            return redirect()->route('jobs.create')->with('success', $message);
         }
-
-
-
-
-       
-
-
-        $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
-
-        if ($jobId) {
-            return redirect()->route('jobs.create')->withInput()->with('success', $message);
-
+        catch (Exception $e) {
+            return redirect()->route('jobs.create')->withInput()->with('error', 'Đã có lỗi xảy ra');
         }
-        return redirect()->route('jobs.create')->with('success', $message);
-
-
-
-
     }
 
 
     private function assignJob($assignees, $processMethod, $jobId) {
-        
         try {
             foreach($assignees as $assignee) {
             
@@ -518,7 +501,11 @@ class JobsController extends Controller
     {
         $directJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
-                $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
+                $query->where([
+                    'staff_id'=> $staffId, 
+                    'parent_id' => null,
+                ])
+                ->whereNotIn('status', ['pending', 'rejected']);
             }, 
             'jobAssigns.processMethod',
             'project:id,code', 
@@ -527,13 +514,19 @@ class JobsController extends Controller
         ->where($condition)
         ->whereNotIn('status', ['pending', 'finished', 'canceled'])
         ->whereHas('jobAssigns', function ($query) use ($staffId) {
-            $query->where(['staff_id'=> $staffId, 'parent_id' => null]);
+            $query->where([
+                'staff_id'=> $staffId, 
+                'parent_id' => null,
+            ])
+            ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
 
         $relatedJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
-                $query->where('staff_id', $staffId)->whereNotNull('parent_id');
+                $query->where('staff_id', $staffId)
+                    ->whereNotNull('parent_id')
+                    ->whereNotIn('status', ['pending', 'rejected']);
             }, 
             'jobAssigns.parent.assignee:id,name',
             'jobAssigns.processMethod',
@@ -543,7 +536,9 @@ class JobsController extends Controller
         ->where($condition)
         ->whereNotIn('status', ['pending', 'finished', 'canceled'])
         ->whereHas('jobAssigns', function ($query) use ($staffId) {
-            $query->where('staff_id', $staffId)->whereNotNull('parent_id');
+            $query->where('staff_id', $staffId)
+                ->whereNotNull('parent_id')
+                ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
 

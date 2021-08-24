@@ -291,6 +291,8 @@ class AssigneeListController extends Controller
         $reformat = [];
 
         $assigner = $job->assigner->name;
+
+        //TODO: get name of evaluator
         $evaluator = null;
 
         foreach ($job->jobAssigns as $jobAssign) {
@@ -299,7 +301,7 @@ class AssigneeListController extends Controller
                 'evaluator' => $evaluator,
                 'assignee' => $jobAssign->assignee->name,
                 'process_method' => $jobAssign->processMethod->name,
-                'history' => null,
+                'history' => null, //TODO: get forward histories
                 'status' => $jobAssign->status
 
             ];
