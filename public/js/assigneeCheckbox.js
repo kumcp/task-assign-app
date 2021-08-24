@@ -23,7 +23,7 @@ const addRowToAssigneeTable = (tableId, data, addCheckboxCol=false) => {
                 value: $(this).val(),
                 text: $(this).text()
             })
-            .prop('selected', data.processMethodId === parseInt($(this).val()))
+            .prop('selected', data.processMethodId === $(this).val())
             );
         });
 
