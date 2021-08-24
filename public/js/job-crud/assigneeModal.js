@@ -11,6 +11,7 @@ const toggleTickElement = (id, processMethod, assignee) => {
             $(`input[name="chu-tri[]"]`).remove();
             untickAssigneeTable();
         }
+        const defaultDeadline = $('#deadline').val();
 
         let newInput = $('<input/>', {
             type: 'hidden', 
@@ -20,6 +21,7 @@ const toggleTickElement = (id, processMethod, assignee) => {
                 staff_id: id, 
                 direct_report: false, 
                 sms: false,
+                deadline: defaultDeadline,
             })
         });
 
@@ -30,7 +32,7 @@ const toggleTickElement = (id, processMethod, assignee) => {
         addAssigneeToInput(processMethod, assignee);
 
 
-        addRowToFullAssigneeTable('full-assignee-table', processMethod, id, assignee)
+        addRowToFullAssigneeTable('full-assignee-table', processMethod, id, assignee, false, false, defaultDeadline);
 
 
 
@@ -120,12 +122,13 @@ const initializeAssigneeList = (assignees, readOnly) => {
                 staff_id: assignee.id, 
                 direct_report: assignee.pivot.direct_report, 
                 sms: assignee.pivot.sms,
+                deadline: assignee.pivot.deadline
             })
         });
 
         $('#job-form').append(newInput);
 
-        addRowToFullAssigneeTable('full-assignee-table', mappedProcessMethod, assignee.id, assigneeName, assignee.pivot.direct_report, assignee.pivot.sms, readOnly);
+        addRowToFullAssigneeTable('full-assignee-table', mappedProcessMethod, assignee.id, assigneeName, assignee.pivot.direct_report, assignee.pivot.sms, assignee.pivot.deadline, readOnly);
 
     });
 
@@ -197,7 +200,7 @@ const addAssigneeToInput = (processMethod, assignee) => {
 }
 
 
-const addRowToFullAssigneeTable = (tableId,  processMethod, assigneeId, assigneeName, directReport=false, sms=false, readOnly=false) => {
+const addRowToFullAssigneeTable = (tableId,  processMethod, assigneeId, assigneeName, directReport=false, sms=false, deadline=null, readOnly=false) => {
 
     let row = $('<tr/>');
 
@@ -243,7 +246,8 @@ const addRowToFullAssigneeTable = (tableId,  processMethod, assigneeId, assignee
     row.append(
         $('<td/>').append($('<input/>', {
             type: 'date',
-            class: 'deadline'
+            class: 'deadline',
+            value: deadline,
         }))
     );
                     

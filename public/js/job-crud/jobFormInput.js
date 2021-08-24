@@ -45,9 +45,6 @@ const initializeJobValues = (jobId, readOnly=false) => {
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
-        if (job.status !== 'pending') {
-            $('button[value="accept"]').prop('disabled', true);
-        }
 
         if (job.files.length > 0) {
             $('#file-count').show();

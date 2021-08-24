@@ -70,7 +70,8 @@
 				'label' => 'Mã dự án', 
 				'options' => $projects, 
 				'displayField' => 'code',
-				'hiddenField' => 'name'
+				'hiddenField' => 'name',
+				'checked' => old('project_id')
 			])
 
 			@include('components.input-text', [
@@ -94,6 +95,7 @@
 			'name' => 'job_type',
 			'label' => 'Loại công việc', 
 			'options' => $jobTypes, 
+			'checked' => old('job_type_id')
 		])
 		<input type="hidden" name="job_type_id" id="job_type_id" value="{{ old('job_type_id') }}">
 
@@ -113,7 +115,9 @@
 				['value' => 'day', 'display' => 'Ngày'],
 				['value' => 'week', 'display' => 'Tuần'],
 				['value' => 'term', 'display' => 'Kỳ'],    
-			]
+			],
+			'checked' => old('period_unit')
+
 		])
 
 	
@@ -247,20 +251,12 @@
 
 @section('custom-script')
 	<script>
-
-
-
-
-
-
-				
-
- 
-
-
 		$(document).ready(function() {
 
-
+			if ($('#job_type_id').val() !== null) {
+				const jobTypeId = $('#job_type_id').val();
+				setSelectedValue('#job_type', jobTypeId);
+			}
 
 			$('button[value="reset"]').click(function () {
 				$('.selectpicker').each(function () {

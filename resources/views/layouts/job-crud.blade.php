@@ -251,7 +251,6 @@
                 handleOptionChange(element.name, element.hiddenInputId);
             });
 
-            $("#period_unit").prop("selectedIndex", -1);
 
             $('#project_code').change(function () {
                 const projectName = $(this).find(':selected').attr('data-hidden');

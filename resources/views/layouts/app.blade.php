@@ -75,6 +75,7 @@
                                 ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
                                 ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
                                 ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+                                ['link' => route('jobs.index', ['type' => 'assigner']), 'value' => 'Công việc đã giao xử lý'],
                                 [
                                     'href' => 'search_categories',
                                     'parentText' => 'Tra cứu/Tìm kiếm',
@@ -106,6 +107,7 @@
                                 ['link' => route('jobs.create'), 'value' => 'Tạo công việc mới'],
                                 ['link' => route('jobs.index', ['type' => 'pending']), 'value' => 'Nhận việc'],
                                 ['link' => route('jobs.index', ['type' => 'handling']), 'value' => 'Công việc đang xử lý'],
+                                ['link' => route('jobs.index', ['type' => 'assigner']), 'value' => 'Công việc đã giao xử lý'],
                                 [
                                     'href' => 'search_categories',
                                     'parentText' => 'Tra cứu/Tìm kiếm',
