@@ -562,13 +562,18 @@ class JobsController extends Controller
     {
         $newAssignedJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId) {
-                $query->where('staff_id', $staffId);
+                $query->where([
+                    'staff_id' => $staffId,
+                    'status' => 'pending'
+                ]);
             }
         ])
-        ->where('status', 'pending')
         ->where($condition)
         ->whereHas('jobAssigns', function ($query) use ($staffId) {
-            $query->where('staff_id', $staffId);
+            $query->where([
+                'staff_id' => $staffId,
+                'status' => 'pending'
+            ]);
         })->get();
 
 

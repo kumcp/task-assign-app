@@ -6,12 +6,23 @@ use App\Models\Configuration;
 use App\Models\Job;
 use App\Models\JobAssign;
 use App\Models\ProcessMethod;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class JobAssignController extends Controller
 {
     const DEFAULT_PAGINATE = 15;
+    
+    const REDIRECT_WORKPLAN = 'REDIRECT_WORKPLAN';
+    const ACCEPT_SUCCESSFUL = 'ACCEPT_SUCCESSFUL';
+    const REJECT_SUCCESSFUL = 'REJECT_SUCCESSFUL';
+    const REJECT_FAILURE = 'REJECT_FAILURE';
+    const INTERNAL_ERROR = 'INTERNAL_ERROR';
+    const EMPTY_DENY_REASON = 'EMPTY_DENY_REASON';
+
+    
 
     public function index(Request $request) {
         
@@ -29,17 +40,9 @@ class JobAssignController extends Controller
             ])
             ->get();
 
-
             foreach ($jobAssigns as $jobAssign) {
                 $job = $jobAssign->job;
-
-                if ($job->assigner_id == $staffId) {
-                    $jobAssign->self_assigned = true;
-                }
-                else {
-                    $jobAssign->self_assigned = false;
-                }
-
+                $jobAssign->self_assigned = $job->assigner_id == $staffId;
             }
             
         }
@@ -51,6 +54,7 @@ class JobAssignController extends Controller
     {
         $action = $request->input('action');
         $jobId = $request->input('job_id');
+        $denyReason = $request->input('deny_reason');
         $staffId = Auth::user()->staff_id;
         
         $job = Job::findOrFail($jobId);
@@ -63,79 +67,130 @@ class JobAssignController extends Controller
         ->with('processMethod')
         ->first();
 
-        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
-
         switch ($action) {
             case 'accept':
-                
-                $workPlanRequired = Configuration::where('field', 'workplan')->first('value')->value;
-                
-                if ($workPlanRequired == 'true') {
+                $result = $this->acceptJob($job, $staffId, $jobAssign);
+
+                if ($result['status_code'] == self::REDIRECT_WORKPLAN) {
                     return redirect()->route('workplans.create', ['jobId' => $jobId]);
                 }
 
-                if ($jobAssign) {
-                    $jobAssign->update(['status' => 'accepted']);
-
-                    if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
-                        $job->update(['status' => 'active']);
-                    }
+                if ($result['status_code'] == self::INTERNAL_ERROR) {
+                    return redirect()->back()->with('error', $result['message']);
                 }
-                else {
-                    JobAssign::create([
-                        'job_id' => $jobId,
-                        'staff_id' => $staffId,
-                        'process_method_id' => $mainProcessMethod->id,
-                        'status' => 'accepted',
-                    ]);
-
-                    $job->update(['status' => 'active']);
-
-                }
-
-
-                
 
                 return view('jobs.job-detail', [
                     'jobs' => $jobs,
                     'jobId' => $jobId,
-                    'success' => 'Nhận việc thành công'
-                ]);
+                    'success' => $result['message']
+                ]); 
                     
-
-
-
             case 'reject': 
+                $result = $this->rejectJob($job, $jobAssign, $denyReason);
 
-                $denyReason = $request->input('deny_reason');
-
-                if (!$denyReason) {
+                if ($result['status_code'] == self::EMPTY_DENY_REASON || $result['status_code'] == self::REJECT_SUCCESSFUL) {
                     return view('jobs.job-detail', [
                         'jobs' => $jobs,
                         'jobId' => $jobId,
+                        'success' => $result['message']
                     ]);
                 }
 
-                if ($jobAssign) {
-                    $jobAssign->update([
-                        'status' => 'rejected',
-                        'deny_reason' => $denyReason
-                    ]);
-
-                    if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
-                        $job->update(['status' => 'pending']);
-                    }
-                }
-
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
-                    'jobId' => $jobId,
-                    'success' => 'Từ chối công việc thành công'
-                ]);
+                return redirect()->back()->with('error', $result['message']);
 
             case 'exchange': 
                 //TODO: exchange function
                 break;
         }
     }
+
+    
+
+    private function acceptJob($job, $staffId, $jobAssign)
+    {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+        $workPlanRequired = Configuration::where('field', 'workplan')->first('value')->value;
+                
+        if ($workPlanRequired) {
+            return [
+                'status_code' => self::REDIRECT_WORKPLAN
+            ];
+        }
+
+        try {
+
+            if ($jobAssign) {
+                $jobAssign->update(['status' => 'active']);
+    
+                if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
+                    $job->update(['status' => 'active']);
+                }
+            }
+            else {
+                JobAssign::create([
+                    'job_id' => $job->id,
+                    'staff_id' => $staffId,
+                    'process_method_id' => $mainProcessMethod->id,
+                    'status' => 'active',
+                ]);
+    
+                $job->update(['status' => 'active']);
+            }
+            return [
+                'status_code' => self::ACCEPT_SUCCESSFUL,
+                'message' => 'Nhận việc thành công'
+            ];
+
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return [
+                'status_code' => self::INTERNAL_ERROR,
+                'message' => 'Đã có lỗi xảy ra'
+            ];
+        }
+
+    }
+
+    private function rejectJob($job, $jobAssign, $denyReason)
+    {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+        
+        if (!$denyReason) {
+            return [
+                'status_code' => self::EMPTY_DENY_REASON,
+                'message' => null
+            ];
+        }
+
+        if ($jobAssign) {
+            try {
+
+                $jobAssign->update([
+                    'status' => 'rejected',
+                    'deny_reason' => $denyReason
+                ]);
+    
+                if ($jobAssign->processMethod->id == $mainProcessMethod->id) {
+                    $job->update(['status' => 'rejected']);
+                }
+                return [
+                    'status_code' => self::REJECT_SUCCESSFUL,
+                    'message' => 'Từ chối công việc thành công'
+                ];
+
+            } catch (Exception $e) {
+                Log::error($e->getMessage());
+                return [
+                    'status_code' => self::INTERNAL_ERROR, 
+                    'message' => 'Đã có lỗi xảy ra'
+                ];
+            }
+        }
+        return [
+            'status_code' => self::REJECT_FAILURE,
+            'message' => 'Không thể từ chối công việc không giao cho mình'
+        ];
+
+    }
+
 }
