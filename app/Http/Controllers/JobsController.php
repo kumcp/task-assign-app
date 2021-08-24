@@ -501,11 +501,8 @@ class JobsController extends Controller
     {
         $directJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
-                $query->where([
-                    'staff_id'=> $staffId, 
-                    'parent_id' => null,
-                ])
-                ->whereNotIn('status', ['pending', 'rejected']);
+                $query->directAssign($staffId)
+                    ->whereNotIn('status', ['pending', 'rejected']);
             }, 
             'jobAssigns.processMethod',
             'project:id,code', 
@@ -514,11 +511,8 @@ class JobsController extends Controller
         ->where($condition)
         ->whereNotIn('status', ['pending', 'finished', 'canceled'])
         ->whereHas('jobAssigns', function ($query) use ($staffId) {
-            $query->where([
-                'staff_id'=> $staffId, 
-                'parent_id' => null,
-            ])
-            ->whereNotIn('status', ['pending', 'rejected']);
+            $query->directAssign($staffId)
+                ->whereNotIn('status', ['pending', 'rejected']);
         })->get();
 
 

@@ -225,13 +225,12 @@ class AssigneeListController extends Controller
             }
 
             $forwardProcessMethod = ProcessMethod::where('name', 'chuyển tiếp')->first();
-
             $forwardJobAssigns = array_filter($jobAssigns, function($jobAssign) use ($forwardProcessMethod) {
-                return $jobAssign['process_method_id'] == $forwardProcessMethod->id;
+                return intval($jobAssign['process_method_id']) == $forwardProcessMethod->id;
             });
 
             $otherJobAssigns = array_filter($jobAssigns, function($jobAssign) use ($forwardProcessMethod) {
-                return $jobAssign['process_method_id'] != $forwardProcessMethod->id;
+                return intval($jobAssign['process_method_id']) != $forwardProcessMethod->id;
             });
 
             foreach ($jobs as $job) {
