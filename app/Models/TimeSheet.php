@@ -87,8 +87,17 @@ class TimeSheet extends Model
 
     public function getPercentageCompleted()
     {
+        $timeSheetsTillNow = TimeSheet::where('job_assign_id', $this->job_assign_id)
+            ->beforeTime($this->to_date, $this->to_time)
+            ->get();
+
+        $totalTimeSheetAmount = 0;
+        foreach ($timeSheetsTillNow as $timeSheet) {
+            $totalTimeSheetAmount += $timeSheet->workAmountInHour();
+        }
+
         $job = $this->load('jobAssign.job')->jobAssign->job;
-        return $job->assign_amount ? $this->workAmountInHour() * 100 / ($job->assign_amount * 8) : null;
+        return $job->assign_amount ? $totalTimeSheetAmount * 100 / ($job->assign_amount * 8) : null;
     }
 
     public function scopeBelongsToJob($query, $jobId)
@@ -108,5 +117,12 @@ class TimeSheet extends Model
     public function scopeBelongsToJobAssign($query, $jobId, $assigneeId)
     {
         return $query->belongsToJob($jobId)->belongsToAssignee($assigneeId);
+    }
+
+    public function scopeBeforeTime($query, $toDate, $toTime)
+    {
+        return $query->where('to_date', '<', $toDate)
+            ->orWhere('to_date', $toDate)
+            ->where('to_time', '<=', $toTime);
     }
 }
