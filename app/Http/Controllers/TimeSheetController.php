@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class TimeSheetController extends Controller
 {
@@ -49,8 +50,13 @@ class TimeSheetController extends Controller
         return view('site.time-sheet.timesheet', compact('assignees', 'defaultJobId', 'defaultStaffId', 'job', 'timeSheets', 'directJobs', 'readonly'));
     }
 
-    public function store(TimeSheetRequest $request){
+    public function store(Request $request){
 
+        $validator = $this->makeValidator($request->all());
+        if ($validator->fails()) {
+            return redirect()->back()->withInput()->withErrors($validator->errors());
+        }
+        
         $jobId = $request->input('job_id');
         $assigneeId = Auth::user()->staff_id;
         $jobAssign = JobAssign::where([
@@ -69,6 +75,10 @@ class TimeSheetController extends Controller
 
         if (JobChecker::isPastDueDeadline($fromDate, $toDate, $deadline)) {
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
+        }
+
+        if ($job->assign_amount && TimeSheet::isOverAssignAmount($data, $job->id, $job->assign_amount)) {
+            return redirect()->back()->withInput()->with('error', '% hoàn thành vượt quá khối lượng công việc');
         }
 
         $data = array_merge(['job_assign_id' => $jobAssign->id], $data);
@@ -121,7 +131,7 @@ class TimeSheetController extends Controller
 
     }
 
-    public function update(TimeSheetRequest $request, $id){
+    public function update(Request $request, $id){
         $action = $request->input('action');
         if ($action == 'reset') {
             return redirect()->route('timesheet.create');
@@ -134,7 +144,16 @@ class TimeSheetController extends Controller
         ->where('id', $id)
         ->first();
 
+        if (!$timeSheet) {
+            return redirect()->back()->withInput()->with('error', 'Không tìm thấy timesheet');
+        }
+
         $data = $request->only(['from_date', 'to_date', 'from_time', 'to_time','content']);
+
+        $validator = $this->makeValidator($request->all());
+        if ($validator->fails()) {
+            return redirect()->back()->withInput()->withErrors($validator->errors());
+        }
 
         $job = $timeSheet->jobAssign->job;
         $fromDate = Carbon::parse($data['from_date']);
@@ -143,6 +162,10 @@ class TimeSheetController extends Controller
         
         if (JobChecker::isPastDueDeadline($fromDate, $toDate, $deadline)) {
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
+        }
+
+        if ($job->assign_amount && TimeSheet::isOverAssignAmount($data, $job->id, $job->assign_amount, $timeSheet->id)) {
+            return redirect()->back()->withInput()->with('error', '% hoàn thành vượt quá khối lượng công việc');
         }
 
         try {
@@ -169,6 +192,36 @@ class TimeSheetController extends Controller
             Log::error($e->getMessage());
             return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
         } 
+    }
+
+    private function makeValidator($data)
+    {
+        $rules = [
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+            'from_time' => ['required', 'date_format:H:i'],
+            'to_time' => ['required', 'date_format:H:i'], 
+            'content' => 'required',
+        ];
+
+        $messages = [
+            'from_date.required' => 'Ngày bắt đầu không được để trống!',
+            'from_date.date' => 'Ngày bắt đầu không hợp lệ!',
+            'to_date.after_or_equal' => 'Ngày kết thúc không được vượt quá ngày bắt đầu!',
+            'to_date.required' => 'Ngày kết thúc không được để trống!',
+            'to_date.date' => 'Ngày kết thúc không hợp lệ!',
+            'from_time.required' => 'Thời gian ngày bắt đầu không được để trống!',
+            'to_time.required' => 'Thời gian ngày kết thúc không được trống!',
+            'to_time.after_or_equal' => 'Giờ kết thúc không được vượt quá giờ bắt đầu!',
+            'content.required' => 'Nội dung không được để trống!',
+        ];
+
+        $validator = Validator::make($data, $rules, $messages);
+        $validator->sometimes('to_time', 'after_or_equal:from_time', function($input) {
+            return $input->from_date == $input->to_date;
+        });
+        
+        return $validator;
     }
 
     private function allowToModify($job, $staffId)

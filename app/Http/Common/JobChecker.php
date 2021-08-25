@@ -2,6 +2,7 @@
 
 namespace App\Http\Common;
 
+use App\Models\TimeSheet;
 
 class JobChecker 
 {
@@ -9,4 +10,5 @@ class JobChecker
     {
         return $fromDate->greaterThan($deadline) || $toDate->greaterThan($deadline);
     }
+
 }
