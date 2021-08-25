@@ -77,7 +77,7 @@ class TimeSheetController extends Controller
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
         }
 
-        if ($job->assign_amount && JobChecker::isOverAssignAmount($data, $job->id, $job->assign_amount)) {
+        if ($job->assign_amount && TimeSheet::isOverAssignAmount($data, $job->id, $job->assign_amount)) {
             return redirect()->back()->withInput()->with('error', '% hoàn thành vượt quá khối lượng công việc');
         }
 
@@ -164,7 +164,7 @@ class TimeSheetController extends Controller
             return redirect()->back()->withInput()->with('error', 'Ngày nhập không được vượt quá deadline');
         }
 
-        if ($job->assign_amount && JobChecker::isOverAssignAmount($data, $job->id, $job->assign_amount, $timeSheet->id)) {
+        if ($job->assign_amount && TimeSheet::isOverAssignAmount($data, $job->id, $job->assign_amount, $timeSheet->id)) {
             return redirect()->back()->withInput()->with('error', '% hoàn thành vượt quá khối lượng công việc');
         }
 
