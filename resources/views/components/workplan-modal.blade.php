@@ -6,17 +6,9 @@
 @section('modal-body')
     <form action="{{ route('workplans.store') }}" method="POST">
         
-        @isset ($jobAssignId)
-            <input type="hidden" name="job_assign_id" value="{{ $jobAssignId }}">
-        @endisset
+        @csrf
 
-        @isset ($jobId)
-            <input type="hidden" name="job_id" value="{{ $jobId }}">
-        @endisset
-
-        @isset ($staffId)
-            <input type="hidden" name="staff_id" value="{{ $staffId }}">
-        @endisset
+        <input type="hidden" name="job_id" value="{{ $jobId ?? old('job_id') }}">
 
         <div class="form-group-row mb-3">
             @include('components.input-date', [

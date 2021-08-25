@@ -24,7 +24,7 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|regex:/^[\pL\s]+$/u|max:80',
             'email' => 'required|string|email|max:255|unique:accounts',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required',
@@ -36,9 +36,12 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name.required' => 'Trường tên là bắt buộc',
+            'name.regex' => 'Tên không được phép chứa các ký tự không phải chữ cái',
+            'name.max' => 'Độ dài tên không quá 80 ký tự',
             'email.required' => 'Trường email là bắt buộc',
             'email.email' => 'Vui lòng nhập đúng định dạng email',
             'email.unique' => 'Địa chỉ email đã được sử dụng',
+            'email.max' => 'Độ dài email không vượt quá 255 ký tự',
             'password.required' => 'Trường mật khẩu là bắt buộc',
             'password.min' => 'Mật khẩu bao gồm ít nhất 8 kí tự',
             'password.confirmed' => 'Mật khẩu xác nhận không trùng khớp',

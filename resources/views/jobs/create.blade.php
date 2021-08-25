@@ -7,8 +7,14 @@
 	'jobTypes' => $jobTypes,
 	'priorities' => $priorities,
 	'processMethods' => $processMethods,
+	'editable' => true
 
 ])
+
+
+@section('modal')
+	@include('components.assignee-modal', ['staff' => $staff])
+@endsection
 
 
 @section('message')
@@ -18,11 +24,13 @@
 			'alertClass' => 'alert alert-sucess',
 			'message' => session('success')
 		])
-	@elseif ($errors->has('job_id')) 
+	@endif
+
+	@if (session('error')) 
 		@include('components.flash-message-modal', [
 			'modalId' => 'errorModal',
 			'alertClass' => 'alert alert-danger',
-			'message' => $errors->first('job_id')
+			'message' => session('error')
 		])
 	@endif
 @endsection
@@ -31,19 +39,26 @@
 @section('job-info')
 	<div class="form-group-row mb-3">
 
-		@include('components.searchable-input-text', [
-			'name' => 'assigner_name',
-			'label' => 'Người giao việc', 
-			'options' => $staff
-		])
-		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
-		<input type="hidden" name="assigner_id" id="assigner_id" value="{{ old('assigner_id') }}">
 
+
+		<input type="hidden" name="authenticated_name" id="authenticated_name" value="{{ Auth::user()->staff->name }}">
+		<input type="hidden" name="authenticated_id" id="authenticated_id" value="{{ Auth::user()->staff_id }}">
+
+
+
+		@include('components.input-text', [
+			'name' => 'assigner_name',
+			'label' => 'Người giao việc',
+			'value' => Auth::user()->staff->name,
+			'readonly' => true
+		])
+		
+		<input type="hidden" name="assigner_id" id="assigner_id" value="{{ Auth::user()->staff_id }}">
 
 		@error('assigner_id')
 			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('assigner_id')}}</span>
 		@enderror
-		
+	
 
 	
 	</div>
@@ -55,7 +70,8 @@
 				'label' => 'Mã dự án', 
 				'options' => $projects, 
 				'displayField' => 'code',
-				'hiddenField' => 'name'
+				'hiddenField' => 'name',
+				'checked' => old('project_id')
 			])
 
 			@include('components.input-text', [
@@ -79,6 +95,7 @@
 			'name' => 'job_type',
 			'label' => 'Loại công việc', 
 			'options' => $jobTypes, 
+			'checked' => old('job_type_id')
 		])
 		<input type="hidden" name="job_type_id" id="job_type_id" value="{{ old('job_type_id') }}">
 
@@ -98,7 +115,9 @@
 				['value' => 'day', 'display' => 'Ngày'],
 				['value' => 'week', 'display' => 'Tuần'],
 				['value' => 'term', 'display' => 'Kỳ'],    
-			]
+			],
+			'checked' => old('period_unit')
+
 		])
 
 	
@@ -120,6 +139,10 @@
 			'name' => 'code',
 			'label' => 'Mã CV'
 		])
+		
+	</div>
+
+	<div class="form-group-row mb-3">
 		@include('components.searchable-input-text', [
 			'name' => 'priority_name',
 			'label' => 'Độ ưu tiên', 
@@ -136,9 +159,6 @@
 		])
 		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
 		
-		@error('name')
-		<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('name')}}</span>
-		@enderror
 	
 	</div>
 
@@ -168,9 +188,6 @@
 			'label' => 'Hạn xử lý',
 		])
 		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
-		@error('deadline')
-			<span class="alert alert-danger ml-3 p-1 errors">{{$errors->first('deadline')}}</span>
-		@enderror
 	</div>
 
 	<div class="form-group-row mb-3">
@@ -196,43 +213,18 @@
 @endsection
 
 
-@section('assignee-info')
-	<div class="form-group-row mb-3 offset-10">
-		<button class="btn btn-info">Rút gọn</button>
-	</div>
 
-	<div id="short-list">
-		<div class="form-group-row mb-3">
-			@include('components.searchable-input-text', [
-				'name' => 'chu-tri',
-				'label' => 'Chủ trì', 
-				'options' => $staff, 
-			])
-			<input type="hidden" name="chu-tri-id" id="chu-tri-id">
-		</div>
-		<div class="form-group-row mb-3">
-			@include('components.multiple-search-input', [
-				'name' => 'phoi-hop[]', 
-				'label' => 'Phối hợp', 
-				'options' => $staff
-			])
-		</div>
-		<div class="form-group-row mb-3">
-			@include('components.searchable-input-text', [
-				'name' => 'nhan-xet',
-				'label' => 'Theo dõi, nhận xét', 
-				'options' => $staff, 
-			])
-			<input type="hidden" name="nhan-xet-id" id="nhan-xet-id">
-		</div>
-	</div>
-
-
-
-@endsection
 
 @section('assign-button-group')
-	{{-- TODO: Thêm 2 link xem chi tiết + bô sung --}}
+	<div class="text-center">
+		@include('components.button-group', [
+			'parentClass' => 'btn-group',
+			'buttons' => [
+				['type' => 'button', 'iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'assignee-detail'], 
+			] 
+		])
+	</div>
+
 	
 @endsection
 
@@ -259,30 +251,12 @@
 
 @section('custom-script')
 	<script>
-
-
-
-		const addRowToTable = (tableId, idx,  data) => {
-			let row = $('<tr/>', {
-				'class': 'data-row',
-			});    
-			let content = $('<td/>', {id: idx}).append(data);
-			row.append(content);
-
-			$(`#${tableId} tbody`).append(row);
-    	}
-
-		const resetTable = tableId => {
-			$(`#${tableId} tbody tr`).remove();
-		}
-
- 
-
-
 		$(document).ready(function() {
-			$('#file-count').hide();
 
-
+			if ($('#job_type_id').val() !== null) {
+				const jobTypeId = $('#job_type_id').val();
+				setSelectedValue('#job_type', jobTypeId);
+			}
 
 			$('button[value="reset"]').click(function () {
 				$('.selectpicker').each(function () {
@@ -293,14 +267,27 @@
 					if ($(this).attr('name') === 'status') {
 						$(this).val('Chưa nhận');
 					}
-					else {
+					else if ($(this).attr('name') !== 'authenticated_name' && $(this).attr('name') !== 'authenticated_id') {
 						$(this).val('');
 					}
+		
 				})
+
+				$('#assigner_name').val($('#authenticated_name').val());
+				$('#assigner_id').val($('#authenticated_id').val());
+
 				$('#period_unit').prop('selectedIndex', -1);
 				$('textarea').val('');
 				$('#history-workplan').hide();
 				$('#note-wrapper').hide();
+
+				resetTable('files');
+				$('#file-count span').html(null);
+				$('#file-count').hide();
+
+				resetHiddenInputs();
+				resetFullAssigneeTable('full-assignee-table');
+				resetAssigneeDisplayValues();
 			});
 
 			$('button[value="edit"]').click(function () {
@@ -310,6 +297,8 @@
 					$('#note-wrapper').show();
 				}
 			});
+
+
 
 
 			$('input:file').change(function(e) {
@@ -351,12 +340,196 @@
 				}
 			});
 
+			$('#file-count').hide();
 
 			$('#file-count').click(function() {
 
 				$('#file-modal').modal('show');
 				
 			});
+			
+			
+
+			$('#chu-tri-btn').click(function() {
+				$('#process_method').val('chu-tri');
+
+				$('#assignee-modal .modal-title').html('Chủ trì');
+			});
+
+			$('#phoi-hop-btn').click(function() {
+				$('#process_method').val('phoi-hop');
+
+				$('#assignee-modal .modal-title').html('Phối hợp');
+			});
+
+			$('#nhan-xet-btn').click(function() {
+				$('#process_method').val('nhan-xet');
+
+				$('#assignee-modal .modal-title').html('Theo dõi/Nhận xét');
+			});
+
+
+			$('#assignee-modal').on('show.bs.modal', function() {
+				const processMethod = $('#process_method').val();
+				tickAssigneeTable(processMethod);
+			});
+
+
+			$('#assignee-modal').on('shown.bs.modal', function() {
+
+
+				$('#search-reset-btn').click(function() {
+					$('#id').val(null).keyup();
+					$('#name').val(null).keyup();
+				});
+
+				$('#id').keyup(function() {
+					const assigneeId = $('#id').val();
+					const assigneeName = $('#name').val();
+					search('assignee-list', assigneeId, assigneeName);
+				});
+
+				$('#name').keyup(function() {
+					const assigneeId = $('#id').val();
+					const assigneeName = $('#name').val();
+					search('assignee-list', assigneeId, assigneeName);
+				});
+			});
+
+
+
+			$('#assignee-modal').on('hidden.bs.modal', function() {
+				untickAssigneeTable();
+				displayAssigneeList('assignee-list');
+			});
+
+
+			$('#assignee-list tr.data-row').click(function() {
+	
+	
+				const id = $(this).attr('id');
+				const processMethod = $('#process_method').val();
+
+				const assignee = $(this).find('td[class="name"]').html();
+				
+
+				toggleTickElement(id, processMethod, assignee);
+
+
+				
+			});
+
+
+			$('#full-assignee-table').on('change', 'input.direct-report', function() {
+
+				const idElement = $(this).closest('tr').find('.id');
+				const id = idElement.text();
+
+				const processMethod = idElement.siblings('.process_method').text();
+				
+
+				let hiddenInput = null;
+				let value = null;
+
+
+				switch (processMethod) {
+
+					case 'Chủ trì':
+						hiddenInput = $(`input[name="chu-tri[]"][id="${id}"]`);
+
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							direct_report: this.checked
+						}));
+						
+						
+						break;
+
+					case 'Phối hợp':
+
+						hiddenInput = $(`input[name="phoi-hop[]"][id="${id}"]`);
+						
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							direct_report: this.checked
+						}));
+
+						break;
+
+					case 'Theo dõi/Nhận xét':
+						hiddenInput = $(`input[name="nhan-xet[]"][id="${id}"]`);
+						
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							direct_report: this.checked
+						}));
+						break;
+				}
+				
+				
+			});
+
+			$('#full-assignee-table').on('change', 'input.sms', function() {
+
+				const idElement = $(this).closest('tr').find('.id');
+				const id = idElement.text();
+
+				const processMethod = idElement.siblings('.process_method').text();
+
+
+				let hiddenInput = null;
+				switch (processMethod) {
+
+					case 'Chủ trì':
+						hiddenInput = $(`input[name="chu-tri[]"][id="${id}"]`);
+						
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							sms: this.checked
+						}));
+
+						break;
+
+					case 'Phối hợp':
+					
+						hiddenInput = $(`input[name="phoi-hop[]"][id="${id}"]`);
+						
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							sms: this.checked
+						}));
+						break;
+
+					case 'Theo dõi/Nhận xét':
+						hiddenInput = $(`input[name="nhan-xet[]"][id="${id}"]`);
+						
+						value = JSON.parse(hiddenInput.val());
+
+						hiddenInput.val(JSON.stringify({
+							...value,
+							sms: this.checked
+						}));
+						break;
+				}
+			});
+
+
+
+
+
+
+
+
 
 
 

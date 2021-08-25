@@ -62,7 +62,8 @@ class Job extends Model
             'direct_report', 
             'sms', 
             'status', 
-            'deny_reason'
+            'deny_reason',
+            'deadline'
         );
     }
 

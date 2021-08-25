@@ -3,8 +3,8 @@
     @if (isset($readonly) && $readonly)
         <input type="text" name="{{$name}}" id="{{$name}}" value="{{ $value ?? old($name) }}" class="{{$inputClass ?? 'form-control d-inline w-25'}}" readonly>
     @else
-        <input type="text" name="{{$name}}" id="{{$name}}" value="{{ old($name) }}" class="{{$inputClass ?? 'form-control d-inline w-25'}}">
+        <input type="text" name="{{$name}}" id="{{$name}}" value="{{ $value ?? old($name) }}" class="{{$inputClass ?? 'form-control d-inline w-25'}}">
     @endif
 
 </div>    
-
+{!!showErrors($errors, $name)!!}

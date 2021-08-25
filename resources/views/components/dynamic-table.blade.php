@@ -8,6 +8,8 @@
             @foreach ($cols ?? [] as $key => $value)
                 @if ($key === 'checkbox')
                     <th><input type="checkbox" ></th>
+                @elseif ($value === 'pattern.tick')
+                    <th></th>
                 @else
                     <th scope="col" data-value="{{$value}}">{{ $key }}</th>
                 @endif
@@ -18,12 +20,14 @@
         @foreach ($rows ?? [] as $item)
             <tr class="data-row" id="{{isset($idField) ? $item[$idField] : $item['id']}}">
                 @foreach ($cols ?? [] as $key => $value)
-                    @if ($value === 'pattern.modified')
+                    @if ($value === 'pattern.tick')
+                        <td class="tick" style="max-width: 5px"> <i class="fas fa-check" style="display: none"></i> </td>
                     @elseif ($key === 'checkbox')
                         <td><input name="{{ $value }}" type="checkbox" value="{{$item['id']}}"></td>
                     @else
-                        <td>{{ isset($$value) && array_key_exists($item->$value, $$value) ? $$value[$item->$value] : $item->$value }}
-                        </td>
+                        
+                        <td class="{{ $value }}">{{ $item->$value }}</td>
+
                     @endif
 
                 @endforeach

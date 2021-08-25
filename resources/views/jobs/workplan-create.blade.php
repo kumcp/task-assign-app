@@ -7,15 +7,14 @@
 @section('content')
 
 
-    @isset ($successMessage)
-
+    @if (session('success'))
         @include('components.flash-message-modal', [
             'modalId' => 'success-modal',
             'alertClass' => 'alert alert-sucess',
-            'message' => $successMessage,
+            'message' => session('success'),
         ])
+    @endif    
 
-    @endisset
 
     @if ($errors->any())
         
@@ -27,30 +26,13 @@
         
     @endif
 
-    @if (isset($jobAssignId))
-        @include('components.workplan-modal', ['jobAssignId' => $jobAssignId])
-
-    @elseif (isset($jobId) && isset($staffId))
-   
-        @include('components.workplan-modal', [
-            'jobId' => $jobId, 
-            'staffId' => $staffId,
-        ])
-    
-    @else
-        
-        @include('components.workplan-modal')
-
-    @endif
-
+    @include('components.workplan-modal', ['jobId' => $jobId])
 
 
     <div class="container">
         <form action="{{ route('workplans.delete') }}" method="POST">
             
-            @isset($jobAssignId)
-                <input type="hidden" name="job_assign_id" value="{{ $jobAssignId }}">
-            @endisset
+            @csrf
 
 
 
@@ -108,8 +90,8 @@
         $(document).ready(function() {
 
             $('button[value="create"]').click(function() {
-                $('#workplan-modal').modal('show').on('hidden.bs.modal', function() {
-                    $('form input, textarea').val(null);
+                $('#workplan-modal').modal('show').on('hide.bs.modal', function() {
+                    $('form input, textarea').not($('input:hidden')).val(null)
                 });
             });
 

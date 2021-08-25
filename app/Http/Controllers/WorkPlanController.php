@@ -8,145 +8,170 @@ use App\Models\ProcessMethod;
 use App\Models\WorkPlan;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 class WorkPlanController extends Controller
 {
 
     const DEFAULT_PAGINATE = 15;
+
     
-    public function create(Request $request) 
+    public function create(Request $request, $jobId) 
     {
-        $jobAssignId = session('job_assign_id');
 
-        $successMessage = $request->session()->get('success');
-     
-        if ($jobAssignId) {
-            
-            $workPlans = WorkPlan::where('job_assign_id', $jobAssignId)->orderBy('created_at', 'DESC')->get();
-            
-            return view('jobs.workplan-create', compact('jobAssignId', 'workPlans', 'successMessage'));
-            
-        }
         
-        $jobId = session('job_id') ? session('job_id') : $request->input('job_id');
+        $staffId = Auth::user()->staff_id;
 
-        // TODO: get authenticated user id
-        $staffId = session('staff_id') ? session('staff_id') : 10;
+        $job = Job::find($jobId);
+
+        if ($job->assigner_id == $staffId) {
+            return view('jobs.workplan', ['jobId' => $jobId]);
+        }
 
         $jobAssign = JobAssign::where([
             'job_id' => $jobId,
             'staff_id' => $staffId
-        ])->with('workPlans')->first();
+        ])
+        ->with([
+            'workPlans',
+            'processMethod'
+        ])
+        ->first();
 
 
-        if ($jobAssign && $jobAssign->workPlans->count()) {
-            $jobAssignId = $jobAssign->id;
-            $workPlans = $jobAssign->workPlans;
-            return view('jobs.workplan-create', compact('jobAssignId', 'workPlans'));
+
+        $workPlans = $jobAssign ? $jobAssign->workPlans : [];
+
+        
+        return view('jobs.workplan-create', compact('jobId', 'workPlans'));
+    }
+
+
+    public function show($jobId, $assigneeId=null) {
+        
+        $condition = ['job_id'=> $jobId];
+
+        if ($assigneeId) {
+            $condition['staff_id'] = $assigneeId;
         }
         
         
-        return view('jobs.workplan-create', compact('jobId', 'staffId'));
+        $jobAssigns = JobAssign::where($condition)->with([
+            'job.assigner',
+            'assignee',
+            'workPlans',
+            'processMethod'
+        ])->get();
+
+        return response()->json($jobAssigns);
+
     }
 
 
     public function store(Request $request)
     {
 
-        $validator = Validator::make($request->all(), [
+
+        $rules = [            
             'from_date' => ['required', 'date'],
             'to_date' => ['required', 'date', 'after_or_equal:from_date'],
             'from_time' => ['required', 'date_format:H:i'],
-            'to_time' => ['required', 'date_format:H:i', 'after:from_time'], 
+            'to_time' => ['required', 'date_format:H:i'], 
             'content' => ['required', 'string', 'max:255'],
-        ]);
+            'job_id' => 'required', 
+
+        ];
+        $messages = [
+            'from_date.required' => 'Trường từ ngày là bắt buộc',
+            'to_date.required' => 'Trường đến ngày là bắt buộc',
+            'to_date.after_or_equal' => 'Trường đến ngày phải sau trường từ ngày',
+            'from_time.required' => 'Trường từ giờ là bắt buộc',
+            'to_time.required' => 'Trường đến giờ là bắt buộc',
+            'to_time.after_or_equal' => 'Trường đến giờ phải sau trường từ giờ',
+            'content.required' => 'Trường nội dung là bắt buộc',
+
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+        $validator->sometimes('to_time', 'after_or_equal:from_time', function($input) {
+            return $input->from_date == $input->to_date;
+        });
 
         if ($validator->fails()) {
             return redirect()->back()->withInput()->withErrors($validator->errors());
-           
         }
+
+        
 
 
         try {
 
-            if ($request->has('job_assign_id')) {
-                $jobAssignId = $request->input('job_assign_id');
+            // TODO get handling and related jobs
+            $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
+
+
+            $jobId = $request->input('job_id');
+            $staffId = Auth::user()->staff_id;
+
+            $existingJobAssign = JobAssign::where([
+                'job_id' => $jobId,
+                'staff_id' => $staffId
+            ])
+            ->with([
+                'job',
+                'workPlans',
+                'processMethod'
+            ])
+            ->first();
+
+            $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+
+
+            if ($existingJobAssign) {
+
+                $existingJobAssign->workPlans()->create($request->all());
+
+                if ($existingJobAssign->job->status != 'pending') {
+                    return redirect()->route('workplans.create', ['jobId' => $jobId])->with('success', 'Thêm kế hoạch công việc thành công');
+                }
+
+                $existingJobAssign->update(['status' => 'active']);
+
+                $processMethod = $existingJobAssign->processMethod;
+                
+                if ($processMethod->id == $mainProcessMethod->id) {
+                    $existingJobAssign->job()->update(['status' => 'active']);
+                }
+
+                return view('jobs.job-detail', [
+                    'jobs' => $jobs,
+                    'jobId' => $jobId,
+                    'success' => 'Nhận việc thành công'
+                ]);
+
+
             }
             else {
-    
-                $validator = Validator::make($request->all(), [
-                    'job_id' => 'required', 
-                    'staff_id' => 'required'
-                ]);
-        
-                if ($validator->fails()) {
-                    return redirect()->back()->withErrors($validator->errors());
-                   
-                }
-                $jobId = $request->input('job_id');
-                $staffId = $request->input('staff_id');
-    
-    
-                // TODO: get id of chu tri process method
-                $mainProcessMethod = ProcessMethod::first();
-    
+
                 $newJobAssign = JobAssign::create([
                     'job_id' => $jobId,
                     'staff_id' => $staffId,
                     'process_method_id' => $mainProcessMethod->id,
                     'status' => 'accepted'
                 ]);
+                $newJobAssign->workPlans()->create($request->all());        
                 
-                $jobAssignId = $newJobAssign->id;
-            }
-    
-    
-            
-            $workPlans = WorkPlan::where('job_assign_id', $jobAssignId)->get();
-            
-            $insertData = $request->has('job_assign_id') ? $request->all() : array_merge(['job_assign_id' => $jobAssignId], $request->all());
-            WorkPlan::create($insertData);
-
-            if ($workPlans->count() > 0) {
-
-                return redirect()->route('workplans.create')->with([
-                    'job_assign_id' => $jobAssignId, 
-                    'success' => 'Thêm kế hoạch công việc thành công'
-                ]);
-            }
-
+                $newJobAssign->job()->update(['status' => 'active']);
 
                 
-            $jobAssign = JobAssign::where('id', $jobAssignId)->with('job')->first();
-
-
-
-            if ($jobAssign->status != 'accepted')
-                $jobAssign->update(['status' => 'accepted']);
-
-            $job = $jobAssign->job;
-            
-
-            
-            if ($job->status === 'pending') {
-
-                $job->update(['status' => 'active']);
-
-                // TODO get handling and related jobs
-                $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
-
                 return view('jobs.job-detail', [
                     'jobs' => $jobs,
-                    'jobId' => $job->id,
+                    'jobId' => $jobId,
                     'success' => 'Nhận việc thành công'
                 ]);
 
             }
 
-            return redirect()->route('workplans.create')->with([
-                'job_assign_id' => $jobAssignId, 
-                'success' => 'Thêm kế hoạch công việc thành công'
-            ]);
 
 
 

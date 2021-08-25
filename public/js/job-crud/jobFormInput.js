@@ -1,44 +1,6 @@
+// MAIN FUNCTIONS
+const initializeJobValues = (jobId, readOnly=false) => {
 
-
-
-const handleOptionChange = (name, hiddenInputId) => {
-    $(`#${name}`).change(function (e) {
-        $(`#${hiddenInputId}`).val(e.target.value)
-    });
-}
-
-
-
-const setSelectedValue = (selector, value) => {
-    $(selector).selectpicker('val', value);
-    $(selector).selectpicker('refresh');
-
-}
-
-const setSelectedValueDynamic = (selector, selectedValue, inputValue) => {
-
-    if ($(`select${selector}`).length) {
-        setSelectedValue(selector, selectedValue);
-    }
-    else {
-
-        $(selector).val(inputValue);
-    }
-}
-
-
-
-const initializeJobValues = (jobId) => {
-
-    const addRowToTable = (tableId, idx,  data) => {
-        let row = $('<tr/>', {
-            'class': 'data-row',
-        });    
-        let content = $('<td/>', {id: idx}).append(data);
-        row.append(content);
-
-        $(`#${tableId} tbody`).append(row);
-    }
 
     const initializeFileTable = (tableId, files) => {
         for (let i = 0; i < files.length; i++) {
@@ -52,8 +14,12 @@ const initializeJobValues = (jobId) => {
         }
     }
 
+
+
+
+
     getJob(jobId).then(job => {
-        console.log(job);
+
         Object.keys(job).forEach(key => {
             let input = document.querySelector(`#${key}`);
             if (input !== null) {
@@ -79,17 +45,52 @@ const initializeJobValues = (jobId) => {
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
-        if (job.status !== 'pending') {
-            $('button[value="accept"]').prop('disabled', true);
-        }
 
         if (job.files.length > 0) {
+            $('#file-count').show();
             $('#file-count span').html(job.files.length);
         }
 
         initializeFileTable('files', job.files);
 
+        initializeAssigneeList(job.assignees, readOnly);
+
+
 
 
     });
 }
+
+
+const handleOptionChange = (name, hiddenInputId) => {
+    $(`#${name}`).change(function (e) {
+        $(`#${hiddenInputId}`).val(e.target.value)
+    });
+}
+
+
+// HELPER FUNCTIONS
+
+
+const setSelectedValue = (selector, value) => {
+    $(selector).selectpicker('val', value);
+    $(selector).selectpicker('refresh');
+
+}
+
+const setSelectedValueDynamic = (selector, selectedValue, inputValue) => {
+
+    if ($(`select${selector}`).length) {
+        setSelectedValue(selector, selectedValue);
+    }
+    else {
+
+        $(selector).val(inputValue);
+    }
+}
+
+
+
+
+
+
