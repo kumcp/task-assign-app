@@ -76,7 +76,7 @@ class WorkPlanController extends Controller
             'from_date' => ['required', 'date'],
             'to_date' => ['required', 'date', 'after_or_equal:from_date'],
             'from_time' => ['required', 'date_format:H:i'],
-            'to_time' => ['required', 'date_format:H:i', 'after:from_time'], 
+            'to_time' => ['required', 'date_format:H:i'], 
             'content' => ['required', 'string', 'max:255'],
             'job_id' => 'required', 
 
@@ -93,6 +93,9 @@ class WorkPlanController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules, $messages);
+        $validator->sometimes('to_time', 'after_or_equal:from_time', function($input) {
+            return $input->from_date == $input->to_date;
+        });
 
         if ($validator->fails()) {
             return redirect()->back()->withInput()->withErrors($validator->errors());

@@ -104,6 +104,7 @@ class JobAssign extends Pivot
             'staff_id' => $staffId,
             'parent_id' => null
         ])
+        ->whereNotIn('status', ['pending', 'rejected'])
         ->whereDoesntHave('children', function($q) {
             $q->where('is_additional', 0);
         });
