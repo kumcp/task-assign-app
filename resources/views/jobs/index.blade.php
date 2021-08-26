@@ -18,10 +18,6 @@
             <form action="{{ route('jobs.search')}}" method="POST" class="w-100">
                 @csrf
 
-				
-
-
-
 				<div class="form-group-row mb-3">
                     @include('components.select', [
 						'name' => 'job_type_id',
@@ -80,10 +76,10 @@
 					])
 				</div>
 				<div class="btn-group offset-5" role="group">
-					<button type="submit" class="btn btn-light">
+					<button type="submit" class="btn btn-light" name="action" value="search">
 						<i class="fas fa-search"></i>
 					</button>
-					<button type="button" id="reset-btn" class="btn btn-light">
+					<button type="submit" id="reset-btn" class="btn btn-light" name="action" value="reset">
 						<i class="fas fa-redo"></i>
 					</button>
 
@@ -97,6 +93,8 @@
 				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
 				
+				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
+
 				@isset($all)
 			
 					@yield('table')
@@ -138,7 +136,8 @@
 						['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
 						['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
 						['iconClass' => 'fas fa-user-plus', 'value' => 'Giao xử lý', 'action' => 'assign'], 
-						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
+						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'],
+						['iconClass' => 'fas fa-plus', 'value' => 'Tạo việc', 'action' => 'job_create'], 
 						['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
 						['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
 					] 
@@ -151,12 +150,6 @@
 
 	<script>
 		$(document).ready(function () {
-			const handleReset = () => {
-				$('select').prop('selectedIndex', -1);
-				$('.form-group-row input').each(function() {
-					$(this).val(null);
-				});
-			}
 
 			const initializeSelectInput = () => {
 				$('select').prop('selectedIndex', -1);
@@ -168,10 +161,6 @@
 			
 			$('input:checkbox').each(function() {
 				$(this).prop('checked', false);
-			});
-
-			$('#reset-btn').click(function() {
-				handleReset();
 			});
 
 

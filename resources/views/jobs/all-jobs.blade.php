@@ -27,6 +27,26 @@
     ])
 @endsection
 
+@section('custom-script')
+    <script>
+        $('tbody input:checkbox').change(function() {
+            if (this.checked) {
+                const jobId = $(this).closest('tr').attr('id');
+                $(this).val(jobId);
+                $('button[value="detail"]').prop('disabled', false);
+            }
+            else {
+                $('thead input:checkbox').prop('checked', false);
+                $(this).removeAttr('value');
+
+                if ($('tbody input:checkbox:checked').length === 0) {
+                    $('button[value="detail"]').prop('disabled', true);
+                }
+            }
+        })
+    </script>
+@endsection
+
 
 
 
