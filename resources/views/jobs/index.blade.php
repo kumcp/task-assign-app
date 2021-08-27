@@ -92,8 +92,6 @@
 
 				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
-				
-				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
 				@isset($all)
 			

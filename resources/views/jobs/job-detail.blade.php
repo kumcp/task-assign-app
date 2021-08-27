@@ -21,6 +21,8 @@
 
 
 @section('job-info')
+	<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
+
 	<div class="form-group-row mb-3">
 
 		@include('components.input-text', [
@@ -203,6 +205,7 @@
 				<div class="tab-pane fade show active w-100" id="left" role="tabpanel" aria-labelledby="left-tab">
 
 					@include('components.dynamic-table', [
+						'id' => 'left-table',
 						'cols' => [
 							'Tên công việc' => 'name',
 						],
@@ -214,6 +217,7 @@
 				<div class="tab-pane" id="right" role="tabpanel" aria-labelledby="right-tab">
 
 					@include('components.dynamic-table', [
+						'id' => 'right-table',
 						'cols' => [
 							'Tên công việc' => 'name',
 						],

@@ -20,7 +20,7 @@
         @yield('message')
 
 
-        <div class="row mb-5">
+        <div class="row mb-5" id="created-date-wrapper">
             <div class="col offset-9">
                 @include('components.input-text', [
                     'name' => 'created_date',
@@ -49,6 +49,8 @@
                     <input type="hidden" name="editable" id="editable" value="{{ $editable ? 1 : 0 }}">
 
                     <input type="hidden" name= "process_method" id="process_method">
+
+                    <input type="hidden" id="staff_id" value="{{ Auth::user()->staff_id }}">
                     
                     <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
                         <legend class="w-auto">Thông tin nghiệp vụ</legend>
@@ -143,14 +145,14 @@
                         @yield('assign-button-group')
 
                     </fieldset>
-                    
+
                     
 					<div class="form-group-row mb-3 p-3">
 						@include('components.input-text', [
 							'name' => 'status', 
 							'label' => 'Trạng thái',
                             'readonly' => true,
-                            'value' => __('jobStatus.pending')
+                            'value' => __('job.all_status.pending')
 						])
 					</div>
 
@@ -221,6 +223,7 @@
     <script src="{{ asset('js/job-crud/jobFormInput.js') }}"></script>
     <script src="{{ asset('js/job-crud/jobTable.js') }}"></script>
     <script src="{{ asset('js/job-crud/updateJobHistories.js') }}"></script>
+    <script src="{{ asset('js/job-crud/assigneeModal.js') }}"></script>
 
     <script type="text/javascript">
         
@@ -230,6 +233,26 @@
             handleSelectInputsChange();
             handleHistoryModalChange();            
             handleRowsChange();
+
+            $('#view-mode-btn').click(function() {
+				const text = $(this).html();
+				if (text === 'Rút gọn') {
+					
+					$(this).html('Đầy đủ');
+				
+					$('#full-list').show();
+					$('#short-list').hide();
+				
+				}
+				else {
+				
+					$(this).html('Rút gọn');
+				
+					$('#short-list').show();
+					$('#full-list').hide();
+				}
+
+			});
 
             $('button[value="assignee-detail"]').click(function() {
 
