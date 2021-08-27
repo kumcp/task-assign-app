@@ -42,23 +42,44 @@ const initializeFileTable = (tableId, files) => {
 }
 
 const initializeDefaultValues = () => {
-    const today = new Date().toLocaleDateString('id');
-    $('#created_date').val(today);
+    $('#chu-tri-display, #nhan-xet-display, #phoi-hop-display').val(null);
+    selectInputs = [
+        {name: '#assigner_name', hiddenInputId: '#assigner_id'},
+        {name: '#project_code', hiddenInputId: '#project_id'},
+        {name: '#job_type', hiddenInputId: '#job_type_id'},
+        {name: '#parent_job', hiddenInputId: '#parent_id'},
+        {name: '#priority_name', hiddenInputId: '#priority_id'},
+    ];
+
+    selectInputs.forEach(input => {
+        setSelectedValue(input.name, $(input.hiddenInputId).val());
+    });
     
+    const readOnly = $('#editable').val() === '0';
+
+    if (!readOnly) {
+        const today = new Date().toLocaleDateString('id');
+        $('#created_date').val(today);
+    }
+    else {
+        $('#created-date-wrapper').hide();
+    }
+
     if ($('#job_id').val() !== '') {
         const jobId = $('#job_id').val();
         
         let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
         $('#workplan').prop('href', `${url}/${jobId}`);
         
-        initializeJobValues(jobId);
+        initializeJobValues(jobId, readOnly);
         
     }
-    $("#period_unit").prop("selectedIndex", -1);
+
+    $('#period-wrapper').hide();
 
 }
 
-const initializeJobValues = (jobId) => {
+const initializeJobValues = (jobId, readOnly=false) => {
 
     getJob(jobId).then(job => {
 
@@ -87,12 +108,16 @@ const initializeJobValues = (jobId) => {
 
         setSelectedValueDynamic('#priority_name', job.priority_id, job.priority ? job.priority.name : null);
 
-        const curAssigneeId = $('#staff_id').val();
+        const curAssigneeId = Number($('#staff_id').val());
         const curAssigneeList = job.assignees.filter(assignee => {
             return assignee.id === curAssigneeId;
         });
+
+        console.log(curAssigneeId);
+        
         if (curAssigneeId !== job.assigner_id && curAssigneeList.length > 0) {
             const curAssignee = curAssigneeList[0];
+            console.log('status: ', curAssignee.pivot.status);
             if (curAssignee.pivot.status !== 'pending') {
                 $('button[value="accept"]').prop('disabled', true);
             } 
@@ -140,7 +165,20 @@ const handleSelectInputsChange = () => {
 
 const handleOptionChange = (name, hiddenInputId) => {
     $(`#${name}`).change(function (e) {
-        $(`#${hiddenInputId}`).val(e.target.value)
+        
+        $(`#${hiddenInputId}`).val(e.target.value);
+
+        if (name === 'job_type') {
+            const isCommon = $(this).find(':selected').data('hidden');
+
+            if (isCommon) {
+                $('#period-wrapper').show();
+            }
+            else {
+                $('#period-wrapper').hide();
+            }
+        }
+
     });
 }
 

@@ -1,15 +1,19 @@
 const handleRowsChange = () => {
-    $('tbody tr.data-row').each(function() {
-        const id = $(this).attr('id');
-        $(this).click(function() {
-            handleRowClick(id);
+    const tableIds = ['jobs-table', 'left-table', 'right-table'];
+    
+    tableIds.forEach(tableId => {
+        $(`#${tableId} tbody tr.data-row`).each(function() {
+            const id = $(this).attr('id');
+            $(this).click(function() {
+                handleRowClick(id);
+            });
         });
-    })
+    });
+
 }
 
 
 const handleRowClick = (id, readOnly=false) => {
-
     $('.alert').each(function () {
         $(this).alert('close');
     });
