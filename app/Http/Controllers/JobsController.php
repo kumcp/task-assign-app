@@ -151,6 +151,9 @@ class JobsController extends Controller
         ->orderBy('created_at', 'DESC')
         ->paginate($this::DEFAULT_PAGINATE);
 
+        //TODO: cache frequently queried models like projects, jobtypes, priorities and process methods
+        // using Cache facade to remember cache data and add to cache if there's no data with given keys
+        // update Cache data on update these catagories in databse
         $staff = Staff::all();
         $projects = Project::all();
         $jobTypes = JobType::all();
