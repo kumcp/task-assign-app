@@ -195,10 +195,10 @@
 		<div class="row ml-0 mb-3">
 			<ul class="nav flex-column nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">
-				<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $leftTitle ?? 'Công việc trực tiếp xử lý' }}</a>
+				<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $leftTable['title'] ?? 'Công việc trực tiếp xử lý' }}</a>
 				</li>
 				<li class="nav-item" role="presentation">
-				<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $rightTitle ?? 'Công việc liên quan' }}</a>
+				<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $rightTable['title'] ?? 'Công việc liên quan' }}</a>
 				</li>
 			</ul>
 			<div class="tab-content w-100" id="myTabContent">
@@ -209,7 +209,7 @@
 						'cols' => [
 							'Tên công việc' => 'name',
 						],
-						'rows' => $leftTable ?? [],
+						'rows' => $leftTable['jobs'] ?? [],
 						'min_row' => 5,
 					])
 					
@@ -221,7 +221,7 @@
 						'cols' => [
 							'Tên công việc' => 'name',
 						],
-						'rows' => $rightTable ?? [],
+						'rows' => $rightTable['jobs'] ?? [],
 						'min_row' => 5,
 					])
 					

@@ -1,11 +1,7 @@
 const handleHistoryModalChange = () => {
-    $('#update-job-histories').on('show.bs.modal', function () {
-        generateUpdateHistoriesTable();
-    });
+    $('#update-job-histories').on('show.bs.modal', generateUpdateHistoriesTable);
     
-    $('#update-job-histories').on('hidden.bs.modal', function () {
-       resetUpdateHistoriesTable();
-    });
+    $('#update-job-histories').on('hidden.bs.modal', resetUpdateHistoriesTable);
 }
 
 const generateUpdateHistoriesTable = () => {

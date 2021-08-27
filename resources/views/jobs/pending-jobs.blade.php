@@ -1,6 +1,6 @@
 @extends('jobs.index', [
-    'left_title' => 'Công việc đang chờ nhận',
-    'right_title' => 'Công việc chưa có người nhận',
+    'left_title' => $leftTableJobs['title'],
+    'right_title' => $rightTableJobs['title'],
     'type' => $type
 ])
 
@@ -16,7 +16,7 @@
             'KL giao' => 'assign_amount',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $newAssignedJobs,                      
+        'rows' => $leftTableJobs['jobs'],                      
         'min_row' => 4,                             
     ])
 @endsection
@@ -33,7 +33,7 @@
             'KL giao' => 'assign_amount',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $unassignedJobs,                       
+        'rows' => $rightTableJobs['jobs'],                       
         'min_row' => 4,                          
     ])
 @endsection
