@@ -9,6 +9,7 @@
         @csrf
 
         <input type="hidden" name="job_id" value="{{ $jobId ?? old('job_id') }}">
+        <input type="hidden" name="type" value="{{ $type }}">
 
         <div class="form-group-row mb-3">
             @include('components.input-date', [
