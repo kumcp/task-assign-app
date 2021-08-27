@@ -162,7 +162,7 @@ Route::post('amount-confirms', [AmountConfirmController::class, 'action'])->name
 
 Route::group(['middleware' => ['auth']], function() {
     Route::get('/jobs/create/{jobId?}', [JobsController::class, 'create'])->name('jobs.create');
-    Route::post('/jobs/search', [JobsController::class, 'index'])->name('jobs.search');
+    Route::post('/jobs/search', [JobsController::class, 'search'])->name('jobs.search');
     Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
     Route::get('/jobs/{jobId}', [JobsController::class, 'detail'])->name('jobs.detail');
     Route::post('/jobs', [JobsController::class, 'action'])->name('jobs.action');

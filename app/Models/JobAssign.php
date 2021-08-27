@@ -107,6 +107,11 @@ class JobAssign extends Pivot
         return false;
     }
 
+    public function sameAssigned($assigneeId, $processMethodId)
+    {
+        return $this->staff_id = $assigneeId && $this->process_method_id == $processMethodId;
+    }
+
     public function scopeDirectAssign($query, $staffId)
     {
         return $query->where([

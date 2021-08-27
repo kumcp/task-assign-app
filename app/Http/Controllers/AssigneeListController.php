@@ -299,8 +299,7 @@ class AssigneeListController extends Controller
                 'assignee' => $jobAssign->assignee->name,
                 'process_method' => $jobAssign->processMethod->name,
                 'history' => null, //TODO: get forward histories
-                'status' => __('job-assign.status.' . $jobAssign->status, [], 'vi') 
-
+                'status' => __('job-assign.status.' . $jobAssign->status) 
             ];
 
             $reformat[] = $reformatObj;

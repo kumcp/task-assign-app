@@ -95,7 +95,21 @@ class Job extends Model
         return $now->greaterThanOrEqualTo($deadline) ? 0 : $now->diffInDays($deadline);
     }
 
-    public function getMainAssignee()
+    public function calculateTimeSheetAmount()
+    {
+        $timeSheetAmount = 0;
+        $jobAssigns = $this->load('jobAssigns')->jobAssigns;
+        
+        foreach ($jobAssigns as $jobAssign) {
+            foreach ($jobAssign->timeSheets as $timeSheet) {
+                $timeSheetAmount += $timeSheet->workAmountInManday();
+            }
+        }
+        return $timeSheetAmount;
+
+    }
+
+    public function getMainAssignee($returnText = false)
     {
         $mainJobAssign = JobAssign::with(
             'assignee'
@@ -104,20 +118,30 @@ class Job extends Model
         ->mainJobAssign()
         ->first();
         
-        return $mainJobAssign ? $mainJobAssign->assignee : null;
+        return $mainJobAssign ? ($returnText ? $mainJobAssign->assignee->name : $mainJobAssign->assignee) : null;
     }
 
-    public function getOtherAssignees()
+    public function getOtherAssignees($returnText = false)
     {
         $mainAssignee = $this->getMainAssignee();
         $assignees = $this->load('assignees')->assignees;
-        if ($mainAssignee) {
-            return $assignees->filter(function($assignee) use ($mainAssignee) {
+        
+        if (!$mainAssignee) {
+            $others = $assignees;
+        }
+        else {
+            $others = $assignees->filter(function($assignee) use ($mainAssignee) {
                 return $assignee->id != $mainAssignee->id;
             });
         }
-        return $assignees;
+
+        if ($returnText) {
+            $otherNames = $others->map(fn ($assignee) => $assignee->name);
+            return implode(', ', $otherNames->toArray());
+        }
+        return $others;
     }
+
 
     public function makeJobUpdates($newJobData, $updateNote)
     {
@@ -130,13 +154,13 @@ class Job extends Model
                         $assigner = Staff::find($this->assigner_id);
                         $newAssigner = Staff::find($value);
                         
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Người giao việc',
                             "old_value" => $assigner->name,
                             "new_value" => $newAssigner->name,
                             "note" => $updateNote
-                        ]));    
+                        ]);    
                              
                         break;
 
@@ -144,13 +168,13 @@ class Job extends Model
                         $project = Project::find($this->project_id);
                         $newProject = Project::find($value);
 
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Dự án',
                             "old_value" => $project ? $project->name : '',
                             "new_value" => $newProject ? $newProject->name : '',
                             "note" => $updateNote
-                        ]));
+                        ]);
                         break;
 
                     case "parent_id": 
@@ -158,13 +182,13 @@ class Job extends Model
                         $parentJob = Job::find($this->parent_id);
                         $newParentJob = Job::find($value);
                         
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Việc cha',
                             "old_value" => $parentJob ? $parentJob->name : '',
                             "new_value" => $newParentJob ? $newParentJob->name : '',
                             "note" => $updateNote
-                        ]));
+                        ]);
                         break;
 
                     case "job_type_id": 
@@ -172,13 +196,13 @@ class Job extends Model
                         $jobType = JobType::find($this->job_type_id);
                         $newJobType = JobType::find($value);
                         
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Loại công việc',
                             "old_value" => $jobType ? $jobType->name : '',
                             "new_value" => $newJobType ? $newJobType->name : '',
                             "note" => $updateNote
-                        ]));
+                        ]);
                         break;
 
                     case "process_method_id":
@@ -186,13 +210,13 @@ class Job extends Model
                         $processMethod = ProcessMethod::find($this->process_method_id);
                         $newProcessMethod = ProcessMethod::find($value);
                         
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Hình thức xử lý',
                             "old_value" => $processMethod ? $processMethod->name : '',
                             "new_value" => $newProcessMethod ? $newProcessMethod->name: '',
                             "note" => $updateNote
-                        ]));
+                        ]);
                         break;
 
                     case "priority_id": 
@@ -200,23 +224,23 @@ class Job extends Model
                         $priority = Priority::find($this->priority_id);
                         $newPriority = Priority::find($value);
                         
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id,
                             "field" => 'Loại công việc',
                             "old_value" => $priority ? $priority->name : '',
                             "new_value" => $newPriority ? $newPriority->name : '',
                             "note" => $updateNote
-                        ]));
+                        ]);
                         break;
 
                     default: 
-                        array_push($jobUpdates, new UpdateJobHistory([
+                        array_push($jobUpdates, [
                             "job_id" => $this->id, 
                             "field" => $key, 
                             "old_value" => $this->$key ?? '',
                             "new_value" => $value ?? '', 
                             "note" => $updateNote
-                        ]));
+                        ]);
 
                         
                 }

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Validator;
@@ -25,8 +26,9 @@ class JobsController extends Controller
 {
     const DEFAULT_PAGINATE = 20;
     const MAIN_ASSIGNEE = 1;
+    const TIME_TO_LIVE = 10; 
 
-    public function index(Request $request)
+    public function index(Request $request, $condition = [])
     {
         $staffId = Auth::user()->staff_id;
 
@@ -34,62 +36,60 @@ class JobsController extends Controller
         $assigners = Staff::orderBy('name')->get();
         $projects = Project::orderBy('name')->get();
 
-        $condition = [];
-        if ($request->method() === 'POST') {
 
-            $action = $request->input('action');
+        $type = $request->input('type') ?? 'all';
 
-            if ($action == 'reset') {
-                return redirect()->back();
-            }
-            
-            foreach ($request->all() as $key => $value) {
-                if (!in_array($key, ['_token', 'type', 'from_date', 'to_date']) && $value)
-                    $condition[$key] = $value;
-                
-                if ($key == 'from_date' && $value) {
-                    $condition[] = ['deadline', '>=' , $value];
-                }
-
-                if ($key == 'to_date' && $value) {
-                    $condition[] = ['deadline', '<=', $value];
-                } 
-
-            }
-            
-        }
-        
-        if (!$request->has('type')) {
+        if ($type == 'all') {
             $jobs = $this->getAllJobsByStaffId($staffId, $condition);
-            return view('jobs.all-jobs', compact('jobs'));
+            return view('jobs.all-jobs', compact('jobs', 'jobTypes', 'assigners', 'projects'));
         }
 
+        $typeToViewMapping = [
+            'pending' => 'jobs.pending-jobs',
+            'handling' => 'jobs.handling-jobs',
+            'assigner' => 'jobs.assigner-jobs'
+        ];
+
+        $typeToFuncMapping = [
+            'pending' => 'getPendingJobs',
+            'handling' => 'getHandlingJobs',
+            'assigner' => 'getAssignerJobs',
+        ];
+
+        $mappedFunc = $typeToFuncMapping[$type];
+        [$leftTableJobs, $rightTableJobs] = $this->$mappedFunc($staffId, $condition);
+        
+        $request->flash();
+        return view($typeToViewMapping[$type], compact('leftTableJobs', 'rightTableJobs', 'jobTypes', 'assigners', 'projects', 'type'));
+        
+
+    }
+
+    public function search(Request $request)
+    {
+        $action = $request->input('action');
         $type = $request->input('type');
-        switch ($type) {
-
-            case 'pending': 
-                [$newAssignedJobs, $unassignedJobs] = $this->getPendingJobs($staffId, $condition);
-                
-                $request->flash();
-                return view('jobs.pending-jobs', compact('newAssignedJobs', 'unassignedJobs', 'jobTypes', 'assigners', 'projects', 'type'));
-
-            case 'handling': 
-                [$directJobs, $relatedJobs] = $this->getHandlingJobs($staffId, $condition);
-                
-                $request->flash();
-                return view('jobs.handling-jobs', compact('directJobs', 'relatedJobs', 'jobTypes', 'assigners', 'projects', 'type'));
-            
-            case 'assigner': 
-                [$createdJobs, $forwardJobs] = $this->getAssignerJobs($staffId, $condition);
-                
-                $request->flash();
-                return view('jobs.assigner-jobs', compact('createdJobs', 'forwardJobs', 'jobTypes', 'assigners', 'projects', 'type'));
+        if ($action == 'reset') {
+            if ($type == 'all') {
+                return redirect()->route('jobs.index');
+            }
+            return redirect()->route('jobs.index', ['type' => $type]);
         }
-
         
+        foreach ($request->all() as $key => $value) {
+            if (!in_array($key, ['_token', 'action', 'type', 'from_date', 'to_date']) && $value)
+                $condition[$key] = $value;
+            
+            if ($key == 'from_date' && $value) {
+                $condition[] = ['deadline', '>=' , $value];
+            }
 
-        
+            if ($key == 'to_date' && $value) {
+                $condition[] = ['deadline', '<=', $value];
+            } 
 
+        }
+        return $this->index($request, $condition);
     }
 
     public function show(Request $request, $id)
@@ -110,7 +110,7 @@ class JobsController extends Controller
 
         $status = $job->status;
 
-        $job->status = __('job.all_status.' . $status, [], 'vi');
+        $job->status = __('job.all_status.' . $status);
 
         $jobAssigns = $job->jobAssigns;        
         
@@ -118,10 +118,7 @@ class JobsController extends Controller
             $id = $assignee->id;
             $processMethodId = $assignee->pivot->process_method_id;
             
-            $jobAssign = $jobAssigns->filter(function($assign) use ($id, $processMethodId){
-                return $assign->staff_id == $id && $assign->process_method_id = $processMethodId;
-            })
-            ->first();
+            $jobAssign = $jobAssigns->filter(fn ($jobAssign) => $jobAssign->sameAssigned($id, $processMethodId))->first();
         
             $assignee->pivot->process_method = $jobAssign->processMethod->name;
 
@@ -169,7 +166,7 @@ class JobsController extends Controller
 
     public function detail(Request $request, $jobId) 
     {
-        $type = $request->input('type');
+        $type = $request->input('type') ?? 'all';
         $staffId = Auth::user()->staff_id;
                     
         $job = Job::find($jobId);
@@ -178,53 +175,35 @@ class JobsController extends Controller
             return redirect()->route('jobs.create', ['jobId' => $jobId]);
         }
 
-        $leftTitle = null;
-        $rightTitle = null;
+        $typeToFuncMapping = [
+            'pending' => 'getPendingJobs',
+            'handling' => 'getHandlingJobs',
+            'assigner' => 'getAssignerJobs',
+        ];
 
-        switch ($type) {
-
-            case 'pending': 
-                [$leftTableJobs, $rightTableJobs] = $this->getPendingJobs($staffId);
-                $leftTitle = 'Công việc đang chờ nhận';
-                $rightTitle = 'Công việc chưa có người nhận';
-                break;
-
-            case 'handling': 
-                [$leftTableJobs, $rightTableJobs] = $this->getHandlingJobs($staffId);
-                $leftTitle = 'Công việc trực tiếp xử lý';
-                $rightTitle = 'Công việc liên quan';
-                break;
-                
-            case 'assigner': 
-                [$leftTableJobs, $rightTableJobs] = $this->getAssignerJobs($staffId);
-                $leftTitle = 'Công việc đã giao xử lý';
-                $rightTitle = 'Công việc chuyển tiếp/bổ sung';
-                break;
-
-            default: 
-                $createdJobs = Job::where('assigner_id', $staffId)
-                ->orderBy('created_at', 'DESC')
-                ->get();
-                return view('jobs.job-detail', [
-                    'jobId' => $jobId,
-                    'numTables' => 1,
-                    'table' => $createdJobs
-                ]);
-    
-
-                
+        if ($type == 'all') {
+            $createdJobs = Job::where('assigner_id', $staffId)
+            ->orderBy('created_at', 'DESC')
+            ->get();
+            return view('jobs.job-detail', [
+                'jobId' => $jobId,
+                'numTables' => 1,
+                'table' => $createdJobs
+            ]);
         }
+        
+        $mappedFunc = $typeToFuncMapping[$type];
+        [$leftTableJobs, $rightTableJobs] = $this->$mappedFunc($staffId);
 
         return view('jobs.job-detail', [
             'jobId' => $jobId,
             'numTables' => 2,
             'leftTable' => $leftTableJobs,
             'rightTable' => $rightTableJobs,
-            'leftTitle' => $leftTitle,
-            'rightTitle' => $rightTitle,
             'type' => $type,
             'success' => $request->session()->get('success')
         ]);
+
     }
 
     public function detailAction(Request $request)
@@ -233,69 +212,16 @@ class JobsController extends Controller
         
         $jobIds = $request->input('job_ids');
 
+        if ($action != 'assign' && count($jobIds) > 1) {
+            return redirect()->back()->with('error', 'Chọn duy nhất một công việc');
+        }
+
         switch ($action) {
             
             case 'detail':
-                
-                $staffId = Auth::user()->staff_id;
-                    
                 $jobId = $jobIds[0];
-                $job = Job::find($jobId);
-
-                if ($job->assigner_id == $staffId) {
-                    return redirect()->route('jobs.create', ['jobId' => $jobId]);
-                }
-
-                $leftTitle = null;
-                $rightTitle = null;
-                $type = $request->input('type');
-                switch ($type) {
-
-                    case 'pending': 
-                        [$leftTableJobs, $rightTableJobs] = $this->getPendingJobs($staffId);
-                        $leftTitle = 'Công việc đang chờ nhận';
-                        $rightTitle = 'Công việc chưa có người nhận';
-                        break;
-
-                    case 'handling': 
-                        [$leftTableJobs, $rightTableJobs] = $this->getHandlingJobs($staffId);
-                        $leftTitle = 'Công việc trực tiếp xử lý';
-                        $rightTitle = 'Công việc liên quan';
-                        break;
-                        
-                    case 'assigner': 
-                        [$leftTableJobs, $rightTableJobs] = $this->getAssignerJobs($staffId);
-                        $leftTitle = 'Công việc đã giao xử lý';
-                        $rightTitle = 'Công việc chuyển tiếp/bổ sung';
-                        break;
-
-                    default: 
-                        $createdJobs = Job::where('assigner_id', $staffId)
-                        ->orderBy('created_at', 'DESC')
-                        ->get();
-                        return view('jobs.job-detail', [
-                            'jobId' => $jobId,
-                            'numTables' => 1,
-                            'table' => $createdJobs
-                        ]);
-            
-
-                        
-                }
-
-                return view('jobs.job-detail', [
-                    'jobId' => $jobId,
-                    'numTables' => 2,
-                    'leftTable' => $leftTableJobs,
-                    'rightTable' => $rightTableJobs,
-                    'leftTitle' => $leftTitle,
-                    'rightTitle' => $rightTitle,
-                    'type' => $type,
-                    'success' => $request->session()->get('success')
-                ]);
-                 
-                
-
+                return $this->detail($request, $jobId);
+  
             case 'finish':
                 // TODO: finish function
                 break;
@@ -303,7 +229,6 @@ class JobsController extends Controller
             case 'search': 
                 return redirect()->route('jobs.index');
 
-            
             case 'assign':
                 return redirect()->route('assignee-list.index', [
                     'jobIds' => $jobIds,
@@ -495,30 +420,20 @@ class JobsController extends Controller
     private function makeValidator($data, $systemConfig)
     {
         $jobId = $data['job_id'];
-        if ($jobId) {
-            
-            $rules = [ 
-                'assigner_id' => 'required', 
-                'name' => ['required', 'string'], 
-                'deadline' => ['required', 'date'],
-                'code' => $systemConfig['job_code'] ? 'required' : '',
-                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
-                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
-            ];
 
-        }
-        else {
-            
-            $rules = [
-                'code' => $systemConfig['job_code'] ? ['required', 'unique:jobs'] : 'unique:jobs', 
-                'assigner_id' => 'required', 
-                'name' => ['required', 'string'], 
-                'deadline' => ['required', 'date'],
-                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
-                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
-            ];
+        $rules = [ 
+            'assigner_id' => 'required', 
+            'name' => ['required', 'string'], 
+            'deadline' => ['required', 'date'],
+            'code' => $systemConfig['job_code'] ? 'required' : '',
+            'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
+            'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
+        ];
 
+        if (!$jobId) {
+            $rules['code'] = $systemConfig['job_code'] ? ['required', 'unique:jobs'] : '';
         }
+
 
         $messages = [
             'code.unique' => 'Mã dự án đã được sử dụng',
@@ -533,6 +448,7 @@ class JobsController extends Controller
         ];
 
         $validator = Validator::make($data, $rules, $messages);
+        
         $validator->sometimes('period', 'required', function() use ($data, $systemConfig) {
             $jobTypeId = $data['job_type_id'];
             if ($jobTypeId) {
@@ -541,6 +457,7 @@ class JobsController extends Controller
             }
             return false;
         });
+        $validator->sometimes('code', 'unique:jobs', fn ($input) => !$jobId && $input->code != null);
 
         return $validator;
     }
@@ -548,7 +465,14 @@ class JobsController extends Controller
     
 
     private function assignJob($assignees, $processMethod, $jobId) {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
         try {
+            if ($processMethod->id == $mainProcessMethod->id) {
+                JobAssign::where([
+                    'job_id' => $jobId,
+                    'process_method_id' => $mainProcessMethod->id
+                ])->delete();
+            }
             foreach($assignees as $assignee) {
             
                 $assignee = json_decode($assignee, true);
@@ -580,6 +504,7 @@ class JobsController extends Controller
 
     private function getHandlingJobs($staffId, $condition=[]) 
     {
+
         $directJobs = Job::with([
             'jobAssigns' => function ($query) use ($staffId){
                 $query->directAssign($staffId)
@@ -619,7 +544,12 @@ class JobsController extends Controller
         $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
         $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
         
-        return [$reformatedDirectJobs, $reformatedRelatedJobs];
+        $res = [
+            ['title' => 'Công việc trực tiếp xử lý', 'jobs' => $reformatedDirectJobs],
+            ['title' => 'Công việc liên quan', 'jobs' => $reformatedRelatedJobs]
+        ];
+     
+        return $res;
         
     }
 
@@ -651,8 +581,13 @@ class JobsController extends Controller
         
         $reformatedNewAssignedJobs = $this->reformatPendingJobs($newAssignedJobs);    
         $reformatedUnassignedJobs = $this->reformatPendingJobs($unassignedJobs);
-    
-        return [$reformatedNewAssignedJobs, $reformatedUnassignedJobs];
+        
+        $res = [
+            ['title' => 'Công việc đang chờ nhận', 'jobs' => $reformatedNewAssignedJobs],
+            ['title' => 'Công việc chưa có người nhận', 'jobs' => $reformatedUnassignedJobs]
+        ];
+
+        return $res;
     }
 
     private function getAssignerJobs($staffId, $condition=null) 
@@ -676,7 +611,12 @@ class JobsController extends Controller
         $reformatedCreatedJobs = $this->reformatAssignerJobs($createdJobs);        
         $reformatedForwardJobs = $this->reformatAssignerJobs($forwardJobs);
 
-        return [$reformatedCreatedJobs, $reformatedForwardJobs];
+        $res = [
+            ['title' => 'Công việc đã giao xử lý', 'jobs' => $reformatedCreatedJobs],
+            ['title' => 'Công việc chuyển tiếp, bổ sung', 'jobs' => $reformatedForwardJobs]
+        ];
+
+        return $res;
     }
 
     private function getAllJobsByStaffId($staffId, $condition=null)
@@ -720,15 +660,8 @@ class JobsController extends Controller
 
             $job->remaining = $job->getRemaining();
 
-            $timeSheetAmount = 0;
-
-            foreach ($job->jobAssigns as $jobAssign) {
-                foreach ($jobAssign->timeSheets as $timeSheet) {
-                    $timeSheetAmount += $timeSheet->workAmountInManday();
-                }
-            }
-            $job->timesheet_amount = $timeSheetAmount;
-            $job->finished_percent = $job->assign_amount ? $timeSheetAmount / $job->assign_amount : null;
+            $job->timesheet_amount = $job->calculateTimeSheetAmount();
+            $job->finished_percent = $job->assign_amount ? $job->timesheet_amount / $job->assign_amount : null;
         }
         return $jobs;
     }
@@ -752,16 +685,8 @@ class JobsController extends Controller
         foreach ($jobs as $job) {
             $job->project_code = $job->project ? $job->project->code : null;
             $job->assigner = $job->assigner->name;
-            
-            $mainAssignee = $job->getMainAssignee();
-            $others = $job->getOtherAssignees();
-            $otherNames = $others->map(function($assignee) {
-                return $assignee->name;
-            });
-
-            $job->main_assignee = $mainAssignee ? $mainAssignee->name :null;
-            $job->others = implode(',', $otherNames->toArray());
-
+            $job->main_assignee = $job->getMainAssignee(true);
+            $job->others = $job->getOtherAssignees(true);
             $job->remaining = $job->getRemaining();
             $job->evaluation = null;
             $job->status = __('job.all_status.' . $job->status, [], 'vi');
@@ -775,17 +700,11 @@ class JobsController extends Controller
     {
 
         foreach ($jobs as $job) {
-            
-            $mainAssignee = $job->getMainAssignee();
-            $others = $job->getOtherAssignees();
-            $otherNames = $others->map(function($assignee) {
-                return $assignee->name;
-            });
 
             $job->project_code = $job->project ? $job->project->code : null;
             $job->assigner = $job->assigner->name;
-            $job->main_assignee = $mainAssignee ? $mainAssignee->name :null;
-            $job->others = implode(',', $otherNames->toArray());
+            $job->main_assignee = $job->getMainAssignee(true);
+            $job->others = $job->getOtherAssignees(true);
             $job->remaining = $job->getRemaining();
             $job->evaluation = null;
             $job->status = __('job.all_status.' . $job->status, [], 'vi');
@@ -795,10 +714,10 @@ class JobsController extends Controller
         return $jobs;
     }
 
-    private function formatSystemConfig($systemConfig)
+    private function formatSystemConfig($systemConfigs)
     {
         $reformat = [];
-        foreach ($systemConfig as $config) {
+        foreach ($systemConfigs as $config) {
             $reformat[$config->field] = $config->value;
         }
         return $reformat;

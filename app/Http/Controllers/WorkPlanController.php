@@ -104,16 +104,16 @@ class WorkPlanController extends Controller
 
                 $existingJobAssign->workPlans()->create($request->all());
 
-                if ($existingJobAssign->status == 'active') {
+                if ($existingJobAssign->status == JobAssign::STATUS_ACTIVE) {
                     return redirect()->route('workplans.create', ['jobId' => $jobId])->with('success', 'Thêm kế hoạch công việc thành công');
                 }
 
-                $existingJobAssign->update(['status' => 'active']);
+                $existingJobAssign->update(['status' => JobAssign::STATUS_ACTIVE]);
 
                 $processMethod = $existingJobAssign->processMethod;
                 
                 if ($processMethod->id == $mainProcessMethod->id) {
-                    $existingJobAssign->job()->update(['status' => 'active']);
+                    $existingJobAssign->job()->update(['status' => Job::STATUS_ACTIVE]);
                 }
 
                 return redirect()->route('jobs.detail', [
@@ -129,11 +129,11 @@ class WorkPlanController extends Controller
                     'job_id' => $jobId,
                     'staff_id' => $staffId,
                     'process_method_id' => $mainProcessMethod->id,
-                    'status' => 'active'
+                    'status' => JobAssign::STATUS_ACTIVE
                 ]);
                 $newJobAssign->workPlans()->create($request->all());        
                 
-                $newJobAssign->job()->update(['status' => 'active']);
+                $newJobAssign->job()->update(['status' => Job::STATUS_ACTIVE]);
 
                 return redirect()->route('jobs.detail', [
                     'jobId' => $jobId,
