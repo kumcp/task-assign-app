@@ -110,7 +110,7 @@ class JobsController extends Controller
 
         $status = $job->status;
 
-        $job->status = __('jobStatus.all_status.' . $status, [], 'vi');
+        $job->status = __('job.all_status.' . $status, [], 'vi');
 
         $jobAssigns = $job->jobAssigns;        
         
@@ -160,11 +160,71 @@ class JobsController extends Controller
         $priorities = Priority::all();
         $processMethods = ProcessMethod::all();
         
-        //TODO get all system configurations
-        $systemConfig = $this->formatSystemConfig(Configuration::all());
+
+        $systemConfig = $this->formatSystemConfig(Configuration::getSystemConfiguration());
         
         return view('jobs.create', compact('relatedJobs', 'createdJobs', 'staff', 'projects', 'jobTypes', 'priorities', 'processMethods', 'jobId', 'parentJobId', 'systemConfig'));
 
+    }
+
+    public function detail(Request $request, $jobId) 
+    {
+        $type = $request->input('type');
+        $staffId = Auth::user()->staff_id;
+                    
+        $job = Job::find($jobId);
+
+        if ($job->assigner_id == $staffId) {
+            return redirect()->route('jobs.create', ['jobId' => $jobId]);
+        }
+
+        $leftTitle = null;
+        $rightTitle = null;
+
+        switch ($type) {
+
+            case 'pending': 
+                [$leftTableJobs, $rightTableJobs] = $this->getPendingJobs($staffId);
+                $leftTitle = 'Công việc đang chờ nhận';
+                $rightTitle = 'Công việc chưa có người nhận';
+                break;
+
+            case 'handling': 
+                [$leftTableJobs, $rightTableJobs] = $this->getHandlingJobs($staffId);
+                $leftTitle = 'Công việc trực tiếp xử lý';
+                $rightTitle = 'Công việc liên quan';
+                break;
+                
+            case 'assigner': 
+                [$leftTableJobs, $rightTableJobs] = $this->getAssignerJobs($staffId);
+                $leftTitle = 'Công việc đã giao xử lý';
+                $rightTitle = 'Công việc chuyển tiếp/bổ sung';
+                break;
+
+            default: 
+                $createdJobs = Job::where('assigner_id', $staffId)
+                ->orderBy('created_at', 'DESC')
+                ->get();
+                return view('jobs.job-detail', [
+                    'jobId' => $jobId,
+                    'numTables' => 1,
+                    'table' => $createdJobs
+                ]);
+    
+
+                
+        }
+
+        return view('jobs.job-detail', [
+            'jobId' => $jobId,
+            'numTables' => 2,
+            'leftTable' => $leftTableJobs,
+            'rightTable' => $rightTableJobs,
+            'leftTitle' => $leftTitle,
+            'rightTitle' => $rightTitle,
+            'type' => $type,
+            'success' => $request->session()->get('success')
+        ]);
     }
 
     public function detailAction(Request $request)
@@ -229,7 +289,9 @@ class JobsController extends Controller
                     'leftTable' => $leftTableJobs,
                     'rightTable' => $rightTableJobs,
                     'leftTitle' => $leftTitle,
-                    'rightTitle' => $rightTitle
+                    'rightTitle' => $rightTitle,
+                    'type' => $type,
+                    'success' => $request->session()->get('success')
                 ]);
                  
                 
@@ -325,53 +387,16 @@ class JobsController extends Controller
     } 
 
     private function save($data, $flashInputs=false) {
+
         $jobId = $data['job_id'];
 
-        //TODO: get system configuration
-        $systemConfig = $this->formatSystemConfig(Configuration::all());
+        $systemConfig = $this->formatSystemConfig(Configuration::getSystemConfiguration());
 
-        if ($jobId) {
-            
-            $rules = [ 
-                'assigner_id' => 'required', 
-                'name' => ['required', 'string'], 
-                'deadline' => ['required', 'date'],
-                'period' => $systemConfig['period'] ? 'required' : '',
-                'code' => $systemConfig['job_code'] ? 'required' : '',
-                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
-                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
-            ];
-
-        }
-        else {
-            
-            $rules = [
-                'code' => $systemConfig['job_code'] ? ['required', 'unique:jobs'] : 'unique:jobs', 
-                'assigner_id' => 'required', 
-                'name' => ['required', 'string'], 
-                'deadline' => ['required', 'date'],
-                'period' => $systemConfig['period'] ? 'required' : '',
-                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
-                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
-            ];
-
-        }
-
-        $messages = [
-            'code.unique' => 'Mã dự án đã được sử dụng',
-            'code.required' => 'Mã dự án là bắt buộc',
-            'assigner_id.required' => 'Người giao việc là bắt buộc',
-            'name.required' => 'Tên công việc là bắt buộc',
-            'deadline.required' => 'Hạn xử lý là bắt buộc',
-            'deadline.date' => 'Hạn xử lý phải là ngày',
-            'period.required' => 'Kỳ là bắt buộc',
-            'lsx_amount.required' => 'Khối lượng LSX là bắt buộc',
-            'assign_amount.required' => 'Khối lượng giao là bắt buộc',
-        ];
-
-        $validator = Validator::make($data, $rules, $messages);
-
+        $validator = $this->makeValidator($data, $systemConfig);
         if ($validator->fails()) {
+            if ($jobId) {
+                return redirect()->route('jobs.create', ['jobId' => $jobId])->withErrors($validator->errors());
+            }
             return redirect()->route('jobs.create')->withInput()->withErrors($validator->errors());
         }
 
@@ -389,110 +414,9 @@ class JobsController extends Controller
 
                 if ($job->isActive()) {
 
-                    $jobUpdates = [];
-                    $updateNote = isset($data['note']) ? $data['note'] : '';
+                    $updateNote = $data['note'] ?? '';
 
-                    foreach ($jobData as $key => $value) {
-                        if ($value != $job[$key]) {
-                            switch ($key) {
-                                case "assigner_id":  
-                                    $assigner = Staff::find($job['assigner_id']);
-                                    $newAssigner = Staff::find($value);
-                                    
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Người giao việc',
-                                        "old_value" => $assigner->name,
-                                        "new_value" => $newAssigner->name,
-                                        "note" => $updateNote
-                                    ]));    
-                                         
-                                    break;
-
-                                case "project_id": 
-                                    $project = Project::find($job['project_id']);
-                                    $newProject = Project::find($value);
-
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Dự án',
-                                        "old_value" => $project ? $project->name : '',
-                                        "new_value" => $newProject ? $newProject->name : '',
-                                        "note" => $updateNote
-                                    ]));
-                                    break;
-
-                                case "parent_id": 
-                                    
-                                    $parentJob = Job::find($job['parent_id']);
-                                    $newParentJob = Job::find($value);
-                                    
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Việc cha',
-                                        "old_value" => $parentJob ? $parentJob->name : '',
-                                        "new_value" => $newParentJob ? $newParentJob->name : '',
-                                        "note" => $updateNote
-                                    ]));
-                                    break;
-
-                                case "job_type_id": 
-                                    
-                                    $jobType = JobType::find($job['job_type_id']);
-                                    $newJobType = JobType::find($value);
-                                    
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Loại công việc',
-                                        "old_value" => $jobType ? $jobType->name : '',
-                                        "new_value" => $newJobType ? $newJobType->name : '',
-                                        "note" => $updateNote
-                                    ]));
-                                    break;
-
-                                case "process_method_id":
-                                    
-                                    $processMethod = ProcessMethod::find($job['process_method_id']);
-                                    $newProcessMethod = ProcessMethod::find($value);
-                                    
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Hình thức xử lý',
-                                        "old_value" => $processMethod ? $processMethod->name : '',
-                                        "new_value" => $newProcessMethod ? $newProcessMethod->name: '',
-                                        "note" => $updateNote
-                                    ]));
-                                    break;
-
-                                case "priority_id": 
-                                    
-                                    $priority = Priority::find($job['priority_id']);
-                                    $newPriority = Priority::find($value);
-                                    
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId,
-                                        "field" => 'Loại công việc',
-                                        "old_value" => $priority ? $priority->name : '',
-                                        "new_value" => $newPriority ? $newPriority->name : '',
-                                        "note" => $updateNote
-                                    ]));
-                                    break;
-
-                                default: 
-                                    array_push($jobUpdates, new UpdateJobHistory([
-                                        "job_id" => $jobId, 
-                                        "field" => $key, 
-                                        "old_value" => $job[$key] ? $job[$key] : '',
-                                        "new_value" => $value ? $value : '', 
-                                        "note" => $updateNote
-                                    ]));
-
-                                    
-                            }
-                        }
-                        
-    
-                    }
+                    $jobUpdates = $job->makeJobUpdates($jobData, $updateNote);
 
                     if ($jobUpdates) {
                         $job->updateHistories()->saveMany($jobUpdates);
@@ -557,9 +481,9 @@ class JobsController extends Controller
             $message = $jobId ? 'Sửa công việc thành công' : 'Thêm công việc thành công';
     
             if ($jobId || $flashInputs) {
-                return redirect()->route('jobs.create')->withInput()->with('success', $message);
+                
+                return redirect()->route('jobs.create', ['jobId' => $jobId ?? $job->id])->with('success', $message);
             }
-
             return redirect()->route('jobs.create')->with('success', $message);
         }
         catch (Exception $e) {
@@ -568,21 +492,80 @@ class JobsController extends Controller
     }
 
 
+    private function makeValidator($data, $systemConfig)
+    {
+        $jobId = $data['job_id'];
+        if ($jobId) {
+            
+            $rules = [ 
+                'assigner_id' => 'required', 
+                'name' => ['required', 'string'], 
+                'deadline' => ['required', 'date'],
+                'code' => $systemConfig['job_code'] ? 'required' : '',
+                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
+                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
+            ];
+
+        }
+        else {
+            
+            $rules = [
+                'code' => $systemConfig['job_code'] ? ['required', 'unique:jobs'] : 'unique:jobs', 
+                'assigner_id' => 'required', 
+                'name' => ['required', 'string'], 
+                'deadline' => ['required', 'date'],
+                'lsx_amount' => $systemConfig['production_volume'] ? 'required' : '',
+                'assign_amount' => $systemConfig['volume_interface'] ? 'required' : '',
+            ];
+
+        }
+
+        $messages = [
+            'code.unique' => 'Mã dự án đã được sử dụng',
+            'code.required' => 'Mã dự án là bắt buộc',
+            'assigner_id.required' => 'Người giao việc là bắt buộc',
+            'name.required' => 'Tên công việc là bắt buộc',
+            'deadline.required' => 'Hạn xử lý là bắt buộc',
+            'deadline.date' => 'Hạn xử lý phải là ngày',
+            'period.required' => 'Kỳ là bắt buộc',
+            'lsx_amount.required' => 'Khối lượng LSX là bắt buộc',
+            'assign_amount.required' => 'Khối lượng giao là bắt buộc',
+        ];
+
+        $validator = Validator::make($data, $rules, $messages);
+        $validator->sometimes('period', 'required', function() use ($data, $systemConfig) {
+            $jobTypeId = $data['job_type_id'];
+            if ($jobTypeId) {
+                $jobType = JobType::find($jobTypeId);
+                return $jobType->common && $systemConfig['period'];
+            }
+            return false;
+        });
+
+        return $validator;
+    }
+
+    
+
     private function assignJob($assignees, $processMethod, $jobId) {
         try {
             foreach($assignees as $assignee) {
             
                 $assignee = json_decode($assignee, true);
                 
-                JobAssign::create([
-                    'job_id' => $jobId,
-                    'staff_id' => $assignee['staff_id'],
-                    'process_method_id' => $processMethod->id,
-                    'direct_report' => $assignee['direct_report'] ?? null,
-                    'deadline' => $assignee['deadline'] ?? null,
-                    'sms' => $assignee['sms'] ?? null,
-                    'status' => JobAssign::STATUS_PENDING
-                ]);
+                JobAssign::updateOrCreate(
+                    [
+                        'job_id' => $jobId,
+                        'staff_id' => $assignee['staff_id'],
+                        'process_method_id' => $processMethod->id,
+                    ], 
+                    [
+                        'direct_report' => $assignee['direct_report'] ?? null,
+                        'deadline' => $assignee['deadline'] ?? null,
+                        'sms' => $assignee['sms'] ?? null,
+                        'status' => JobAssign::STATUS_PENDING
+                    ]
+                );
     
             }
             return ['success' => true];
@@ -781,7 +764,7 @@ class JobsController extends Controller
 
             $job->remaining = $job->getRemaining();
             $job->evaluation = null;
-            $job->status = __('jobStatus.all_status.' . $job->status, [], 'vi');
+            $job->status = __('job.all_status.' . $job->status, [], 'vi');
 
         }
 
@@ -805,7 +788,7 @@ class JobsController extends Controller
             $job->others = implode(',', $otherNames->toArray());
             $job->remaining = $job->getRemaining();
             $job->evaluation = null;
-            $job->status = __('jobStatus.all_status.' . $job->status, [], 'vi');
+            $job->status = __('job.all_status.' . $job->status, [], 'vi');
 
         }
 

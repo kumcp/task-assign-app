@@ -119,6 +119,114 @@ class Job extends Model
         return $assignees;
     }
 
+    public function makeJobUpdates($newJobData, $updateNote)
+    {
+        $jobUpdates = [];
+
+        foreach ($newJobData as $key => $value) {
+            if ($value != $this->$key) {
+                switch ($key) {
+                    case "assigner_id":  
+                        $assigner = Staff::find($this->assigner_id);
+                        $newAssigner = Staff::find($value);
+                        
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Người giao việc',
+                            "old_value" => $assigner->name,
+                            "new_value" => $newAssigner->name,
+                            "note" => $updateNote
+                        ]));    
+                             
+                        break;
+
+                    case "project_id": 
+                        $project = Project::find($this->project_id);
+                        $newProject = Project::find($value);
+
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Dự án',
+                            "old_value" => $project ? $project->name : '',
+                            "new_value" => $newProject ? $newProject->name : '',
+                            "note" => $updateNote
+                        ]));
+                        break;
+
+                    case "parent_id": 
+                        
+                        $parentJob = Job::find($this->parent_id);
+                        $newParentJob = Job::find($value);
+                        
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Việc cha',
+                            "old_value" => $parentJob ? $parentJob->name : '',
+                            "new_value" => $newParentJob ? $newParentJob->name : '',
+                            "note" => $updateNote
+                        ]));
+                        break;
+
+                    case "job_type_id": 
+                        
+                        $jobType = JobType::find($this->job_type_id);
+                        $newJobType = JobType::find($value);
+                        
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Loại công việc',
+                            "old_value" => $jobType ? $jobType->name : '',
+                            "new_value" => $newJobType ? $newJobType->name : '',
+                            "note" => $updateNote
+                        ]));
+                        break;
+
+                    case "process_method_id":
+                        
+                        $processMethod = ProcessMethod::find($this->process_method_id);
+                        $newProcessMethod = ProcessMethod::find($value);
+                        
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Hình thức xử lý',
+                            "old_value" => $processMethod ? $processMethod->name : '',
+                            "new_value" => $newProcessMethod ? $newProcessMethod->name: '',
+                            "note" => $updateNote
+                        ]));
+                        break;
+
+                    case "priority_id": 
+                        
+                        $priority = Priority::find($this->priority_id);
+                        $newPriority = Priority::find($value);
+                        
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id,
+                            "field" => 'Loại công việc',
+                            "old_value" => $priority ? $priority->name : '',
+                            "new_value" => $newPriority ? $newPriority->name : '',
+                            "note" => $updateNote
+                        ]));
+                        break;
+
+                    default: 
+                        array_push($jobUpdates, new UpdateJobHistory([
+                            "job_id" => $this->id, 
+                            "field" => $key, 
+                            "old_value" => $this->$key ?? '',
+                            "new_value" => $value ?? '', 
+                            "note" => $updateNote
+                        ]));
+
+                        
+                }
+            }
+            
+
+        }
+        return $jobUpdates;
+    }
+
 
 
 }

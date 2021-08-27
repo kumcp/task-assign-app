@@ -18,7 +18,7 @@ class WorkPlanController extends Controller
     
     public function create(Request $request, $jobId) 
     {
-
+        $type = $request->input('type');
         
         $staffId = Auth::user()->staff_id;
 
@@ -43,7 +43,7 @@ class WorkPlanController extends Controller
         $workPlans = $jobAssign ? $jobAssign->workPlans : [];
 
         
-        return view('jobs.workplan-create', compact('jobId', 'workPlans'));
+        return view('jobs.workplan-create', compact('jobId', 'type', 'workPlans'));
     }
 
 
@@ -72,45 +72,18 @@ class WorkPlanController extends Controller
     {
 
 
-        $rules = [            
-            'from_date' => ['required', 'date'],
-            'to_date' => ['required', 'date', 'after_or_equal:from_date'],
-            'from_time' => ['required', 'date_format:H:i'],
-            'to_time' => ['required', 'date_format:H:i'], 
-            'content' => ['required', 'string', 'max:255'],
-            'job_id' => 'required', 
-
-        ];
-        $messages = [
-            'from_date.required' => 'Trường từ ngày là bắt buộc',
-            'to_date.required' => 'Trường đến ngày là bắt buộc',
-            'to_date.after_or_equal' => 'Trường đến ngày phải sau trường từ ngày',
-            'from_time.required' => 'Trường từ giờ là bắt buộc',
-            'to_time.required' => 'Trường đến giờ là bắt buộc',
-            'to_time.after_or_equal' => 'Trường đến giờ phải sau trường từ giờ',
-            'content.required' => 'Trường nội dung là bắt buộc',
-
-        ];
-
-        $validator = Validator::make($request->all(), $rules, $messages);
-        $validator->sometimes('to_time', 'after_or_equal:from_time', function($input) {
-            return $input->from_date == $input->to_date;
-        });
+        $validator = $this->makeValidator($request->all());
 
         if ($validator->fails()) {
             return redirect()->back()->withInput()->withErrors($validator->errors());
         }
 
-        
-
 
         try {
 
-            // TODO get handling and related jobs
-            $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
-
 
             $jobId = $request->input('job_id');
+            $type = $request->input('type');
             $staffId = Auth::user()->staff_id;
 
             $existingJobAssign = JobAssign::where([
@@ -126,12 +99,12 @@ class WorkPlanController extends Controller
 
             $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
 
-
+            
             if ($existingJobAssign) {
 
                 $existingJobAssign->workPlans()->create($request->all());
 
-                if ($existingJobAssign->job->status != 'pending') {
+                if ($existingJobAssign->status == 'active') {
                     return redirect()->route('workplans.create', ['jobId' => $jobId])->with('success', 'Thêm kế hoạch công việc thành công');
                 }
 
@@ -143,12 +116,11 @@ class WorkPlanController extends Controller
                     $existingJobAssign->job()->update(['status' => 'active']);
                 }
 
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
+                return redirect()->route('jobs.detail', [
                     'jobId' => $jobId,
-                    'success' => 'Nhận việc thành công'
-                ]);
-
+                    'type' => $type
+                ])
+                ->with('success', 'Nhận việc thành công');                
 
             }
             else {
@@ -157,27 +129,22 @@ class WorkPlanController extends Controller
                     'job_id' => $jobId,
                     'staff_id' => $staffId,
                     'process_method_id' => $mainProcessMethod->id,
-                    'status' => 'accepted'
+                    'status' => 'active'
                 ]);
                 $newJobAssign->workPlans()->create($request->all());        
                 
                 $newJobAssign->job()->update(['status' => 'active']);
 
-                
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
+                return redirect()->route('jobs.detail', [
                     'jobId' => $jobId,
-                    'success' => 'Nhận việc thành công'
-                ]);
-
+                    'type' => $type
+                ])
+                ->with('success', 'Nhận việc thành công');  
             }
-
-
-
 
         } 
         catch (Exception $e) {
-            return redirect()->back()->withInput()->withErrors(['errorMessage', $e->getMessage()]);
+            return redirect()->back()->withInput()->with('error', 'Đã có lỗi xảy ra');
         }
         
 
@@ -213,5 +180,34 @@ class WorkPlanController extends Controller
             
 
 
+    }
+
+    private function makeValidator($data)
+    {
+        $rules = [            
+            'from_date' => ['required', 'date'],
+            'to_date' => ['required', 'date', 'after_or_equal:from_date'],
+            'from_time' => ['required', 'date_format:H:i'],
+            'to_time' => ['required', 'date_format:H:i'], 
+            'content' => ['required', 'string', 'max:255'],
+            'job_id' => 'required', 
+
+        ];
+        $messages = [
+            'from_date.required' => 'Trường từ ngày là bắt buộc',
+            'to_date.required' => 'Trường đến ngày là bắt buộc',
+            'to_date.after_or_equal' => 'Trường đến ngày phải sau trường từ ngày',
+            'from_time.required' => 'Trường từ giờ là bắt buộc',
+            'to_time.required' => 'Trường đến giờ là bắt buộc',
+            'to_time.after_or_equal' => 'Trường đến giờ phải sau trường từ giờ',
+            'content.required' => 'Trường nội dung là bắt buộc',
+
+        ];
+
+        $validator = Validator::make($data, $rules, $messages);
+        $validator->sometimes('to_time', 'after_or_equal:from_time', function($input) {
+            return $input->from_date == $input->to_date;
+        });
+        return $validator;
     }
 }

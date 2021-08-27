@@ -87,6 +87,15 @@ class JobAssign extends Pivot
         return $this->isForwardOrAdditional() && !$this->isAdditional();
     }
 
+    public function getEvaluator()
+    {
+        $relations = $this->load('parent', 'parent.assignee', 'job', 'job.assigner');
+        if ($relations->parent && !$this->isDirectReport()) {
+            return $relations->parent->assignee->name;
+        } 
+        return $relations->job->assigner->name;
+    }
+
     public function hasForwardChild()
     {
         $children = $this->load('children')->children;
