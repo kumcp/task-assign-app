@@ -76,11 +76,6 @@
                 }
             });
 
-            // $('#project_id').change(function() {
-            //     const projectId = $(this).val();
-            //     let url = $('#url').val().split('/').slice(0, -2).join('/');
-            //     window.location.href = `${url}/${projectId}/jobs`;
-            // });
         
         })
     </script>
