@@ -1,6 +1,6 @@
 @extends('jobs.index', [
-    'left_title' => $leftTableJobs['title'],
-    'right_title' => $rightTableJobs['title'],
+    'left_title' => 'Công việc trực tiếp xử lý',
+    'right_title' => 'Công việc liên quan',
     'type' => $type
 ])
 
@@ -20,7 +20,7 @@
             'Số ngày còn lại' => 'remaining',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $leftTableJobs['jobs'],                      
+        'rows' => $leftTableJobs,                      
         'min_row' => 4,                             
     ])
 @endsection
@@ -42,7 +42,7 @@
             'Số ngày còn lại' => 'remaining',
             'checkbox' => 'job_ids[]'
         ],
-        'rows' => $rightTableJobs['jobs'],                       
+        'rows' => $rightTableJobs,                       
         'min_row' => 4,                          
     ])
 @endsection
