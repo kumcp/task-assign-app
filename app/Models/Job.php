@@ -109,10 +109,37 @@ class Job extends Model
 
     }
 
+    public function getFinishedPercent()
+    {
+        $jobAssigns = $this->load('jobAssigns.amountConfirms')->jobAssigns;
+        $totalAmount = 0;
+        foreach ($jobAssigns as $jobAssign) {
+            $amountConfirms = $jobAssign->amountConfirms;
+            $totalAmount += $amountConfirms->sum('confirm_amount');
+        }
+        $assignAmount = $this->assign_amount;
+        if ($assignAmount) {
+            return $totalAmount * 100 / ($assignAmount * 8);
+        }
+        return null;
+    }
+
+    public function getAssignees($returnText = false)
+    {
+        $assignees = $this->load('assignees')->assignees;
+        if ($returnText) {
+            $assigneeNames = $assignees->map(fn ($assignee) => $assignee->name);
+            return implode(', ', $assigneeNames->toArray());
+        }
+        return $assignees;
+    }
+
     public function getMainAssignee($returnText = false)
     {
         $mainJobAssign = JobAssign::with(
-            'assignee'
+            'assignee',
+            'assignee.account',
+            'assignee.info'
         )
         ->where('job_id', $this->id)
         ->mainJobAssign()
@@ -249,6 +276,11 @@ class Job extends Model
 
         }
         return $jobUpdates;
+    }
+
+    public function scopeHasJobAssign($query, $jobAssignId) 
+    {
+        return $query->whereHas('jobAssigns', fn ($subQuery) => $subQuery->where('id', $jobAssignId));
     }
 
 

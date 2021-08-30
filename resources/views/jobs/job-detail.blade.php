@@ -185,6 +185,7 @@
 
 	@if ($numTables == 1)
 		@include('components.dynamic-table', [
+			'id' => 'jobs-table',
 			'cols' => [
 				'Tên công việc' => 'name',
 			],

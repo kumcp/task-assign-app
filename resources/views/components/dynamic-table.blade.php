@@ -50,9 +50,10 @@
 
     </tbody>
 </table>
-@isset($pagination)
-    {{ $rows->onEachSide(2)->links('pagination::bootstrap-4') }}
-@endisset
+@if (isset($pagination) && count($rows) > 0)
+    {{ $rows->links('pagination::bootstrap-4') }}
+@endif
+
 
 
 
