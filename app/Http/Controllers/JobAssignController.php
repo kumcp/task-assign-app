@@ -54,11 +54,11 @@ class JobAssignController extends Controller
     {
         $action = $request->input('action');
         $jobId = $request->input('job_id');
+        $type = $request->input('type');
         $denyReason = $request->input('deny_reason');
         $staffId = Auth::user()->staff_id;
         
         $job = Job::findOrFail($jobId);
-        $jobs = Job::orderBy('created_at', 'DESC')->paginate($this::DEFAULT_PAGINATE);
 
         $jobAssign = JobAssign::where([
             'job_id' => $jobId, 
@@ -72,28 +72,33 @@ class JobAssignController extends Controller
                 $result = $this->acceptJob($job, $staffId, $jobAssign);
 
                 if ($result['status_code'] == self::REDIRECT_WORKPLAN) {
-                    return redirect()->route('workplans.create', ['jobId' => $jobId]);
+                    return redirect()->route('workplans.create', [
+                        'jobId' => $jobId,
+                        'type' => $type
+                    ])
+                    ->with('message', 'Nhập kế hoạch thực hiện để nhận việc');
                 }
 
                 if ($result['status_code'] == self::INTERNAL_ERROR) {
                     return redirect()->back()->with('error', $result['message']);
                 }
 
-                return view('jobs.job-detail', [
-                    'jobs' => $jobs,
+                return redirect()->route('jobs.detail', [
                     'jobId' => $jobId,
-                    'success' => $result['message']
-                ]); 
+                    'type' => $type
+                ])
+                ->with('success', $result['message']);
+
                     
             case 'reject': 
                 $result = $this->rejectJob($job, $jobAssign, $denyReason);
 
                 if ($result['status_code'] == self::EMPTY_DENY_REASON || $result['status_code'] == self::REJECT_SUCCESSFUL) {
-                    return view('jobs.job-detail', [
-                        'jobs' => $jobs,
+                    return redirect()->route('jobs.detail', [
                         'jobId' => $jobId,
-                        'success' => $result['message']
-                    ]);
+                        'type' => $type
+                    ])
+                    ->with('success', $result['message']);                
                 }
 
                 return redirect()->back()->with('error', $result['message']);

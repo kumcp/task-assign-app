@@ -87,6 +87,15 @@ class JobAssign extends Pivot
         return $this->isForwardOrAdditional() && !$this->isAdditional();
     }
 
+    public function getEvaluator()
+    {
+        $relations = $this->load('parent', 'parent.assignee', 'job', 'job.assigner');
+        if ($relations->parent && !$this->isDirectReport()) {
+            return $relations->parent->assignee->name;
+        } 
+        return $relations->job->assigner->name;
+    }
+
     public function hasForwardChild()
     {
         $children = $this->load('children')->children;
@@ -96,6 +105,11 @@ class JobAssign extends Pivot
             }
         }
         return false;
+    }
+
+    public function sameAssigned($assigneeId, $processMethodId)
+    {
+        return $this->staff_id = $assigneeId && $this->process_method_id == $processMethodId;
     }
 
     public function scopeDirectAssign($query, $staffId)
@@ -110,5 +124,10 @@ class JobAssign extends Pivot
         });
     }
 
+    public function scopeMainJobAssign($query)
+    {
+        $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
+        return $query->where('process_method_id', $mainProcessMethod->id);
+    }
 
 }

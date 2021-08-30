@@ -7,6 +7,14 @@
 @section('content')
 
 
+    @if (session('message')) 
+        @include('components.flash-message-modal', [
+            'modalId' => 'info-modal',
+            'alertClass' => 'alert alert-info',
+            'message' => session('message')
+        ])
+    @endif
+
     @if (session('success'))
         @include('components.flash-message-modal', [
             'modalId' => 'success-modal',
@@ -26,14 +34,16 @@
         
     @endif
 
-    @include('components.workplan-modal', ['jobId' => $jobId])
+    @include('components.workplan-modal', [
+        'jobId' => $jobId,
+        'type' => $type ?? 'all'
+    ])
 
 
     <div class="container">
         <form action="{{ route('workplans.delete') }}" method="POST">
             
             @csrf
-
 
 
             <div class="row ml-0 mb-5">
@@ -127,7 +137,7 @@
                 }
             });
 
-
+            setCloseTimeout("#info-modal", 5000);
             setCloseTimeout("#success-modal", 5000);
             setCloseTimeout("#error-modal", 5000);
 

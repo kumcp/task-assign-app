@@ -3,14 +3,13 @@
 @section('content')
     <div class="container">
 
-		@error('jobs')
+		@if(session('error'))
 			@include('components.flash-message-modal', [
 				'modalId' => 'errorModal',
 				'alertClass' => 'alert alert-danger',
-				'message' => $errors->first('jobs')
+				'message' => session('error')
 			])
-		@enderror
-
+		@endif
 		
 
 
@@ -18,20 +17,20 @@
             <form action="{{ route('jobs.search')}}" method="POST" class="w-100">
                 @csrf
 
-				
-
-
+				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
 				<div class="form-group-row mb-3">
                     @include('components.select', [
 						'name' => 'job_type_id',
 						'label' => 'Loại công việc',
-						'options' => $jobTypes ?? []
+						'options' => $jobTypes ?? [],
+						'checked' => old('job_type_id')
 					])
 					@include('components.select', [
 						'name' => 'project_id',
 						'label' => 'Dự án',
-						'options' => $projects ?? []
+						'options' => $projects ?? [],
+						'checked' => old('project_id')
 					])
 
                 </div>
@@ -41,12 +40,14 @@
 						@include('components.select', [
 							'name' => 'status',
 							'label' => 'Trạng thái',
-							'options' => []
+							'options' => [],
+							'checked' => old('status')
 						])
 						@include('components.select', [
 							'name' => 'assessment',
 							'label' => 'Đánh giá',
-							'options' => []
+							'options' => [],
+							'checked' => old('assessment')
 						])
 
 					</div>
@@ -57,7 +58,8 @@
                     @include('components.select', [
 						'name' => 'assigner_id',
 						'label' => 'Người giao',
-						'options' => $assigners ?? []
+						'options' => $assigners ?? [],
+						'checked' => old('assigner_id')
 					])
 
 					@include('components.input-text', [
@@ -80,10 +82,10 @@
 					])
 				</div>
 				<div class="btn-group offset-5" role="group">
-					<button type="submit" class="btn btn-light">
+					<button type="submit" class="btn btn-light" name="action" value="search">
 						<i class="fas fa-search"></i>
 					</button>
-					<button type="button" id="reset-btn" class="btn btn-light">
+					<button type="submit" id="reset-btn" class="btn btn-light" name="action" value="reset">
 						<i class="fas fa-redo"></i>
 					</button>
 
@@ -96,7 +98,7 @@
 
 				<input type="hidden" name="type" value="{{ $type ?? 'all' }}">
 
-				
+
 				@isset($all)
 			
 					@yield('table')
@@ -130,19 +132,23 @@
 				
 
 				@yield('button-group')
+				
+				<div id="detail-button-group">
+					@include('components.button-group', [
+						'parentClass' => 'btn-group offset-1',
+						'buttons' => [
+							['iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'detail'], 
+							['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
+							['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
+							['iconClass' => 'fas fa-user-plus', 'value' => 'Giao xử lý', 'action' => 'assign'], 
+							['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'],
+							['iconClass' => 'fas fa-plus', 'value' => 'Tạo việc', 'action' => 'job_create'], 
+							['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
+							['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
+						] 
+					])
+				</div>
 
-				@include('components.button-group', [
-					'parentClass' => 'btn-group offset-1',
-					'buttons' => [
-						['iconClass' => 'fas fa-info-circle', 'value' => 'Xem chi tiết', 'action' => 'detail'], 
-						['iconClass' => 'fas fa-check', 'value' => 'Hoàn thành', 'action' => 'finish'], 
-						['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'], 
-						['iconClass' => 'fas fa-user-plus', 'value' => 'Giao xử lý', 'action' => 'assign'], 
-						['iconClass' => 'fas fa-clipboard-list', 'value' => 'Timesheet', 'action' => 'timesheet'], 
-						['iconClass' => 'fas fa-tasks', 'value' => 'Xác nhận SL', 'action' => 'amount_confirm'], 
-						['iconClass' => 'fas fa-comments', 'value' => 'Trao đổi', 'action' => 'exchange'] 
-					] 
-				])
 
 
             </form>
@@ -150,19 +156,17 @@
     </div>   
 
 	<script>
+		const disableButtonGroup = () => {
+			$('#detail-button-group button').prop('disabled', true);
+		}
+
+		const enableButtonGroup = () => {
+			$('#detail-button-group button').prop('disabled', false);
+		}
+
 		$(document).ready(function () {
-			const handleReset = () => {
-				$('select').prop('selectedIndex', -1);
-				$('.form-group-row input').each(function() {
-					$(this).val(null);
-				});
-			}
 
-			const initializeSelectInput = () => {
-				$('select').prop('selectedIndex', -1);
-			}
-
-			initializeSelectInput();
+			disableButtonGroup();
 			
 			$('th input:checkbox').prop('disabled', true);
 			
@@ -170,12 +174,7 @@
 				$(this).prop('checked', false);
 			});
 
-			$('#reset-btn').click(function() {
-				handleReset();
-			});
 
-
-			$('button[value="detail"]').prop('disabled', true);
 
 
 			$('#left-table thead th input:checkbox').change(function() {
@@ -193,8 +192,7 @@
 
 					const processMethod = $(this).closest('tr').find('td.process_method').text();
 
-					$('button[value="detail"]').prop('disabled', false);
-
+					enableButtonGroup();
 					
 					$('tr.data-row').each(function() {
 						if ($(this).find('td.process_method').text() !== processMethod) {
@@ -212,7 +210,7 @@
 					}
 
 					if ($('#left tbody input:checkbox:checked').length === 0) {
-						$('button[value="detail"]').prop('disabled', true);
+						disableButtonGroup();
 					}
 				}
 			});
@@ -231,8 +229,7 @@
 						}
 					});
 
-					$('button[value="detail"]').prop('disabled', false);
-						
+					enableButtonGroup();						
 				}
 				else {
 					$('#right thead input:checkbox').prop('checked', false);
@@ -243,7 +240,7 @@
 					}
 
 					if ($('#right tbody input:checkbox:checked').length === 0) {
-						$('button[value="detail"]').prop('disabled', true);
+						disableButtonGroup();
 					}
 				}
 			});

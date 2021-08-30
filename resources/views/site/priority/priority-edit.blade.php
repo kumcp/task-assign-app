@@ -39,7 +39,7 @@
                    'value' => 'Xóa'
                ])
         </form>
-        @include('components.modal', [
+        @include('components.warning-modal', [
             'href' => route('priority.destroy',['id'=>$priority->id])
         ])
         @include('components.span-modal', [

@@ -17,7 +17,7 @@
 						'label' => 'Mã ĐT',
 					])
 					@include('components.input-text', [
-						'name' => 'name',
+						'name' => 'assignee_name',
 						'label' => 'Tên',
 					])
 

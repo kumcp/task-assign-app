@@ -33,10 +33,6 @@ const toggleTickElement = (id, processMethod, assignee) => {
 
 
         addRowToFullAssigneeTable('full-assignee-table', processMethod, id, assignee, false, false, defaultDeadline);
-
-
-
-
         
     }
     else {
@@ -61,12 +57,12 @@ const search = (listId, assigneeId='', assigneeName='') => {
 
     const filteredRows = $(`#${listId} tbody tr`).filter(function() {
         if (assigneeId === '') 
-            return  $(this).find('td.name').text().includes(assigneeName);
+            return  $(this).find('td.name').text().toLowerCase().includes(assigneeName.toLowerCase());
         
         if (assigneeName === '')
             return $(this).attr('id') === assigneeId;
 
-        return $(this).attr('id') === assigneeId || $(this).find('td.name').text().includes(assigneeName);
+        return $(this).attr('id') === assigneeId || $(this).find('td.name').text().toLowerCase().includes(assigneeName.toLowerCase());
     });
 
     filteredRows.each(function() {
@@ -243,12 +239,13 @@ const addRowToFullAssigneeTable = (tableId,  processMethod, assigneeId, assignee
         .attr('disabled', readOnly)
     ));
 
+    
     row.append(
         $('<td/>').append($('<input/>', {
             type: 'date',
             class: 'deadline',
             value: deadline,
-        }))
+        }).prop('readonly', readOnly))
     );
                     
     row.append(
@@ -312,7 +309,7 @@ const resetAssigneeDisplayValues = () => {
 const displayAssigneeList = listId => {
     $(`#${listId} tbody tr`).show();
     $('#id').val(null);
-    $('#name').val(null);
+    $('#assignee_name').val(null);
 }
 
 

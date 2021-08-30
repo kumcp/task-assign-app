@@ -2,12 +2,13 @@
 	'routeName' => 'jobs.action',
 	'method' => 'POST', 
 	'staff' => $staff,
-	'jobs' => $jobs,
+	'jobs' => $createdJobs,
 	'projects' => $projects,
 	'jobTypes' => $jobTypes,
 	'priorities' => $priorities,
 	'processMethods' => $processMethods,
-	'editable' => true
+	'editable' => true,
+	'jobId' => $jobId ?? null,
 
 ])
 
@@ -37,6 +38,7 @@
 
 
 @section('job-info')
+
 	<div class="form-group-row mb-3">
 
 
@@ -66,19 +68,18 @@
 	<div class="form-group-row mb-3">
 
 		@include('components.searchable-input-text', [
-				'name' => 'project_code',
-				'label' => 'Mã dự án', 
-				'options' => $projects, 
-				'displayField' => 'code',
-				'hiddenField' => 'name',
-				'checked' => old('project_id')
-			])
+			'name' => 'project_code',
+			'label' => 'Mã dự án', 
+			'options' => $projects, 
+			'displayField' => 'code',
+			'hiddenField' => 'name'
+		])
 
-			@include('components.input-text', [
-				'name' => 'project_name',
-				'label' => '(Tên dự án)',
-				'readonly' => true,
-			])
+		@include('components.input-text', [
+			'name' => 'project_name',
+			'label' => '(Tên dự án)',
+			'readonly' => true,
+		])
 		<input type="hidden" name="project_id" id="project_id" value="{{ old('project_id') }}">
 		
 
@@ -94,6 +95,7 @@
 		@include('components.searchable-input-text', [
 			'name' => 'job_type',
 			'label' => 'Loại công việc', 
+			'hiddenField' => 'common',
 			'options' => $jobTypes, 
 			'checked' => old('job_type_id')
 		])
@@ -102,34 +104,42 @@
 	
 		
 	</div>
-	<div class="form-group-row mb-3">
+	<div class="form-group-row mb-3" id="period-wrapper">
 
 		@include('components.input-number', [
 			'name' => 'period',
 			'label' => 'Kỳ',
+			'required' => $systemConfig['period'],
 		])
+
+		
+	
+	</div>
+
+	<div class="form-group-row mb-3">
 		@include('components.select', [
 			'name' => 'period_unit', 
 			'label' => 'Đơn vị',
 			'options' => [
 				['value' => 'day', 'display' => 'Ngày'],
 				['value' => 'week', 'display' => 'Tuần'],
-				['value' => 'term', 'display' => 'Kỳ'],    
+				['value' => 'month', 'display' => 'Tháng'], 
+				['value' => 'quarter', 'display' => 'Quý'],
+				['value' => 'year', 'display' => 'Năm'],   
 			],
 			'checked' => old('period_unit')
 
 		])
-
-	
 	</div>
+
 	<div class="form-group-row mb-3">
 
 		@include('components.searchable-input-text', [
 			'name' => 'parent_job',
 			'label' => 'Việc cha', 
-			'options' => $jobs, 
+			'options' => $relatedJobs, 
 		])
-		<input type="hidden" name="parent_id" id="parent_id" value="{{ old('parent_id') }}">
+		<input type="hidden" name="parent_id" id="parent_id" value="{{ $parentJobId ?? old('parent_id') }}">
 
 	
 	</div>
@@ -137,12 +147,15 @@
 	
 		@include('components.input-text', [
 			'name' => 'code',
-			'label' => 'Mã CV'
+			'label' => 'Mã CV',
+			'required' => $systemConfig['job_code']
 		])
-		
+
+
 	</div>
 
 	<div class="form-group-row mb-3">
+	
 		@include('components.searchable-input-text', [
 			'name' => 'priority_name',
 			'label' => 'Độ ưu tiên', 
@@ -151,14 +164,15 @@
 		<input type="hidden" name="priority_id" id="priority_id" value="{{ old('priority_id') }}">
 
 	</div>
+
 	<div class="form-group-row mb-3">
 
 		@include('components.input-text', [
 			'name' => 'name', 
 			'label' => 'Tên công việc',
+			'required' => true
 		])
-		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
-		
+
 	
 	</div>
 
@@ -167,8 +181,10 @@
 		@include('components.input-number', [
 			'name' => 'lsx_amount', 
 			'label' => 'Khối lượng LSX',
+			'required' => $systemConfig['production_volume']
 		])
-		<label>(Man day)</label>
+		<label class="ml-4">(Man day)</label>
+
 
 
 	</div>
@@ -177,17 +193,20 @@
 
 		@include('components.input-number', [
 			'name' => 'assign_amount', 
-			'label' => 'Khối lượng giao'
+			'label' => 'Khối lượng giao',
+			'required' => $systemConfig['volume_interface']
 		])
-		<label>(Man day)</label>
+
+		<label class="ml-4">(Man day)</label>
+
 	</div>
 	<div class="form-group-row mb-3">
 		@include('components.input-date', [
 			'type' => 'date',
 			'name' => 'deadline', 
 			'label' => 'Hạn xử lý',
+			'required' => true
 		])
-		<i class="fas fa-asterisk" style="width: .5em; color:red"></i>
 	</div>
 
 	<div class="form-group-row mb-3">
@@ -240,7 +259,7 @@
 			['iconClass' => 'fas fa-edit', 'type' => 'button', 'value' => 'Sửa', 'action' => 'edit'], 
 			['iconClass' => 'fas fa-trash', 'value' => 'Xóa', 'action' => 'delete'], 
 			['iconClass' => 'fas fa-search', 'value' => 'Tìm kiếm', 'action' => 'search'],
-			['iconClass' => 'fas fa-redo', 'type' => 'button', 'value' => 'Tạo mới', 'action' => 'reset'], 
+			['iconClass' => 'fas fa-redo', 'value' => 'Tạo mới', 'action' => 'reset'], 
 		] 
 	])
 
@@ -248,47 +267,29 @@
 	
 @endsection
 
+@section('jobs-table')
+	@include('components.dynamic-table', [
+		'id' => 'jobs-table',
+		'cols' => [
+			'Tên công việc' => 'name',
+		],
+		'rows' => $createdJobs ?? [],
+		'min_row' => 5,
+		'pagination' => true
+	])
+@endsection
+
 
 @section('custom-script')
+	<script src="{{ asset('js/fileInput.js') }}"></script>
 	<script>
+
 		$(document).ready(function() {
 
-			if ($('#job_type_id').val() !== null) {
-				const jobTypeId = $('#job_type_id').val();
-				setSelectedValue('#job_type', jobTypeId);
-			}
+			initializeChildJob();
 
-			$('button[value="reset"]').click(function () {
-				$('.selectpicker').each(function () {
-					$(this).val('');
-					$(this).selectpicker('refresh')
-				})
-				$('input').each(function () {
-					if ($(this).attr('name') === 'status') {
-						$(this).val('Chưa nhận');
-					}
-					else if ($(this).attr('name') !== 'authenticated_name' && $(this).attr('name') !== 'authenticated_id') {
-						$(this).val('');
-					}
-		
-				})
-
-				$('#assigner_name').val($('#authenticated_name').val());
-				$('#assigner_id').val($('#authenticated_id').val());
-
-				$('#period_unit').prop('selectedIndex', -1);
-				$('textarea').val('');
-				$('#history-workplan').hide();
-				$('#note-wrapper').hide();
-
-				resetTable('files');
-				$('#file-count span').html(null);
-				$('#file-count').hide();
-
-				resetHiddenInputs();
-				resetFullAssigneeTable('full-assignee-table');
-				resetAssigneeDisplayValues();
-			});
+			$('#file-count').hide();
+			handleFileCountClick();
 
 			$('button[value="edit"]').click(function () {
 				const jobId = $('#job_id').val();
@@ -302,52 +303,9 @@
 
 
 			$('input:file').change(function(e) {
-
 				const files = e.target.files;
-				
-				if (files.length > 0) {
-					let cnt = 0;
-					
-
-					resetTable('files');
-
-					for (let i = 0; i < files.length; i++) {
-						const file = files[i];
-						const fileSize = ((file.size / 1024) / 1024).toFixed(4); // MB
-						
-						if (fileSize <= 10) {
-							const newLink = $('<a/>', {
-								href: URL.createObjectURL(file),
-								text: file.name,
-								target: '_blank'
-            				});
-							addRowToTable('files', i, newLink);
-							cnt++;
-						}
-
-					}
-
-					if (cnt > 0) {
-
-						$('#file-count span').html(cnt);
-						$('#file-count').show();
-					}
-
-					
-				}
-				else {
-					$('#file-count').hide();
-				}
+				handleFileInputChange(files);
 			});
-
-			$('#file-count').hide();
-
-			$('#file-count').click(function() {
-
-				$('#file-modal').modal('show');
-				
-			});
-			
 			
 
 			$('#chu-tri-btn').click(function() {
@@ -379,19 +337,20 @@
 
 
 				$('#search-reset-btn').click(function() {
+					console.log('here');
 					$('#id').val(null).keyup();
-					$('#name').val(null).keyup();
+					$('#assignee_name').val(null).keyup();
 				});
 
 				$('#id').keyup(function() {
 					const assigneeId = $('#id').val();
-					const assigneeName = $('#name').val();
+					const assigneeName = $('#assignee_name').val();
 					search('assignee-list', assigneeId, assigneeName);
 				});
 
-				$('#name').keyup(function() {
+				$('#assignee_name').keyup(function() {
 					const assigneeId = $('#id').val();
-					const assigneeName = $('#name').val();
+					const assigneeName = $('#assignee_name').val();
 					search('assignee-list', assigneeId, assigneeName);
 				});
 			});
@@ -412,124 +371,41 @@
 
 				const assignee = $(this).find('td[class="name"]').html();
 				
-
 				toggleTickElement(id, processMethod, assignee);
-
-
 				
 			});
 
+			const inputMappings = {
+				'direct_report': 'input.direct-report',
+				'sms': 'input.sms',
+				'deadline': 'input.deadline',
+			};
 
-			$('#full-assignee-table').on('change', 'input.direct-report', function() {
+			Object.keys(inputMappings).forEach(field => {
+				const selector = inputMappings[field];
+				$('#full-assignee-table').on('change', selector, function() {
 
-				const idElement = $(this).closest('tr').find('.id');
-				const id = idElement.text();
+					const assigneeId = $(this).closest('tr').find('.id').text();
 
-				const processMethod = idElement.siblings('.process_method').text();
-				
-
-				let hiddenInput = null;
-				let value = null;
-
-
-				switch (processMethod) {
-
-					case 'Chủ trì':
-						hiddenInput = $(`input[name="chu-tri[]"][id="${id}"]`);
-
-						value = JSON.parse(hiddenInput.val());
-
-						hiddenInput.val(JSON.stringify({
-							...value,
-							direct_report: this.checked
-						}));
-						
-						
-						break;
-
-					case 'Phối hợp':
-
-						hiddenInput = $(`input[name="phoi-hop[]"][id="${id}"]`);
-						
-						value = JSON.parse(hiddenInput.val());
-
-						hiddenInput.val(JSON.stringify({
-							...value,
-							direct_report: this.checked
-						}));
-
-						break;
-
-					case 'Theo dõi/Nhận xét':
-						hiddenInput = $(`input[name="nhan-xet[]"][id="${id}"]`);
-						
-						value = JSON.parse(hiddenInput.val());
-
-						hiddenInput.val(JSON.stringify({
-							...value,
-							direct_report: this.checked
-						}));
-						break;
-				}
-				
-				
-			});
-
-			$('#full-assignee-table').on('change', 'input.sms', function() {
-
-				const idElement = $(this).closest('tr').find('.id');
-				const id = idElement.text();
-
-				const processMethod = idElement.siblings('.process_method').text();
-
-
-				let hiddenInput = null;
-				switch (processMethod) {
-
-					case 'Chủ trì':
-						hiddenInput = $(`input[name="chu-tri[]"][id="${id}"]`);
-						
-						value = JSON.parse(hiddenInput.val());
-
-						hiddenInput.val(JSON.stringify({
-							...value,
-							sms: this.checked
-						}));
-
-						break;
-
-					case 'Phối hợp':
+					const processMethod = $(this).closest('tr').data('type');
 					
-						hiddenInput = $(`input[name="phoi-hop[]"][id="${id}"]`);
-						
-						value = JSON.parse(hiddenInput.val());
 
-						hiddenInput.val(JSON.stringify({
-							...value,
-							sms: this.checked
-						}));
-						break;
+					const hiddenInput = $(`input[name="${processMethod}[]"][id="${assigneeId}"]`);
 
-					case 'Theo dõi/Nhận xét':
-						hiddenInput = $(`input[name="nhan-xet[]"][id="${id}"]`);
-						
-						value = JSON.parse(hiddenInput.val());
+					const value = JSON.parse(hiddenInput.val());
 
-						hiddenInput.val(JSON.stringify({
-							...value,
-							sms: this.checked
-						}));
-						break;
-				}
+					hiddenInput.val(JSON.stringify({
+						...value,
+						[field]: field === 'deadline' ? $(this).val() : this.checked
+					}));
+
+				});
 			});
 
 
-
-
-
-
-
-
+			$('#parent_job').change(function() {
+				initializeChildJob();
+			});
 
 
 

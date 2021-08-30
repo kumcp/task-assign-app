@@ -53,7 +53,7 @@
 
             ])
         </form>
-        @include('components.modal', [
+        @include('components.warning-modal', [
             'href' => route('project-type.destroy',['id'=>$projectType->id]),
             'messages' => 'Bạn có chắc chắn xóa loại công việc này không?'
         ])

@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap-select.css') }}">
     <link rel="stylesheet" href="{{ asset('css/file-input.css') }}">
     <link rel="stylesheet" href="{{ asset('css/modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dynamic-table.css') }}">
+
 
     @include('components.file-modal')
 
@@ -18,8 +20,20 @@
         @yield('message')
 
 
-        <div class="row">
-        
+        <div class="row mb-5" id="created-date-wrapper">
+            <div class="col offset-9">
+                @include('components.input-text', [
+                    'name' => 'created_date',
+                    'labelClass' => 'form-label',
+                    'label' => 'Ngày tạo',
+                    'textClass' => 'd-inline ml-5',
+                    'inputClass' => 'form-control d-inline w-50',
+                    'readonly' => true
+                ])
+            </div>
+
+            
+        </div>
 
         <div class="row">
 
@@ -30,11 +44,13 @@
 
                 <form id="job-form" action="{{route($routeName, $params ?? [])}}" method="{{$method}}" enctype="multipart/form-data">
                     @csrf
-                    <input type="hidden" name="job_id" id="job_id" value="{{ $job_id ?? old('job_id') }}">
+                    <input type="hidden" name="job_id" id="job_id" value="{{ $jobId ?? old('job_id') }}">
                     
                     <input type="hidden" name="editable" id="editable" value="{{ $editable ? 1 : 0 }}">
 
                     <input type="hidden" name= "process_method" id="process_method">
+
+                    <input type="hidden" id="staff_id" value="{{ Auth::user()->staff_id }}">
                     
                     <fieldset class="p-3 mb-3" style="border: 1px solid; border-radius: 15px">
                         <legend class="w-auto">Thông tin nghiệp vụ</legend>
@@ -129,14 +145,14 @@
                         @yield('assign-button-group')
 
                     </fieldset>
-                    
+
                     
 					<div class="form-group-row mb-3 p-3">
 						@include('components.input-text', [
 							'name' => 'status', 
 							'label' => 'Trạng thái',
                             'readonly' => true,
-                            'value' => __('jobStatus.pending')
+                            'value' => __('job.all_status.pending')
 						])
 					</div>
 
@@ -153,15 +169,8 @@
                 </form>
             </div>
             <div class="col-md-3">
-                @include('components.dynamic-table', [
-                    'cols' => [
-                        'Tên công việc' => 'name',
-                    ],
-                    'id' => 'jobs-table',
-                    'rows' => $jobs ?? [],
-                    'min_row' => 5,
-                    'pagination' => true
-                ])
+                @yield('jobs-table')
+
                 <div id="history-workplan" style="display: none">
                     <a href=""  class="btn btn-link p-0 mb-1 text-decoration-none" data-toggle="modal" data-target="#update-job-histories">Lịch sử công việc</a>
                     
@@ -213,71 +222,17 @@
     <script src="{{ asset('js/job-crud/jobAPI.js') }}"></script>
     <script src="{{ asset('js/job-crud/jobFormInput.js') }}"></script>
     <script src="{{ asset('js/job-crud/jobTable.js') }}"></script>
+    <script src="{{ asset('js/job-crud/updateJobHistories.js') }}"></script>
     <script src="{{ asset('js/job-crud/assigneeModal.js') }}"></script>
 
-    
     <script type="text/javascript">
-
-
-
+        
         $(document).ready(function () {
-            
-            if ($('#job_id').val() !== '') {
-                const jobId = $('#job_id').val();
-                
-                let url = $('#workplan').attr('href').split('/').slice(0, -1).join('/');
-                $('#workplan').prop('href', `${url}/${jobId}`);
-                
-                
-                const readOnly = $('#editable').val() === '0';
 
-                initializeJobValues(jobId, readOnly);
-            }
-            else {
-                $('button[value="assignee-detail"]').hide();
-            }
-
-            selectInputs = [
-                {name: 'assigner_name', hiddenInputId: 'assigner_id'},
-                {name: 'project_code', hiddenInputId: 'project_id'},
-                {name: 'job_type', hiddenInputId: 'job_type_id'},
-                {name: 'parent_job', hiddenInputId: 'parent_id'},
-                {name: 'priority_name', hiddenInputId: 'priority_id'},
-                {name: 'chu-tri', hiddenInputId: 'chu-tri-id'},
-                {name: 'nhan-xet', hiddenInputId: 'nhan-xet-id'},
-            ];
-
-            selectInputs.forEach(element => {
-                handleOptionChange(element.name, element.hiddenInputId);
-            });
-
-
-            $('#project_code').change(function () {
-                const projectName = $(this).find(':selected').attr('data-hidden');
-                $('#project_name').val(projectName);
-            });
-            
-
-            $('#update-job-histories').on('show.bs.modal', function () {
-                generateUpdateHistoriesTable();
-            });
-
-            $('#update-job-histories').on('hidden.bs.modal', function () {
-               resetUpdateHistoriesTable();
-            });
-
-            
-
-            document.querySelectorAll('#jobs-table tr').forEach(function (element) {
-                if (element.id !== '') {
-                    const id = element.id;       
-                    const readOnly = $('#editable').val() === '0';
-
-                    element.addEventListener('click', function () {
-                        handleRowClick(id, readOnly);
-                    });
-                }
-            });
+            initializeDefaultValues();
+            handleSelectInputsChange();
+            handleHistoryModalChange();            
+            handleRowsChange();
 
             $('#view-mode-btn').click(function() {
 				const text = $(this).html();
@@ -299,34 +254,24 @@
 
 			});
 
-        });
+            $('button[value="assignee-detail"]').click(function() {
 
+                const jobId = $('#job_id').val();
 
-        
-
-        $('button[value="assignee-detail"]').click(function() {
-
-            const jobId = $('#job_id').val();
-
-            getAssigneeList(jobId).then(assigneeList => {
-
-                initializeAssigneeDetailTable('assignee-detail-table', assigneeList);
-                $('#assignee-detail-modal').modal('show');
+                getAssigneeList(jobId).then(assigneeList => {
+                    initializeAssigneeDetailTable('assignee-detail-table', assigneeList);
+                    $('#assignee-detail-modal').modal('show');
+                });
 
             });
-
+            
+            setCloseTimeout("#successModal", 5000);
+            setCloseTimeout("#errorModal", 5000);
         });
 
-
-        setCloseTimeout("#successModal", 5000);
-        setCloseTimeout("#errorModal", 5000);
-
-        
     </script>
 
     @yield('custom-script')
 
     
 @endsection
-
-
