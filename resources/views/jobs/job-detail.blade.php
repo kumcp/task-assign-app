@@ -195,10 +195,26 @@
 		<div class="row ml-0 mb-3">
 			<ul class="nav flex-column nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item" role="presentation">
-				<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">{{ $leftTable['title'] ?? 'Công việc trực tiếp xử lý' }}</a>
+				<a class="nav-link active" id="left-tab" data-toggle="tab" href="#left" role="tab" aria-controls="left" aria-selected="true">
+					@if ($type == 'pending')
+						{{ 'Công việc đang chờ nhận' }}
+					@elseif ($type == 'handling')
+						{{ 'Công việc trực tiếp xử lý' }}
+					@elseif ($type == 'assigner')
+						{{ 'Công việc đã giao xử lý' }}
+					@endif
+				</a>
 				</li>
 				<li class="nav-item" role="presentation">
-				<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">{{ $rightTable['title'] ?? 'Công việc liên quan' }}</a>
+				<a class="nav-link" id="right-tab" data-toggle="tab" href="#right" role="tab" aria-controls="right" aria-selected="false">
+					@if ($type == 'pending')
+						{{ 'Công việc chưa có người nhận' }}
+					@elseif ($type == 'handling')
+						{{ 'Công việc liên quan' }}
+					@elseif ($type == 'assigner')
+						{{ 'Công việc chuyển tiếp, bổ sung' }}
+					@endif
+				</a>
 				</li>
 			</ul>
 			<div class="tab-content w-100" id="myTabContent">
@@ -209,7 +225,7 @@
 						'cols' => [
 							'Tên công việc' => 'name',
 						],
-						'rows' => $leftTable['jobs'] ?? [],
+						'rows' => $leftTable ?? [],
 						'min_row' => 5,
 					])
 					
@@ -221,7 +237,7 @@
 						'cols' => [
 							'Tên công việc' => 'name',
 						],
-						'rows' => $rightTable['jobs'] ?? [],
+						'rows' => $rightTable ?? [],
 						'min_row' => 5,
 					])
 					

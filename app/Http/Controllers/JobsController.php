@@ -223,7 +223,8 @@ class JobsController extends Controller
             
             case 'detail':
                 $jobId = $jobIds[0];
-                return $this->detail($request, $jobId);
+                $type = $request->input('type');
+                return redirect()->route('jobs.detail', ['jobId' => $jobId, 'type' => $type]);
   
             case 'finish':
                 // TODO: finish function
@@ -547,12 +548,7 @@ class JobsController extends Controller
         $reformatedDirectJobs = $this->reformatHandlingJobs($directJobs);
         $reformatedRelatedJobs = $this->reformatHandlingJobs($relatedJobs, true);
         
-        $res = [
-            ['title' => 'Công việc trực tiếp xử lý', 'jobs' => $reformatedDirectJobs],
-            ['title' => 'Công việc liên quan', 'jobs' => $reformatedRelatedJobs]
-        ];
-     
-        return $res;
+        return [$reformatedDirectJobs, $reformatedRelatedJobs];
         
     }
 
@@ -585,12 +581,7 @@ class JobsController extends Controller
         $reformatedNewAssignedJobs = $this->reformatPendingJobs($newAssignedJobs);    
         $reformatedUnassignedJobs = $this->reformatPendingJobs($unassignedJobs);
         
-        $res = [
-            ['title' => 'Công việc đang chờ nhận', 'jobs' => $reformatedNewAssignedJobs],
-            ['title' => 'Công việc chưa có người nhận', 'jobs' => $reformatedUnassignedJobs]
-        ];
-
-        return $res;
+        return [$reformatedNewAssignedJobs, $reformatedUnassignedJobs];
     }
 
     private function getAssignerJobs($staffId, $condition=null) 
@@ -614,12 +605,7 @@ class JobsController extends Controller
         $reformatedCreatedJobs = $this->reformatAssignerJobs($createdJobs);        
         $reformatedForwardJobs = $this->reformatAssignerJobs($forwardJobs);
 
-        $res = [
-            ['title' => 'Công việc đã giao xử lý', 'jobs' => $reformatedCreatedJobs],
-            ['title' => 'Công việc chuyển tiếp, bổ sung', 'jobs' => $reformatedForwardJobs]
-        ];
-
-        return $res;
+        return [$reformatedCreatedJobs, $reformatedForwardJobs];
     }
 
     private function getAllJobsByStaffId($staffId, $condition=null)
