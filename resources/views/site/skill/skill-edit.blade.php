@@ -34,7 +34,7 @@
             ])
         </form>
 
-        @include('components.modal', [
+        @include('components.warning-modal', [
             'href' => route('skill.destroy',['id'=>$skill->id]),
             'messages' => 'Bạn có chắc chắn xóa kỹ năng này không?'
         ])

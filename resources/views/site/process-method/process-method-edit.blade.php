@@ -42,7 +42,7 @@
                'value' => 'Xóa'
            ])
             </form>
-        @include('components.modal', [
+        @include('components.warning-modal', [
                 'href' => route('process-method.destroy',['id'=>$process_method->id]),
                 'messages' => 'Bạn có chắc chắn xóa hình thức xử lý này không?'
             ])
