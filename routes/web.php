@@ -147,6 +147,7 @@ Route::post('/timesheet-statistics-search', [TimesheetStatisticsController::clas
 
 //Project Plan
 Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
+Route::get('/project-plan/{id}/jobs', [ProjectPlanController::class, 'queryJobs'])->name('project-plan.queryJobs');
 Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
 
 //Backup Manday
@@ -171,7 +172,7 @@ Route::group(['middleware' => ['auth']], function() {
     Route::post('/jobs/update-assignee-list', [JobsController::class, 'updateAssigneeList'])->name('jobs.updateAssigneeList');
 });
 
-
+Route::post('job-assigns/job-detail', [JobAssignController::class, 'jobDetail'])->name('job-assigns.jobDetail');
 Route::post('job-assigns/update-status', [JobAssignController::class, 'updateStatus'])->name('job-assigns.updateStatus');
 Route::post('job-assign/delete', [JobAssignController::class, 'delete'])->name('job-assigns.delete');
 
