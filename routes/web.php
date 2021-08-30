@@ -146,9 +146,11 @@ Route::get('/timesheet-statistics', [TimesheetStatisticsController::class, 'list
 Route::post('/timesheet-statistics-search', [TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
 
 //Project Plan
-Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
-Route::get('/project-plan/{id}/jobs', [ProjectPlanController::class, 'queryJobs'])->name('project-plan.queryJobs');
-Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
+    Route::get('/project-plan/{id}/jobs', [ProjectPlanController::class, 'queryJobs'])->name('project-plan.queryJobs');
+    Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');    
+});
 
 //Backup Manday
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-manday.list');
