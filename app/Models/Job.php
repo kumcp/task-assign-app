@@ -280,9 +280,7 @@ class Job extends Model
 
     public function scopeHasJobAssign($query, $jobAssignId) 
     {
-        return $query->whereHas('jobAssigns', function ($subQuery) use ($jobAssignId) {
-            $subQuery->where('id', $jobAssignId);
-        });
+        return $query->whereHas('jobAssigns', fn ($subQuery) => $subQuery->where('id', $jobAssignId));
     }
 
 
