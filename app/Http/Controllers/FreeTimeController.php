@@ -78,8 +78,8 @@ class FreeTimeController extends Controller
             $jobAssigns = $assignee->jobAssigns;
 
             foreach ($jobAssigns as $jobAssign) {
-                $totalMandays += $jobAssign->calculateTotalWorkPlanMandays();
-                $totalHours += $jobAssign->calculateTotalWorkPlanHours();
+                $totalMandays += $jobAssign->calculateTotalWorkAmount('manday');
+                $totalHours += $jobAssign->calculateTotalWorkAmount('hour');
             }
             $assignee->working_hours = $totalHours;
 

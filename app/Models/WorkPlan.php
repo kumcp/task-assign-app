@@ -14,31 +14,7 @@ class WorkPlan extends Model
         return $this->belongsTo(JobAssign::class);
     }
 
-    public function calculateTotalMandays()
-    {
-        $fromDate = strtotime($this->from_date);
-        $toDate = strtotime($this->to_date);
-        
-        if (!$this->from_time && !$this->to_time) {
-            $absHour = 8;
-        }
-        else {
-            $fromTime = strtotime($this->from_time);
-            $toTime = strtotime($this->to_time);
-            $absHour = abs($toTime - $fromTime);
-        }
-        
-        $hour = floor($absHour / (60 * 60));
-
-        $absDate = floor($toDate - $fromDate);
-        $date = floor($absDate / (60 * 60 * 24));
-
-        $workAmount = $hour * ($date + 1) / 8;
-        return $workAmount;
-    }
-
-    public function calculateTotalHours()
-    {
+    public function calculateWorkAmount($unit = 'manday') {
         $fromDate = strtotime($this->from_date);
         $toDate = strtotime($this->to_date);
         
@@ -57,8 +33,9 @@ class WorkPlan extends Model
         $date = floor($absDate / (60 * 60 * 24));
 
         $workAmount = $hour * ($date + 1);
-        return $workAmount;
+        return $unit == 'manday' ? $workAmount / 8 : $workAmount;
     }
+
 
     public function scopeBetweenDate($query, $fromDate, $toDate)
     {

@@ -112,25 +112,16 @@ class JobAssign extends Pivot
         return $this->staff_id = $assigneeId && $this->process_method_id == $processMethodId;
     }
 
-    public function calculateTotalWorkPlanMandays()
+    public function calculateTotalWorkAmount($unit = 'manday')
     {
         $total = 0;
         $workPlans = $this->workPlans;
         foreach ($workPlans as $workPlan) {
-            $total += $workPlan->calculateTotalMandays();
+            $total += $workPlan->calculateWorkAmount($unit);
         }
         return $total;
     }
 
-    public function calculateTotalWorkPlanHours()
-    {
-        $total = 0;
-        $workPlans = $this->workPlans;
-        foreach ($workPlans as $workPlan) {
-            $total += $workPlan->calculateTotalHours();
-        }
-        return $total;
-    }
 
     public function scopeDirectAssign($query, $staffId)
     {
