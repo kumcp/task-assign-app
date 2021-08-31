@@ -21,9 +21,9 @@ class Staff extends Model
         return $this->hasMany(Job::class);
     }
 
-    public function assignment()
+    public function jobAssigns()
     {
-        return $this->hasMany(JobAssign::class);
+        return $this->hasMany(JobAssign::class, 'staff_id');
     }
 
     public function jobsAssigned()
@@ -34,7 +34,8 @@ class Staff extends Model
             'direct_report', 
             'sms', 
             'status', 
-            'deny_reason'
+            'deny_reason',
+            'deadline'
         );    
     }
 

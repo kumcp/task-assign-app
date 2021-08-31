@@ -112,6 +112,26 @@ class JobAssign extends Pivot
         return $this->staff_id = $assigneeId && $this->process_method_id == $processMethodId;
     }
 
+    public function calculateTotalWorkPlanMandays()
+    {
+        $total = 0;
+        $workPlans = $this->workPlans;
+        foreach ($workPlans as $workPlan) {
+            $total += $workPlan->calculateTotalMandays();
+        }
+        return $total;
+    }
+
+    public function calculateTotalWorkPlanHours()
+    {
+        $total = 0;
+        $workPlans = $this->workPlans;
+        foreach ($workPlans as $workPlan) {
+            $total += $workPlan->calculateTotalHours();
+        }
+        return $total;
+    }
+
     public function scopeDirectAssign($query, $staffId)
     {
         return $query->where([
@@ -128,6 +148,11 @@ class JobAssign extends Pivot
     {
         $mainProcessMethod = ProcessMethod::where('name', 'chủ trì')->first();
         return $query->where('process_method_id', $mainProcessMethod->id);
+    }
+
+    public function scopeBelongsToStaff($query, $staffId)
+    {
+        return $query->where('staff_id', $staffId);
     }
 
 }
