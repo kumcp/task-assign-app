@@ -81,7 +81,8 @@
                                         ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
                                         ['link' => route('timesheet-statis.list'), 'value' => 'Thống kê timesheet'],
                                         ['link' => route('project-plan.list'), 'value' => 'Kế hoạch dự án'],
-                                        ['link' => route('backup-manday.list'), 'value' => 'Tìm kiếm thời gian rảnh'],
+                                        ['link' => route('backup-manday.list'), 'value' => 'Manday dự phòng'],
+                                        ['link' => route('free-time.list'), 'value' => 'Tìm kiếm thời gian rảnh']
                                     ]
                                 ],
                                 [
@@ -113,7 +114,8 @@
                                         ['link' => route('jobs.index'), 'value' => 'Tìm kiếm công việc'],
                                         ['link' => route('timesheet-statis.list'), 'value' => 'Thống kê timesheet'],
                                         ['link' => route('project-plan.list'), 'value' => 'Kế hoạch dự án'],
-                                        ['link' => route('backup-manday.list'), 'value' => 'Tìm kiếm thời gian rảnh'],
+                                        ['link' => route('backup-manday.list'), 'value' => 'Manday dự phòng'],
+                                        ['link' => route('free-time.list'), 'value' => 'Tìm kiếm thời gian rảnh']
                                     ]
                                 ],
 
