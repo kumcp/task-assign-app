@@ -23,7 +23,7 @@ use App\Http\Controllers\TimesheetStatisticsController;
 use App\Http\Controllers\ProjectPlanController;
 use App\Http\Controllers\BackupMandayController;
 use App\Http\Controllers\JobAssignController;
-
+use App\Http\Controllers\FreeTimeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -156,6 +156,11 @@ Route::group(['middleware' => ['auth']], function() {
 Route::get('/backup-manday', [BackupMandayController::class, 'list'])->name('backup-manday.list');
 Route::post('/backup-manday-search', [BackupMandayController::class, 'search'])->name('backup-manday.search');
 
+// Free time
+Route::prefix('free-time')->group(function () {
+    Route::get('/', [FreeTimeController::class, 'list'])->name('free-time.list');
+    Route::post('/search', [FreeTimeController::class, 'search'])->name('free-time.search');
+});
 
 Route::get('assignee-list', [AssigneeListController::class, 'index'])->name('assignee-list.index');
 Route::post('assignee-list', [AssigneeListController::class, 'action'])->name('assignee-list.action');
