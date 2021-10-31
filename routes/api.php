@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AmountConfirmController;
+use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\AssigneeListController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\JobAssignController;
@@ -43,3 +44,9 @@ Route::get('amount-confirms/{id}', [AmountConfirmController::class, 'show'])->na
 Route::post('amount-confirms', [AmountConfirmController::class, 'queryAmountConfirm'])->name('amount-confirms.query');
 
 Route::get('process-methods', [ProcessMethodController::class, 'queryProcessMethod'])->name('process-methods.query');
+
+Route::get('skill', [SkillController::class, 'list']);
+Route::post('skill', [SkillController::class, 'store']);
+Route::get('skill/{id}', [SkillController::class, 'edit']);
+Route::put('skill/{id}', [SkillController::class, 'update']);
+Route::delete('skill/{id}', [SkillController::class, 'destroy']);
