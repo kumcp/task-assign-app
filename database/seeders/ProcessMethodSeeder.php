@@ -14,6 +14,10 @@ class ProcessMethodSeeder extends Seeder
      */
     public function run()
     {
+        ProcessMethod::factory()->count(1)->create([
+            "name" => "chủ trì",
+            "code" => "main"
+        ]);
         ProcessMethod::factory()->count(20)->create();
     }
 }

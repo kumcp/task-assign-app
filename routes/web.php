@@ -104,9 +104,9 @@ Route::prefix('process-method')->group(function () {
 });
 
 // Config
-Route::prefix('configurations')->group(function (){
-    Route::get('/',[ConfigController::class, 'list'])->name('config.list');
-    Route::post('/update',[ConfigController::class, 'update'])->name('config.update');
+Route::prefix('configurations')->group(function () {
+    Route::get('/', [ConfigController::class, 'list'])->name('config.list');
+    Route::post('/update', [ConfigController::class, 'update'])->name('config.update');
 });
 
 Route::get('/register', [RegisterController::class, 'register']);
@@ -146,10 +146,10 @@ Route::get('/timesheet-statistics', [TimesheetStatisticsController::class, 'list
 Route::post('/timesheet-statistics-search', [TimesheetStatisticsController::class, 'search'])->name('timesheet-statis.search');
 
 //Project Plan
-Route::group(['middleware' => ['auth']], function() {
+Route::group(['middleware' => ['auth']], function () {
     Route::get('/project-plan', [ProjectPlanController::class, 'list'])->name('project-plan.list');
     Route::get('/project-plan/{id}/jobs', [ProjectPlanController::class, 'queryJobs'])->name('project-plan.queryJobs');
-    Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');    
+    Route::post('/project-plan-search', [ProjectPlanController::class, 'search'])->name('project-plan.search');
 });
 
 //Backup Manday
@@ -168,7 +168,7 @@ Route::post('assignee-list', [AssigneeListController::class, 'action'])->name('a
 Route::get('amount-confirms/create', [AmountConfirmController::class, 'create'])->name('amount-confirms.create');
 Route::post('amount-confirms', [AmountConfirmController::class, 'action'])->name('amount-confirms.action');
 
-Route::group(['middleware' => ['auth']], function() {
+Route::group(['middleware' => ['auth']], function () {
     Route::get('/jobs/create/{jobId?}', [JobsController::class, 'create'])->name('jobs.create');
     Route::post('/jobs/search', [JobsController::class, 'search'])->name('jobs.search');
     Route::get('/jobs', [JobsController::class, 'index'])->name('jobs.index');
