@@ -1,18 +1,17 @@
 server {
         listen 80;
 
-        root /home/ec2-user/task-assign-app/public;
+        root /var/www/public;
         server_name _;
         index index.php index.html;
 		
         location / {
-                try_files $uri $uri/ /index.php?$query_string;
+                try_files $uri $uri/ =404;
         }
 
         location ~ \.php$ {
-                fastcgi_pass unix:/var/run/php-fpm/www.sock;
+                fastcgi_pass server-web:9000;
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
                 include fastcgi_params;
         }
-
 }
