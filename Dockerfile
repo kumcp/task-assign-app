@@ -1,5 +1,8 @@
 FROM php:7.4-fpm
 
-COPY . /usr/src/myapp
-WORKDIR /usr/src/myapp
+COPY . /var/www
+
+WORKDIR /var/www
+
+RUN chmod -R 777 /var/www/storage
 # CMD [ "php", "./your-script.php" ]
