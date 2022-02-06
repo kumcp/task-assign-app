@@ -20,5 +20,4 @@ class PriorityJobTypeSeeder extends Seeder
         $listPriority = Priority::factory()->count(20)->create();
         $listJobType = JobType::factory()->count(20)->create();
     }
-
 }
