@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  nginx:
+    image: custom-nginx
+    ports:
+      - 8080:80
+    networks:
+      - web-net
+    volumes:
+      # - ./storage/log:/var/log/nginx
+      - ./:/var/www
+    depends_on:
+      - php-fpm
+  php-fpm:
+    container_name: server-web
+    build: php-web
+    networks:
+      - web-net
+
+networks:
+  web-net:
+    driver: bridge
