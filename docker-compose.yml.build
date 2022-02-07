@@ -1,48 +1,38 @@
 version: '3.9'
 
 services:
-  nginx:
-    image: nginx
+  built-nginx:
+    build:
+      context: .
+      dockerfile: deploy-helper/nginx/Dockerfile.nginx
     ports:
       - 8080:80
     depends_on:
       - php-fpm
 
-    volumes:
-      - ./storage/log:/var/log/nginx
-      - ./:/var/www
-      - ./deploy-helper/nginx:/etc/nginx/helper
-
-    command: /bin/bash /etc/nginx/helper/gen_nginx.sh && chmod -R gu+w /var/www/storage
-
-    # networks:
-    #   - web-net
-
     environment:
       - NGINX_HOST=server-web
       - NGINX_PORT=80
-      - APP_DEBUG=true
 
   php-fpm:
     container_name: server-web
     build: ./
+
     working_dir: /var/www/
-    # volumes:
-    #   - ./:/var/www
-    # networks:
-    #   - web-net
+    command: php artisan migrate && php artisan db:seed --class=DatabbaseSeeder
+
     depends_on:
-      - db
+      - test-db
 
     environment:
       - DB_CONNECTION=mysql
-      - DB_HOST=db
+      - DB_HOST=test-db
       - DB_PORT=3306
-      - DB_DATABASE=db
+      - DB_DATABASE=test-db
       - DB_USERNAME=root
       - DB_PASSWORD=12345678
 
-  db:
+  test-db:
     image: mariadb
     restart: always
     # command: --default-authentication-plugin=mysql_native_password
@@ -55,12 +45,3 @@ services:
     ports:
       - 3306:3306
       - 33060:33060
-
-  adminer:
-    image: adminer
-    ports:
-      - 8081:8080
-
-networks:
-  web-net:
-    driver: bridge
