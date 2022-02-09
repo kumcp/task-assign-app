@@ -11,7 +11,7 @@ phases:
   pre_build:
     commands:
       - echo "----- 1. PRE-BUILD COMMAND"
-      - eval $(aws ecr get-login --no-include-email | sed 's|https://||')
+      - eval $(aws ecr get-login-password --no-include-email | sed 's|https://||')
 
   build:
     commands:
