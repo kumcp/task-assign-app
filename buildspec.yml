@@ -11,7 +11,6 @@ phases:
   pre_build:
     commands:
       - echo "----- 1. PRE-BUILD COMMAND"
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
 
   build:
     commands:
