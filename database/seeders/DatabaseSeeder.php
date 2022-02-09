@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\DepartmentSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,7 +15,18 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            DepartmentSeeder::class
+
+
+            ProcessMethodSeeder::class,
+            SkillSeeder::class,
+            ProjectSeeder::class,
+            PriorityJobTypeSeeder::class,
+
+            DepartmentStaffSeeder::class,
+        ])->call([
+            // JobSeeder::class,
+        ])->call([
+            // JobAssignSeeder::class,
         ]);
     }
 }
