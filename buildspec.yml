@@ -1,8 +1,10 @@
 version: 0.2
 
 files:
-
-
+  - source: /
+    destination: /home/ec2-user/web/
+    overwrite: purge
+file_exists_behavior: OVERWRITE
 
 
 phases:
@@ -14,7 +16,7 @@ phases:
   build:
     commands:
       - echo "----- 2. BUILD COMMAND"
-      - docker build . ---tag php-web:latest
+      - docker build . --tag php-web:latest
       - docker tag php-web:latest 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-web:latest
       - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-web:latest
 
