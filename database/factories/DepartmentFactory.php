@@ -31,9 +31,9 @@ class DepartmentFactory extends Factory
 
     public function configure()
     {
-        return $this->afterMaking(function () {
-        })->afterCreating(function (Department $dep) {
-            Staff::factory()->count(5)->create(
+        // Create a staff inside  department
+        return $this->afterCreating(function (Department $dep) {
+            Staff::factory()->count(1)->create(
                 ['department_id' => $dep->id]
             );
         });
