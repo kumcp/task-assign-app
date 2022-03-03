@@ -8,6 +8,8 @@ services:
       - web-net
     depends_on:
       - php-fpm
+
+
   php-fpm:
     container_name: server-web
     image: 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-fpm:latest

@@ -16,10 +16,11 @@ services:
 
   php-fpm:
     container_name: server-web
-    build: ./
+    build:
+      context: .
+      dockerfile: Dockerfile
 
     working_dir: /var/www/
-    command: php artisan migrate && php artisan db:seed --class=DatabbaseSeeder
 
     depends_on:
       - test-db

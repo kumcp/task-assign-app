@@ -17,10 +17,16 @@ Package requirement:
 
 ### 1.1 Install composer.phar if you don't have it.
 
+Command to install composer is like this:
+
+```
+curl -sS https://getcomposer.org/installer | php
+```
+
 ### 1.2 Using composer to install package:
 
 ```
-composer install
+php composer.phar install
 ```
 
 ### 1.3 Setup environment variables
@@ -58,3 +64,31 @@ php artisan make:migration <migration_name>
 ```
 
 Detail see [here](https://laravel.com/docs/8.x/migrations)
+
+### 2.4 To run seed, run this command:
+
+```
+php artisan db:seed --class=DatabaseSeeder
+```
+
+This command will create Database for the project
+
+## 3. Build up project:
+
+This project have several environment for study purpose. We will go over several environment for this project
+
+## 3.1 Development:
+
+For development, we have some container to build up:
+You can run by this command:
+
+```
+docker-compose -f docker-compose.dev.yml up
+```
+
+This environment includes these images:
+
+-   php:7.4-fpm
+-   nginx
+-   mariadb (for test purpose only)
+-   adminer (for access mariadb)
