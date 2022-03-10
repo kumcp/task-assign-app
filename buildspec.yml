@@ -27,12 +27,15 @@ phases:
   post_build:
     commands:
       - echo "----- 3. POST-BUILD COMMAND ---------"
-      - echo "3.1 Push php-fpm to ECR"
+      - echo "3.1 Push php-fpm to ECR ---------"
       - docker tag php-web:latest $MAIN_REPOSITORY_URI:latest
       - docker push $MAIN_REPOSITORY_URI:latest
-      - echo "3.2 Push built-nginx to ECR"
+      - echo "3.2 Push built-nginx to ECR --------"
       - docker tag built-nginx:latest $SUB_REPOSITORY_URI:latest
       - docker push $SUB_REPOSITORY_URI:latest
+      - echo "3.3 Create image definitions --------"
+      - printf '[{"name":"php-fpm","imageUri":"$MAIN_REPOSITORY_URI:latest"},' >> imagedefinitions.json
+      - printf '{"name":"nginx","imageUri":"$SUB_REPOSITORY_URI:latest"}]' >> imagedefinitions.json
 
 artifacts:
   files: 
