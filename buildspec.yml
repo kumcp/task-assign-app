@@ -36,6 +36,7 @@ phases:
       - echo "3.3 Create image definitions --------"
       - printf "[{\"name\":\"php-fpm\",\"imageUri\":\"$MAIN_REPOSITORY_URI:latest\"}," >> imagedefinitions.json
       - printf "{\"name\":\"nginx\",\"imageUri\":\"$SUB_REPOSITORY_URI:latest\"}]" >> imagedefinitions.json
+      - cat imagedefinitions.json
 
 artifacts:
   files: 
