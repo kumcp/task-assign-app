@@ -7,7 +7,7 @@ This is a web application which help tranfer, assign and manage tasks between mu
 Package requirement:
 
 -   PHP 7.x
--   Composer
+-   Composer 2.0
 -   Laravel 8.x
 -   MySQL (Installation with XAMPP/MySQL Installer)
 

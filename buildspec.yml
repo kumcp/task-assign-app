@@ -10,7 +10,10 @@ phases:
   pre_build:
     commands:
       - echo "----- 1. PRE-BUILD COMMAND ---------"
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
+      - echo $CODEBUILD_BUILD_ARN
+      - ACCOUNT_ID=$(echo $CODEBUILD_BUILD_ARN | cut -f5 -d ':')
+      - echo "This script run from $ACCOUNT_ID"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
   build:
     commands:
@@ -27,6 +30,7 @@ phases:
       - echo "3.1 Push php-fpm to ECR"
       - docker tag php-web:latest $MAIN_REPOSITORY_URI:latest
       - docker push $MAIN_REPOSITORY_URI:latest
+      - echo "3.2 Push built-nginx to ECR"
       - docker tag built-nginx:latest $SUB_REPOSITORY_URI:latest
       - docker push $SUB_REPOSITORY_URI:latest
 
