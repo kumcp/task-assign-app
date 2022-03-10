@@ -1,31 +1,24 @@
 version: '3.9'
 
 services:
-  nginx:
-    image: nginx
+  built-nginx:
+    build:
+      context: .
+      dockerfile: deploy-helper/nginx/Dockerfile.nginx
     ports:
       - 8080:80
     depends_on:
       - php-fpm
 
-    volumes:
-      - ./storage/log:/var/log/nginx
-      - ./:/var/www
-      - ./deploy-helper/nginx:/etc/nginx/helper
-
-    command: /bin/bash -c "sh /etc/nginx/helper/gen_nginx.sh && chmod -R gu+w /var/www/storage && nginx -g 'daemon off;'"
-
-    # networks:
-    #   - web-net
-
     environment:
-      - NGINX_HOST=server-web
+      - NGINX_HOST=php-fpm
       - NGINX_PORT=80
-      - APP_DEBUG=true
 
   php-fpm:
-    container_name: server-web
-    image: php:7.4-fpm
+    container_name: php-fpm
+    build:
+      context: .
+      dockerfile: Dockerfile
 
     #command: bash -c "
     #  php artisan key:generate 
@@ -33,17 +26,7 @@ services:
     #  && php artisan db:seed --class=DatabaseSeeder 
     #  && php-fpm"
 
-    command: bash -c "
-      php artisan key:generate
-      && php artisan migrate 
-      && php-fpm"
 
-    working_dir: /var/www/
-    volumes:
-      - ./:/var/www
-
-    depends_on:
-      - db
 
     environment:
       - DB_CONNECTION=mysql
@@ -54,25 +37,4 @@ services:
       - DB_PASSWORD=12345678
 
   # In the first time initialize DB can take time (around 30s-1min, please check log)
-  db:
-    image: mariadb
-    restart: always
-    # command: --default-authentication-plugin=mysql_native_password
-    # volumes: 
-    #   - ~/mysql:/var/lib/mysql
-    environment:
-      MYSQL_DATABASE: taskassign
-      MYSQL_ROOT_PASSWORD: 12345678
-      # MYSQL_ROOT_HOST: '%'  # needs to be enclosed with quotes
-    ports:
-      - 3306:3306
-      - 33060:33060
 
-  adminer:
-    image: adminer
-    ports:
-      - 8081:8080
-
-networks:
-  web-net:
-    driver: bridge

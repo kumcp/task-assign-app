@@ -20,12 +20,12 @@ services:
 
     environment:
       - APP_KEY=base64:0/vsZK0O/cgGHM7mCFM8XfXMBuKzJkbPiZ74urwK5/g=
-      # - DB_CONNECTION=mysql
-      # - DB_HOST=db
-      # - DB_PORT=3306
-      # - DB_DATABASE=db #taskassign
-      # - DB_USERNAME=root #taskassign_admin
-      # - DB_PASSWORD=12345678
+      - DB_CONNECTION=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=db #taskassign
+      - DB_USERNAME=root #taskassign_admin
+      - DB_PASSWORD=12345678
 
 networks:
   web-net:

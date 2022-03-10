@@ -15,3 +15,7 @@ WORKDIR /var/www
 RUN cp /var/www/.env.example /var/www/.env
 
 RUN chmod -R 777 /var/www/storage
+
+RUN php artisan key:generate 
+
+CMD ["php-fpm"]

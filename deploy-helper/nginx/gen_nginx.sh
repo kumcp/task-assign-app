@@ -5,5 +5,5 @@ envsubst '${NGINX_HOST} ${NGINX_PORT}' < /etc/nginx/helper/nginx-config-docker.t
 
 
 
-# nginx -g 'daemon off;'
+nginx -g 'daemon off;'
 
