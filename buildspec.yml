@@ -35,4 +35,5 @@ phases:
       - docker push $SUB_REPOSITORY_URI:latest
 
 artifacts:
-  files: deploy-helper/**/*
+  files: 
+    - '**/*'
