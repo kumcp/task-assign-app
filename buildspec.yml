@@ -34,8 +34,8 @@ phases:
       - docker tag built-nginx:latest $SUB_REPOSITORY_URI:latest
       - docker push $SUB_REPOSITORY_URI:latest
       - echo "3.3 Create image definitions --------"
-      - printf '[{"name":"php-fpm","imageUri":"$MAIN_REPOSITORY_URI:latest"},' >> imagedefinitions.json
-      - printf '{"name":"nginx","imageUri":"$SUB_REPOSITORY_URI:latest"}]' >> imagedefinitions.json
+      - printf "[{\"name\":\"php-fpm\",\"imageUri\":\"$MAIN_REPOSITORY_URI:latest\"}," >> imagedefinitions.json
+      - printf "{\"name\":\"nginx\",\"imageUri\":\"$SUB_REPOSITORY_URI:latest\"}]" >> imagedefinitions.json
 
 artifacts:
   files: 
