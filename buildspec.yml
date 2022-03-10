@@ -4,23 +4,29 @@ files:
   - source: /
     destination: /home/ec2-user/web/
     overwrite: purge
-file_exists_behavior: OVERWRITE
-
+    file_exists_behavior: OVERWRITE
 
 phases:
   pre_build:
     commands:
-      - echo "----- 1. PRE-BUILD COMMAND"
-      - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com
+      - echo "----- 1. PRE-BUILD COMMAND ---------"
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.${AWS_REGION}.amazonaws.com
 
   build:
     commands:
-      - echo "----- 2. BUILD COMMAND"
-      - docker build . --tag php-web:latest
-      - docker tag php-web:latest 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-web:latest
-      - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-web:latest
+      - echo "----- 2. BUILD COMMAND ---------"
+      - echo " 2.1 Build php-fpm"
+      - docker build -f ./Dockerfile -t php-web:latest .
+      - echo " 2.2 Build nginx"
+      - docker build -f ./deploy-helper/nginx/Dockerfile.nginx -t built-nginx:latest .
+
 
   post_build:
     commands:
-      - echo "----- 2. BUILD COMMAND" 
+      - echo "----- 3. POST-BUILD COMMAND ---------"
+      - echo "3.1 Push php-fpm to ECR"
+      - docker tag php-web:latest $MAIN_REPOSITORY_URI:latest
+      - docker push $MAIN_REPOSITORY_URI:latest
+      - docker tag built-nginx:latest $SUB_REPOSITORY_URI:latest
+      - docker push $SUB_REPOSITORY_URI:latest
 
