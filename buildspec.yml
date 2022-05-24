@@ -16,6 +16,8 @@ phases:
       - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest
       - docker tag do03-php-fpm:latest 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest
       - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest
+
 artifacts:
   files:
     - README.md
+    - imagedefinitions.json
