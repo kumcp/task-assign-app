@@ -1,0 +1,24 @@
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      - echo "1. pre build step"
+      - aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com
+  build:
+    commands:
+      - echo "2. Build step"
+      - docker build -f ./deploy-helper/nginx/Dockerfile.nginx -t do03-nginx .
+      - docker build -f Dockerfile -t do03-php-fpm .
+  post_build:
+    commands:
+      - echo 3. "Post build"
+      - docker tag do03-nginx:latest 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest
+      - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest
+      - docker tag do03-php-fpm:latest 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest
+      - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest
+artifacts:
+  files:
+    - codedeploy/**/*
+    - appspec.yml
+    - docker-compose.yml
+    - .env
