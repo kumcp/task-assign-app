@@ -1,7 +1,7 @@
 [
     {
         "name": "php-fpm",
-        "image": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-fpm:latest",
+        "image": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest",
         "cpu": 0,
         "portMappings": [
             {
@@ -25,7 +25,7 @@
     },
     {
         "name": "nginx",
-        "image": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/built-nginx:latest",
+        "image": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest",
         "cpu": 0,
         "links": [],
         "portMappings": [

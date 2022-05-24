@@ -18,7 +18,4 @@ phases:
       - docker push 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest
 artifacts:
   files:
-    - codedeploy/**/*
-    - appspec.yml
-    - docker-compose.yml
-    - .env
+    - README.md
