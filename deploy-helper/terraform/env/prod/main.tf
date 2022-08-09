@@ -27,7 +27,6 @@ module "ecs_cluster" {
     base              = 0
   }]
 
-
   tags = {
     Environment = local.environment
   }
@@ -60,9 +59,9 @@ module "vpc" {
   name = "my-vpc"
   cidr = "10.0.0.0/16"
 
-  azs             = ["ap-southeast-1a"]
-  private_subnets = ["10.0.1.0/24"]
-  public_subnets  = ["10.0.3.0/24"]
+  azs             = ["ap-southeast-1a", "ap-southeast-1b"]
+  private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
+  public_subnets  = ["10.0.3.0/24", "10.0.4.0/24"]
 
   #   enable_nat_gateway = true
   #   enable_vpn_gateway = true
@@ -92,19 +91,48 @@ resource "aws_ecs_service" "service" {
     assign_public_ip = true
   }
 
-  # ordered_placement_strategy {
-  #   type  = "binpack"
-  #   field = "cpu"
-  # }
+  load_balancer {
+    target_group_arn = module.alb.target_group_arns[0]
+    container_name   = "nginx"
+    container_port   = 80
+  }
+}
 
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.foo.arn
-  #   container_name   = "mongo"
-  #   container_port   = 8080
-  # }
 
-  # placement_constraints {
-  #   type       = "memberOf"
-  #   expression = "attribute:ecs.availability-zone in [us-west-2a, us-west-2b]"
-  # }
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "~> 6.0"
+
+  name = "alb"
+
+  load_balancer_type = "application"
+
+  vpc_id          = module.vpc.vpc_id
+  subnets         = module.vpc.public_subnets
+  security_groups = [module.common_sg.allow_http.id, data.aws_security_group.default_sg.id]
+
+  target_groups = [
+    {
+      name             = "do2806-tg1"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "ip"
+
+      health_check = {
+        matcher = "301"
+      }
+    }
+  ]
+
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
+
+  tags = {
+    Environment = "test"
+  }
 }
