@@ -1,10 +1,10 @@
 [
     {
-        "name": "nginx",
-        "imageUri": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest"
+        "name": "built-nginx",
+        "imageUri": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/built-nginx:latest"
     },
     {
         "name": "php-fpm",
-        "imageUri": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest"
+        "imageUri": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/php-fpm:latest"
     }
 ]

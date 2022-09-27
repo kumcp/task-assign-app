@@ -1,7 +1,7 @@
 version: '3.9'
 services:
   nginx:
-    image: 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/built-nginx:latest
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/built-nginx:latest
     ports:
       - 8080:80
     networks:
@@ -12,7 +12,7 @@ services:
 
   php-fpm:
     container_name: server-web
-    image: 666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/php-fpm:latest
+    image: <ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/php-fpm:latest
     networks:
       - web-net
     # depends_on:
