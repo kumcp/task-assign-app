@@ -16,12 +16,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
 
-
+            AdminAccount::class,
             ProcessMethodSeeder::class,
             SkillSeeder::class,
             ProjectSeeder::class,
             PriorityJobTypeSeeder::class,
-
             DepartmentStaffSeeder::class,
         ])->call([
             // JobSeeder::class,

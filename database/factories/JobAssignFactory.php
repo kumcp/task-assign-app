@@ -24,24 +24,24 @@ class JobAssignFactory extends Factory
     public function definition()
     {
         return [
-                'job_id' => 0,
-                'staff_id' => 0,
-                'process_method_id' => 0,
-                'parent_id' => NULL,
-                'direct_report' => 1,
-                'sms' => 'Check sms',
-                'status' => 'active',
-                'deny_reason' => $this->faker->jobTitle,
+            'job_id' => 0,
+            'staff_id' => 0,
+            'process_method_id' => 0,
+            'parent_id' => NULL,
+            'direct_report' => 1,
+            'sms' => 'Check sms',
+            'status' => 'active',
+            'deny_reason' => $this->faker->jobTitle,
         ];
     }
-//
-//    public function configure()
-//    {
-//        return $this->afterCreating(function (TimeSheet $timeSheet) {
-//            TimeSheet::factory()->count(5)->create(
-//                ['job_assign_id' => $timeSheet->id]
-//            );
-//        });
-//    }
+    //
+    //    public function configure()
+    //    {
+    //        return $this->afterCreating(function (TimeSheet $timeSheet) {
+    //            TimeSheet::factory()->count(5)->create(
+    //                ['job_assign_id' => $timeSheet->id]
+    //            );
+    //        });
+    //    }
 
 }
