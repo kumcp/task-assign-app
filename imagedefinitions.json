@@ -1,0 +1,10 @@
+[
+    {
+        "name": "nginx",
+        "imageUri": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-nginx:latest"
+    },
+    {
+        "name": "php-fpm",
+        "imageUri": "666402361323.dkr.ecr.ap-southeast-1.amazonaws.com/do03-php-fpm:latest"
+    }
+]

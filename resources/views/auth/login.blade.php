@@ -5,7 +5,7 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">Đăng nhập DevOps-04final</div>
+                    <div class="card-header">Login</div>
 
                     @include('components.flash-message')
 
@@ -17,8 +17,9 @@
                                 <label for="email" class="col-md-4 col-form-label text-md-right">Địa chỉ E-Mail</label>
 
                                 <div class="col-md-6">
-                                    <input id="email" type="text" class="form-control @error('email') is-invalid @enderror"
-                                        name="email" value="{{ old('email') }}" autocomplete="email" autofocus>
+                                    <input id="email" type="text"
+                                        class="form-control @error('email') is-invalid @enderror" name="email"
+                                        value="{{ old('email') }}" autocomplete="email" autofocus>
 
                                     @error('email')
                                         <span class="invalid-feedback" role="alert">
