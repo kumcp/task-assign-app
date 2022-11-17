@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 8080:80
+      - 8082:80
     depends_on:
       - php-fpm
 
@@ -31,22 +31,25 @@ services:
     working_dir: /var/www/
 
     # First run with seed
-    command: /bin/bash -c "
+    command: /bin/sh -c "
       chmod -R 777 /var/www/storage
       && php artisan migrate
       && php artisan db:seed --class=DatabaseSeeder
       && php-fpm"
 
-
-    # command: /bin/bash -c "chmod -R 777 /var/www/storage && php-fpm"
+    # After first run
+    # command: /bin/sh -c "chmod -R 777 /var/www/storage && php-fpm"
 
     volumes:
       - ./:/var/www
 
     depends_on:
-      - db
+      - dbstop 
 
     environment:
+      - APP_KEY=base64:0/vsZK0O/cgGHM7mCFM8XfXMBuKzJkbPiZ74urwK5/g=
+      - APP_DEBUG=true
+      - APP_ENV=local
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
