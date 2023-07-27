@@ -15,7 +15,6 @@ class ExampleTest extends TestCase
     public function test_example()
     {
         $response = $this->get('/');
-
-        $response->assertStatus(200);
+        $response->assertStatus(301);   // When point to /, this will point to /login, so return 301 status
     }
 }
