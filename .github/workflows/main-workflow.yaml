@@ -3,7 +3,7 @@ name: main-actions
 run-name: ${{ github.actor }} is running GitHub Actions
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "develop", "master" ]
   pull_request:
     branches: [ "develop" ]
 
