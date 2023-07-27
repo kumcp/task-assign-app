@@ -24,7 +24,7 @@ jobs:
         php_version: '7.4'
         version: '2.3.5'
     - name: Config permission for composer
-      run: sudo chown -R "$(id -un)" "$(composer config --global home)"
+      run: sudo chown -R $USER ~/.composer/
     - name: Install Dependencies
       run: composer install
     - name: Generate key
