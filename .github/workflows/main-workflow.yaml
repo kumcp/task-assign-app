@@ -19,11 +19,10 @@ jobs:
     - uses: actions/checkout@v3
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-    - uses: php-actions/composer@v6   # This will auto run the command composer install by default
+    - uses: php-actions/composer@v6 
       with:
         php_version: '7.4'
         version: '2.3.5'
-        # command: composer install   # If you want a custom composer install, write here
     - name: Generate key
       run: php artisan key:generate
     - name: Run API Test

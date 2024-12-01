@@ -1,0 +1,21 @@
+unit_test:
+  stage: test
+  image: php:7.4-fpm
+  tags:
+    - aws
+  script:
+    # Install app dependencies
+    - apt-get update -y \
+     && apt-get install -y libzip-dev \
+     && docker-php-ext-install zip \
+     && apt-get install zip unzip
+    - apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --prefer-dist --no-cache
+    # - cp .env.example .env
+    # Generate an environment key
+    # - php artisan key:generate
+    # Run migrations
+    - php artisan test
+    # Run tests
+    # - vendor/bin/phpunit
